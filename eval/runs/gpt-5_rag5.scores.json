@@ -1,8 +1,8 @@
 {
   "report": {
     "items": 459,
-    "correct": 330,
-    "accuracy": 0.7189542483660131,
+    "correct": 382,
+    "accuracy": 0.8322440087145969,
     "families": {
       "abstention": {
         "n": 40,
@@ -22,17 +22,17 @@
       },
       "lookup_traits": {
         "n": 80,
-        "correct": 66,
-        "accuracy": 0.825,
+        "correct": 69,
+        "accuracy": 0.8625,
         "mean_recall": 0.9447916666666666,
-        "over_answered": 6
+        "over_answered": 3
       },
       "prereq": {
         "n": 80,
-        "correct": 24,
-        "accuracy": 0.3,
+        "correct": 73,
+        "accuracy": 0.9125,
         "mean_recall": 0.946875,
-        "over_answered": 55
+        "over_answered": 0
       },
       "remaster_rename": {
         "n": 53,
@@ -814,7 +814,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -826,7 +825,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -862,7 +860,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -957,7 +954,6 @@
         "Unique",
         "Medium"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -969,7 +965,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1041,7 +1036,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1067,7 +1061,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1093,7 +1086,6 @@
       "missing": [
         "Small"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -1167,10 +1159,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Skirmisher"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0031",
@@ -1181,7 +1170,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1193,10 +1181,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Nightmare"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0033",
@@ -1233,7 +1218,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1299,7 +1283,6 @@
         "Uncommon",
         "Medium"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -1323,10 +1306,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Common"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0043",
@@ -1445,7 +1425,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1457,7 +1436,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1475,7 +1453,6 @@
         "Unique",
         "Small"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -1487,7 +1464,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1511,7 +1487,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1523,7 +1498,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1535,7 +1509,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1691,7 +1664,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1703,7 +1675,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1777,7 +1748,6 @@
       "missing": [
         "Kholo"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -2509,10 +2479,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0001",
@@ -2523,10 +2490,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0002",
@@ -2537,7 +2501,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2549,10 +2512,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0004",
@@ -2563,7 +2523,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2575,10 +2534,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0006",
@@ -2591,9 +2547,6 @@
       "missing": [
         "Expert in Crafting"
       ],
-      "extra": [
-        "Dedication"
-      ],
       "correct": false
     },
     {
@@ -2605,11 +2558,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Champion",
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0008",
@@ -2620,10 +2569,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0009",
@@ -2634,7 +2580,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2646,10 +2591,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0011",
@@ -2660,7 +2602,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2672,7 +2613,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2684,7 +2624,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2696,7 +2635,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2710,9 +2648,6 @@
       "missing": [
         "Master in Arcana"
       ],
-      "extra": [
-        "Wizard"
-      ],
       "correct": false
     },
     {
@@ -2724,10 +2659,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Stance"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0017",
@@ -2738,10 +2670,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0018",
@@ -2752,10 +2681,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0019",
@@ -2768,10 +2694,6 @@
       "missing": [
         "or or another lineage feat associated with celestials"
       ],
-      "extra": [
-        "Celestial",
-        "Lineage"
-      ],
       "correct": false
     },
     {
@@ -2783,11 +2705,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Mummy"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0021",
@@ -2798,10 +2716,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dragon"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0022",
@@ -2812,10 +2727,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0023",
@@ -2826,10 +2738,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0024",
@@ -2840,10 +2749,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Good"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0025",
@@ -2854,10 +2760,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0026",
@@ -2868,7 +2771,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2880,7 +2782,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2892,10 +2793,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Stance"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0029",
@@ -2906,10 +2804,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0030",
@@ -2922,10 +2817,6 @@
       "missing": [
         "tusks unarmed attack"
       ],
-      "extra": [
-        "Attack",
-        "Unarmed"
-      ],
       "correct": false
     },
     {
@@ -2937,10 +2828,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0032",
@@ -2951,7 +2839,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2963,7 +2850,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2975,7 +2861,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2987,10 +2872,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0036",
@@ -3001,7 +2883,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3015,10 +2896,6 @@
       "missing": [
         "Kijimuna Gnome heritage or at least one primal innate spell from a gnome heritage or feat"
       ],
-      "extra": [
-        "Gnome",
-        "Primal"
-      ],
       "correct": false
     },
     {
@@ -3030,10 +2907,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Poppet"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0039",
@@ -3044,10 +2918,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0040",
@@ -3058,14 +2929,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Animal",
-        "Attack",
-        "Companion",
-        "Dedication",
-        "Unarmed"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0041",
@@ -3076,7 +2940,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3088,11 +2951,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Bulwark",
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0043",
@@ -3103,10 +2962,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0044",
@@ -3117,11 +2973,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Werecreature"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0045",
@@ -3132,10 +2984,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0046",
@@ -3146,10 +2995,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0047",
@@ -3160,7 +3006,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3172,10 +3017,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Champion"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0049",
@@ -3186,7 +3028,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3198,12 +3039,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Holy",
-        "Sanctified",
-        "Unholy"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0051",
@@ -3214,10 +3050,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0052",
@@ -3228,10 +3061,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Archetype"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0053",
@@ -3242,10 +3072,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0054",
@@ -3256,10 +3083,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0055",
@@ -3270,11 +3094,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Attack",
-        "Unarmed"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0056",
@@ -3285,11 +3105,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Companion",
-        "Construct"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0057",
@@ -3300,10 +3116,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Spirit"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0058",
@@ -3314,7 +3127,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3326,7 +3138,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3338,7 +3149,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3350,10 +3160,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Leshy"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0062",
@@ -3364,11 +3171,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Dragon"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0063",
@@ -3379,10 +3182,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0064",
@@ -3393,10 +3193,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Stance"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0065",
@@ -3407,7 +3204,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3421,7 +3217,6 @@
       "missing": [
         "ability to cast _shield_"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -3433,10 +3228,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Cantrip"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0068",
@@ -3447,10 +3239,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Beast"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0069",
@@ -3461,7 +3250,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3475,10 +3263,6 @@
       "missing": [
         "Master in Acrobatics"
       ],
-      "extra": [
-        "Dedication",
-        "Ghost"
-      ],
       "correct": false
     },
     {
@@ -3490,10 +3274,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0072",
@@ -3504,7 +3285,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3516,10 +3296,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0074",
@@ -3530,11 +3307,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Deadly",
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0075",
@@ -3545,10 +3318,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0076",
@@ -3559,7 +3329,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3571,7 +3340,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3583,12 +3351,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Death",
-        "Dedication",
-        "Necromancer"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0079",
@@ -3599,10 +3362,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0000",

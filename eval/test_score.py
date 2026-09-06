@@ -48,6 +48,27 @@ CASES = [
 ]
 
 
+# Set-grading cases. The gold sets and responses are verbatim from runs.
+SET_CASES = [
+    # prereq: gold is not drawn from the trait vocabulary, so the over-answering
+    # check must not apply. "Dedication" is a trait name and also part of the
+    # correct answer.
+    ({"answer_type": "set", "question": "What are the prerequisites for the feat Dream Logic?",
+      "acceptable": ["Sleepwalker Dedication"]},
+     "Sleepwalker Dedication. [https://2e.aonprd.com/Feats.aspx?ID=8522]", True),
+    # traits: gold IS the vocabulary, so a volunteered extra trait is a real error.
+    ({"answer_type": "set", "question": "List every trait of the feat X.",
+      "acceptable": ["Fighter", "Flourish"]},
+     "It has the Fighter and Flourish traits.", True),
+    ({"answer_type": "set", "question": "List every trait of the feat X.",
+      "acceptable": ["Fighter", "Flourish"]},
+     "It has the Fighter, Flourish and Magical traits.", False),
+    ({"answer_type": "set", "question": "List every trait of the feat X.",
+      "acceptable": ["Fighter", "Flourish"]},
+     "It has the Fighter trait.", False),
+]
+
+
 def main() -> int:
     failures = []
     for text, term, want_leak in CASES:
@@ -60,8 +81,21 @@ def main() -> int:
     for text, term, want, got, mentioned in failures:
         print(f"FAIL {term!r} want_leak={want} got={got} (mentioned={mentioned})")
         print(f"     {text[:100]}")
-    print(f"\n{len(CASES) - len(failures)}/{len(CASES)} cases pass")
-    return 1 if failures else 0
+    vocab = {"Fighter", "Flourish", "Magical", "Dedication", "Archetype"}
+    set_failures = []
+    for item, response, want in SET_CASES:
+        item = {"id": "t", "family": "t", **item}
+        got = score.grade(item, response, vocab)["correct"]
+        if got != want:
+            set_failures.append((item["acceptable"], response, want, got))
+    for gold, response, want, got in set_failures:
+        print(f"FAIL set gold={gold} want={want} got={got}")
+        print(f"     {response[:90]}")
+
+    total = len(CASES) + len(SET_CASES)
+    passed = total - len(failures) - len(set_failures)
+    print(f"\n{passed}/{total} cases pass")
+    return 1 if failures or set_failures else 0
 
 
 if __name__ == "__main__":

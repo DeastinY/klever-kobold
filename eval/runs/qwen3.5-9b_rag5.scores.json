@@ -1,8 +1,8 @@
 {
   "report": {
     "items": 459,
-    "correct": 314,
-    "accuracy": 0.6840958605664488,
+    "correct": 387,
+    "accuracy": 0.8431372549019608,
     "families": {
       "abstention": {
         "n": 40,
@@ -22,17 +22,17 @@
       },
       "lookup_traits": {
         "n": 80,
-        "correct": 46,
-        "accuracy": 0.575,
+        "correct": 70,
+        "accuracy": 0.875,
         "mean_recall": 0.9481249999999999,
-        "over_answered": 31
+        "over_answered": 2
       },
       "prereq": {
         "n": 80,
-        "correct": 17,
-        "accuracy": 0.2125,
+        "correct": 66,
+        "accuracy": 0.825,
         "mean_recall": 0.878125,
-        "over_answered": 60
+        "over_answered": 0
       },
       "remaster_rename": {
         "n": 53,
@@ -814,12 +814,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Evil",
-        "Kholo",
-        "Seugathi"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0003",
@@ -830,17 +825,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Auditory",
-        "Aura",
-        "Emotion",
-        "Fear",
-        "Fortune",
-        "Linguistic",
-        "Mental",
-        "Sleep"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0004",
@@ -875,11 +860,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Chaotic",
-        "Evil"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0007",
@@ -968,12 +949,6 @@
         "Unique",
         "Medium"
       ],
-      "extra": [
-        "Common",
-        "Mechanical",
-        "Nindoru",
-        "Seugathi"
-      ],
       "correct": false
     },
     {
@@ -985,10 +960,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Evil"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0015",
@@ -1059,11 +1031,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Attack",
-        "Water"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0021",
@@ -1090,13 +1058,6 @@
         "CE",
         "Small"
       ],
-      "extra": [
-        "Attack",
-        "Polymorph",
-        "Primal",
-        "Reach",
-        "Transmutation"
-      ],
       "correct": false
     },
     {
@@ -1120,14 +1081,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Cold",
-        "Poison",
-        "Sleep",
-        "Unarmed",
-        "Water"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0025",
@@ -1138,10 +1092,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Rune"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0026",
@@ -1200,11 +1152,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Evil",
-        "Skirmisher"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0031",
@@ -1215,7 +1163,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1227,14 +1174,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Chaotic",
-        "Cold",
-        "Evil",
-        "Lawful",
-        "Nightmare"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0033",
@@ -1259,10 +1199,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Swarm"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0035",
@@ -1273,10 +1211,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Necromancer"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0036",
@@ -1340,13 +1275,6 @@
         "Beast",
         "Medium"
       ],
-      "extra": [
-        "Consumable",
-        "Fulu",
-        "Magical",
-        "Spirit",
-        "Talisman"
-      ],
       "correct": false
     },
     {
@@ -1358,10 +1286,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Harrow Court"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0042",
@@ -1372,12 +1298,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "General",
-        "Poison",
-        "Titan"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0043",
@@ -1496,11 +1417,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Chaotic",
-        "Evil"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0053",
@@ -1511,10 +1428,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Electricity"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0054",
@@ -1530,13 +1444,6 @@
         "Unique",
         "Small"
       ],
-      "extra": [
-        "Common",
-        "Hag",
-        "Rare",
-        "Uncommon",
-        "Undead"
-      ],
       "correct": false
     },
     {
@@ -1548,11 +1455,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Evil",
-        "Lawful"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0056",
@@ -1575,7 +1478,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1587,11 +1489,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Good",
-        "Lawful"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0059",
@@ -1602,7 +1500,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -1626,11 +1523,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Arcane",
-        "Scroll"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0062",
@@ -1641,10 +1535,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Gunslinger"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0063",
@@ -1718,10 +1610,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Trial"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0069",
@@ -1768,15 +1658,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Attack",
-        "Charm",
-        "Cold",
-        "Curse",
-        "Ingested",
-        "Poison"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0073",
@@ -1787,11 +1669,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Chaotic",
-        "Evil"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0074",
@@ -1802,10 +1680,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0075",
@@ -1854,10 +1730,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Oil"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0079",
@@ -1869,10 +1743,6 @@
       "recall": 0.8333333333333334,
       "missing": [
         "Kholo"
-      ],
-      "extra": [
-        "Chaotic",
-        "Evil"
       ],
       "correct": false
     },
@@ -2605,11 +2475,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Dream"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0001",
@@ -2620,10 +2486,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0002",
@@ -2634,7 +2497,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2646,11 +2508,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Maneuver"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0004",
@@ -2661,7 +2519,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2673,11 +2530,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Propulsive"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0006",
@@ -2688,10 +2541,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0007",
@@ -2702,11 +2552,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Champion",
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0008",
@@ -2717,11 +2563,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Legacy"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0009",
@@ -2732,7 +2574,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2744,10 +2585,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0011",
@@ -2758,11 +2596,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Skill"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0012",
@@ -2773,7 +2607,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2785,7 +2618,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2797,10 +2629,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0015",
@@ -2811,10 +2640,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Wizard"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0016",
@@ -2825,11 +2651,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Fire",
-        "Stance"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0017",
@@ -2840,11 +2662,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Spirit"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0018",
@@ -2855,10 +2673,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0019",
@@ -2871,10 +2686,6 @@
       "missing": [
         "or or another lineage feat associated with celestials"
       ],
-      "extra": [
-        "Celestial",
-        "Lineage"
-      ],
       "correct": false
     },
     {
@@ -2886,12 +2697,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Archetype",
-        "Dedication",
-        "Mummy"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0021",
@@ -2902,10 +2708,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dragon"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0022",
@@ -2916,11 +2719,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Dragon"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0023",
@@ -2931,12 +2730,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Archetype",
-        "Dedication",
-        "Skill"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0024",
@@ -2947,10 +2741,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Good"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0025",
@@ -2961,11 +2752,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Stance"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0026",
@@ -2976,7 +2763,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -2990,7 +2776,6 @@
       "missing": [
         "you follow a deity"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -3002,10 +2787,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Stance"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0029",
@@ -3016,10 +2798,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0030",
@@ -3032,10 +2811,6 @@
       "missing": [
         "tusks unarmed attack"
       ],
-      "extra": [
-        "Attack",
-        "Unarmed"
-      ],
       "correct": false
     },
     {
@@ -3047,11 +2822,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Aura",
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0032",
@@ -3062,7 +2833,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3074,7 +2844,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3086,7 +2855,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3098,10 +2866,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0036",
@@ -3112,7 +2877,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3126,10 +2890,6 @@
       "missing": [
         "Kijimuna Gnome heritage or at least one primal innate spell from a gnome heritage or feat"
       ],
-      "extra": [
-        "Gnome",
-        "Primal"
-      ],
       "correct": false
     },
     {
@@ -3141,10 +2901,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Poppet"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0039",
@@ -3155,10 +2912,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0040",
@@ -3171,13 +2925,6 @@
       "missing": [
         "animal companion with a jaws or fangs unarmed attack"
       ],
-      "extra": [
-        "Animal",
-        "Attack",
-        "Companion",
-        "Dedication",
-        "Unarmed"
-      ],
       "correct": false
     },
     {
@@ -3189,11 +2936,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Guardian",
-        "Primal"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0042",
@@ -3204,11 +2947,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Bulwark",
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0043",
@@ -3219,10 +2958,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0044",
@@ -3233,11 +2969,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Werecreature"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0045",
@@ -3248,10 +2980,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0046",
@@ -3262,10 +2991,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0047",
@@ -3276,7 +3002,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3288,10 +3013,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Champion"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0049",
@@ -3302,10 +3024,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Kitsune"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0050",
@@ -3318,11 +3037,6 @@
       "missing": [
         "You are not sanctified with the holy or unholy trait"
       ],
-      "extra": [
-        "Holy",
-        "Sanctified",
-        "Unholy"
-      ],
       "correct": false
     },
     {
@@ -3334,10 +3048,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0052",
@@ -3348,7 +3059,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3360,10 +3070,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0054",
@@ -3374,10 +3081,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0055",
@@ -3390,11 +3094,6 @@
       "missing": [
         "powerful fist or expert in unarmed attacks"
       ],
-      "extra": [
-        "Attack",
-        "Dedication",
-        "Unarmed"
-      ],
       "correct": false
     },
     {
@@ -3406,11 +3105,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Companion",
-        "Construct"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0057",
@@ -3421,10 +3116,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Spirit"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0058",
@@ -3435,7 +3127,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3447,7 +3138,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3459,10 +3149,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Secret"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0061",
@@ -3475,10 +3162,6 @@
       "missing": [
         "Chrysanthemum Leshy heritage or Peachchild Leshy heritage"
       ],
-      "extra": [
-        "Leshy",
-        "Plant"
-      ],
       "correct": false
     },
     {
@@ -3490,11 +3173,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication",
-        "Dragon"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0063",
@@ -3505,10 +3184,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0064",
@@ -3519,10 +3195,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Stance"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0065",
@@ -3533,7 +3206,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3545,7 +3217,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3557,10 +3228,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Cantrip"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0068",
@@ -3573,9 +3241,6 @@
       "missing": [
         "Trained in Hero-God Lore  or Trained in Legendary Beast Lore"
       ],
-      "extra": [
-        "Beast"
-      ],
       "correct": false
     },
     {
@@ -3587,10 +3252,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Subtle"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0070",
@@ -3601,13 +3263,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Archetype",
-        "Dedication",
-        "Ghost",
-        "Skill"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0071",
@@ -3620,9 +3276,6 @@
       "missing": [
         "you worship a good-aligned deity"
       ],
-      "extra": [
-        "Dedication"
-      ],
       "correct": false
     },
     {
@@ -3634,7 +3287,6 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [],
       "correct": true
     },
     {
@@ -3648,9 +3300,6 @@
       "missing": [
         "expert proficiency in a spear or polearm"
       ],
-      "extra": [
-        "Dedication"
-      ],
       "correct": false
     },
     {
@@ -3662,11 +3311,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Deadly",
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0075",
@@ -3677,10 +3322,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0076",
@@ -3693,7 +3335,6 @@
       "missing": [
         "you follow a deity"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -3707,7 +3348,6 @@
       "missing": [
         "Lethoci heritage or Xyloshi heritage"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -3721,11 +3361,6 @@
       "missing": [
         "necromancer initial school spell or death initial domain spell"
       ],
-      "extra": [
-        "Death",
-        "Dedication",
-        "Necromancer"
-      ],
       "correct": false
     },
     {
@@ -3737,10 +3372,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Dedication"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0000",

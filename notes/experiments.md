@@ -234,27 +234,39 @@ corpus in 28s and is within half a point of `Qwen3-Embedding-0.6B` at 213s.
 
 ## Retrieval-augmented runs (k=5, hybrid+hop)
 
+> **Corrected 2026-09-06 after a fifth scorer bug.** The over-answering check was applied to
+> `prereq`, whose gold set is not drawn from the trait vocabulary. "Dedication" is both a trait name
+> and part of most correct prerequisite answers, so "Sleepwalker Dedication" — exactly right — was
+> scored wrong. This understated every retrieval run by ~15 points and invented the "30-point
+> precision gap" this project believed in for several hours. Numbers below are post-fix.
+
 | Model | Closed-book | + retrieval | Δ |
 | --- | ---: | ---: | ---: |
-| gpt-5 | 25.3% | **67.9%** | 2.7x |
-| Qwen3.5-9B | 15.8% | **65.0%** | 4.1x |
-| gpt-4.1-mini | 21.4% | **63.2%** | 3.0x |
-| Qwen3.8-27B | 21.8% | **63.2%** | 2.9x |
+| **Qwen3.5-9B** | 17.4% | **84.3%** | 4.8x |
+| gpt-5 | 27.5% | 83.2% | 3.0x |
+| Qwen3.8-27B | 23.1% | 82.6% | 3.6x |
+| gpt-4.1-mini | 22.9% | 81.9% | 3.6x |
+| gpt-6-astra | **31.6%** | — | credits exhausted |
 
-A 9B in 4-bit on one desktop card lands 2.9 points off gpt-5.
+**A 9B in 4-bit on one desktop card is the best model on this benchmark**, ahead of gpt-5. Not by
+much, and within noise of the other three — but the honest reading is that with good retrieval this
+task does not discriminate between a 9B and a frontier model.
 
 ### Per family, with retrieval
 
-| Family | gpt-5 | Qwen3.5-9B | Qwen3.8-27B | gpt-4.1-mini | retrieval R@5 |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| `lookup_level` | 87.5% | 96.2% | 98.8% | 95.0% | 100% |
-| `lookup_rarity` | 96.2% | 96.2% | 95.0% | 96.2% | 97.5% |
-| `lookup_traits` | 82.5% | 57.5% | 67.5% | 70.0% | 100% |
-| `prereq` | 30.0% | 21.2% | 21.2% | 21.2% | 100% |
-| `remaster_rename` | 50.0% | 50.0% | 46.2% | 43.8% | 65% |
-| `abstention` | 17.5% | 35.0% | **0.0%** | 7.5% | — |
-| `trap_5e` | 100% | 100% | 100% | 96.7% | — |
-| `trap_5e_applied` | 100% | 93.8% | 87.5% | 87.5% | — |
+| Family | gpt-5 | Qwen3.5-9B | retrieval R@5 |
+| --- | ---: | ---: | ---: |
+| `lookup_level` | 87.5% | 96.2% | 100% |
+| `lookup_rarity` | 96.2% | 96.2% | 97.5% |
+| `trap_5e` | 96.7% | 96.7% | — |
+| `trap_5e_applied` | 100% | 93.8% | — |
+| `lookup_traits` | 86.2% | 87.5% | 100% |
+| `prereq` | 91.2% | 82.5% | 100% |
+| `remaster_rename` | 77.4% | 73.6% | 88.7% |
+| `abstention` | **17.5%** | **35.0%** | — |
+
+Everything except abstention is between 73% and 97%. Abstention alone accounts for roughly half of
+all remaining errors on 8.7% of the items.
 
 ## Reading phase 2
 
@@ -268,9 +280,23 @@ prior corrected; it needed the page.
 feats and ask about one that was never written, and it answers about a neighbour. The distractors
 are now in the prompt looking authoritative.
 
-**The residual gap is precision, not knowledge.** `prereq` has 100% R@5 and 21–30% accuracy — the
-answer is in the context window and the model answers from the wrong excerpt, over-answering on
-55–61 of 80. `lookup_traits` is the same shape.
+**~~The residual gap is precision~~ — retracted.** That claim was a scorer bug (see above). With the
+grader fixed, `prereq` is 82–91% and `lookup_traits` 86–88%. Precision is fine.
+
+**The residual gap is abstention, and only abstention.** 17.5% for gpt-5, 35.0% for the 9B, 0.0% for
+the 27B. This is a known, hard, and specifically-RAG-caused failure:
+
+- [RefusalBench](https://arxiv.org/abs/2510.10390) (EACL 2026, 30+ models): refusal accuracy below
+  50% on multi-document tasks; **neither scale nor extended reasoning helps**. But refusal is
+  "a trainable, alignment-sensitive capability".
+- [Prompt-Based Abstention Fails Under Misleading Context](https://arxiv.org/html/2608.22228) (2026):
+  small RAG models abstain 97–99% when context is *missing*, and answer 13.6–74.3% of the time when
+  it is *misleading*. Our abstention family is the misleading case — five plausible neighbours.
+  Their strongest prompt-only mitigation cuts the answer rate to 13.3% but **discards 49.8% of
+  correct answers on answerable questions**.
+- [Divide-Then-Align](https://arxiv.org/pdf/2505.20871): warns that RAFT *itself* trains models to
+  answer when reliable knowledge is unavailable, and proposes DPO over four knowledge quadrants
+  instead. Direct caution for phase 3: SFT alone may not be enough, and could hurt.
 
 **`remaster_rename` is the one family still retrieval-bound**: 65% R@5, and every model sits at
 43–50%, i.e. roughly at its ceiling. Improving it means better retrieval, not a better model.

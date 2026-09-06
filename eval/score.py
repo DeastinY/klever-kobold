@@ -192,9 +192,25 @@ def grade(item: dict, response: str, vocab: set[str] | None = None) -> dict:
         found = [g for g in gold if contains(hay, g)]
         out["recall"] = len(found) / len(gold) if gold else 0.0
         out["missing"] = [g for g in gold if g not in found]
-        if vocab:
-            goldset = {norm(g) for g in gold}
-            extra = sorted(v for v in vocab if norm(v) not in goldset and contains(hay, v))
+
+        # Over-answering is only measurable where the gold set is drawn from a
+        # closed vocabulary -- i.e. trait questions. Applying it to prerequisites
+        # was a category error: "Dedication" is itself a trait name, so
+        # "Sleepwalker Dedication" -- the exactly correct answer -- was scored as
+        # naming a trait that was not asked for.
+        gold_norm = [norm(g) for g in gold]
+        vocab_drawn = bool(vocab) and all(any(g == norm(v) for v in vocab) for g in gold_norm)
+        if vocab_drawn:
+            question = norm(item.get("question", ""))
+            extra = sorted(
+                v for v in vocab
+                if norm(v) not in gold_norm
+                # a term inside a gold answer, or already in the question, is not
+                # something the model volunteered
+                and not any(norm(v) in g for g in gold_norm)
+                and not contains(question, v)
+                and contains(hay, v)
+            )
             out["extra"] = extra
             out["correct"] = out["recall"] == 1.0 and not extra
         else:

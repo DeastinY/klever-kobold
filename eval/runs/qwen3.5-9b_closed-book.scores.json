@@ -1,8 +1,8 @@
 {
   "report": {
     "items": 459,
-    "correct": 77,
-    "accuracy": 0.16775599128540306,
+    "correct": 80,
+    "accuracy": 0.17429193899782136,
     "families": {
       "abstention": {
         "n": 40,
@@ -22,17 +22,17 @@
       },
       "lookup_traits": {
         "n": 80,
-        "correct": 0,
-        "accuracy": 0.0,
+        "correct": 1,
+        "accuracy": 0.0125,
         "mean_recall": 0.14020833333333332,
-        "over_answered": 73
+        "over_answered": 50
       },
       "prereq": {
         "n": 80,
-        "correct": 0,
-        "accuracy": 0.0,
+        "correct": 2,
+        "accuracy": 0.025,
         "mean_recall": 0.03125,
-        "over_answered": 72
+        "over_answered": 0
       },
       "remaster_rename": {
         "n": 53,
@@ -840,12 +840,6 @@
         "NE",
         "Large"
       ],
-      "extra": [
-        "Attack",
-        "Giant",
-        "Light",
-        "Reach"
-      ],
       "correct": false
     },
     {
@@ -860,10 +854,6 @@
         "Occult",
         "Uncommon",
         "Gargantuan"
-      ],
-      "extra": [
-        "Class",
-        "Human"
       ],
       "correct": false
     },
@@ -921,11 +911,6 @@
         "Spriggan",
         "CE",
         "Small"
-      ],
-      "extra": [
-        "Agathion",
-        "Celestial",
-        "Common"
       ],
       "correct": false
     },
@@ -1060,7 +1045,6 @@
         "Unique",
         "Medium"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -1077,17 +1061,6 @@
         "Mortic",
         "Rare",
         "NE"
-      ],
-      "extra": [
-        "Acid",
-        "Archetype",
-        "Class",
-        "Cold",
-        "Common",
-        "Death",
-        "Fire",
-        "Skill",
-        "Undead"
       ],
       "correct": false
     },
@@ -1199,11 +1172,6 @@
         "Humanoid",
         "Medium"
       ],
-      "extra": [
-        "City",
-        "Common",
-        "Giant"
-      ],
       "correct": false
     },
     {
@@ -1236,10 +1204,6 @@
         "CE",
         "Small"
       ],
-      "extra": [
-        "Archetype",
-        "Common"
-      ],
       "correct": false
     },
     {
@@ -1269,9 +1233,6 @@
       "missing": [
         "Small"
       ],
-      "extra": [
-        "Beast"
-      ],
       "correct": false
     },
     {
@@ -1291,8 +1252,7 @@
       "extra": [
         "Legacy",
         "Negative",
-        "Rare",
-        "Rune"
+        "Rare"
       ],
       "correct": false
     },
@@ -1390,11 +1350,6 @@
       "missing": [
         "NE"
       ],
-      "extra": [
-        "Common",
-        "Goblin",
-        "Skirmisher"
-      ],
       "correct": false
     },
     {
@@ -1408,15 +1363,6 @@
       "missing": [
         "N",
         "Small"
-      ],
-      "extra": [
-        "Attack",
-        "Class",
-        "Giant",
-        "Poison",
-        "Psychic",
-        "Reach",
-        "Skill"
       ],
       "correct": false
     },
@@ -1433,19 +1379,6 @@
         "Unique",
         "CE",
         "Gargantuan"
-      ],
-      "extra": [
-        "Attack",
-        "Aura",
-        "Common",
-        "Evil",
-        "Fear",
-        "Good",
-        "Humanoid",
-        "Nightmare",
-        "Reach",
-        "Undead",
-        "Unholy"
       ],
       "correct": false
     },
@@ -1490,7 +1423,6 @@
         "Force",
         "Range",
         "Reach",
-        "Swarm",
         "Time",
         "Visual"
       ],
@@ -1509,9 +1441,6 @@
         "Unique",
         "N",
         "Medium"
-      ],
-      "extra": [
-        "Cleric"
       ],
       "correct": false
     },
@@ -1603,10 +1532,6 @@
         "Uncommon",
         "Medium"
       ],
-      "extra": [
-        "Animal",
-        "Common"
-      ],
       "correct": false
     },
     {
@@ -1627,7 +1552,6 @@
       ],
       "extra": [
         "Attack",
-        "Harrow Court",
         "Move"
       ],
       "correct": false
@@ -1644,10 +1568,6 @@
         "Animal",
         "N",
         "Gargantuan"
-      ],
-      "extra": [
-        "Giant",
-        "Titan"
       ],
       "correct": false
     },
@@ -1704,7 +1624,6 @@
       "extra": [
         "Attack",
         "Capacity",
-        "Common",
         "Companion",
         "Intelligent",
         "Morale",
@@ -1839,14 +1758,6 @@
         "CE",
         "Large"
       ],
-      "extra": [
-        "Attack",
-        "Class",
-        "Fear",
-        "Grapple",
-        "Poison",
-        "Rogue"
-      ],
       "correct": false
     },
     {
@@ -1860,13 +1771,6 @@
       "missing": [
         "Animal",
         "Small"
-      ],
-      "extra": [
-        "Common",
-        "Construct",
-        "Golem",
-        "Metal",
-        "Ooze"
       ],
       "correct": false
     },
@@ -1885,11 +1789,6 @@
         "Unique",
         "Small"
       ],
-      "extra": [
-        "Common",
-        "Skill",
-        "Swarm"
-      ],
       "correct": false
     },
     {
@@ -1905,9 +1804,6 @@
         "Unique",
         "LE",
         "Medium"
-      ],
-      "extra": [
-        "Rogue"
       ],
       "correct": false
     },
@@ -1945,11 +1841,6 @@
         "N",
         "Large"
       ],
-      "extra": [
-        "Common",
-        "Humanoid",
-        "Orc"
-      ],
       "correct": false
     },
     {
@@ -1967,9 +1858,6 @@
         "LG",
         "Medium"
       ],
-      "extra": [
-        "Aberration"
-      ],
       "correct": false
     },
     {
@@ -1986,9 +1874,6 @@
         "Sahkil",
         "Unholy",
         "Medium"
-      ],
-      "extra": [
-        "Common"
       ],
       "correct": false
     },
@@ -2027,10 +1912,7 @@
         "Uncommon"
       ],
       "extra": [
-        "Arcane",
         "Capacity",
-        "Common",
-        "Scroll",
         "Simple"
       ],
       "correct": false
@@ -2049,9 +1931,7 @@
         "Uncommon"
       ],
       "extra": [
-        "Attack",
-        "Class",
-        "Gunslinger"
+        "Attack"
       ],
       "correct": false
     },
@@ -2172,8 +2052,7 @@
         "Elf",
         "Force",
         "Psychic",
-        "Tiefling",
-        "Trial"
+        "Tiefling"
       ],
       "correct": false
     },
@@ -2244,16 +2123,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Darkness",
-        "Evil",
-        "Human",
-        "Modification",
-        "Shade",
-        "Undead",
-        "Witch"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_traits-0073",
@@ -2270,11 +2140,6 @@
         "CE",
         "Medium"
       ],
-      "extra": [
-        "Attack",
-        "Famous",
-        "Giant"
-      ],
       "correct": false
     },
     {
@@ -2290,9 +2155,7 @@
         "Mythic",
         "Rare"
       ],
-      "extra": [
-        "Dedication"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -2367,7 +2230,6 @@
       ],
       "extra": [
         "Acid",
-        "Oil",
         "Rare"
       ],
       "correct": false
@@ -2386,7 +2248,6 @@
         "Large",
         "Kholo"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -3120,11 +2981,6 @@
       "missing": [
         "Sleepwalker Dedication"
       ],
-      "extra": [
-        "Archetype",
-        "Class",
-        "Dream"
-      ],
       "correct": false
     },
     {
@@ -3137,14 +2993,6 @@
       "recall": 0.0,
       "missing": [
         "Guerrilla Dedication"
-      ],
-      "extra": [
-        "Class",
-        "Fear",
-        "General",
-        "Lineage",
-        "Time",
-        "Undead"
       ],
       "correct": false
     },
@@ -3159,7 +3007,6 @@
       "missing": [
         "Trained in Intimidation"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -3172,11 +3019,6 @@
       "recall": 0.0,
       "missing": [
         "Thlipit Contestant Dedication"
-      ],
-      "extra": [
-        "Class",
-        "Maneuver",
-        "Rogue"
       ],
       "correct": false
     },
@@ -3191,11 +3033,6 @@
       "missing": [
         "Combat Assessment"
       ],
-      "extra": [
-        "Class",
-        "Human",
-        "Investigator"
-      ],
       "correct": false
     },
     {
@@ -3208,13 +3045,6 @@
       "recall": 0.0,
       "missing": [
         "Ostilli Host Dedication"
-      ],
-      "extra": [
-        "Class",
-        "Fighter",
-        "Mutant",
-        "Propulsive",
-        "Rogue"
       ],
       "correct": false
     },
@@ -3230,11 +3060,6 @@
         "Swordmaster Dedication",
         "Expert in Crafting"
       ],
-      "extra": [
-        "Class",
-        "Focus",
-        "Skill"
-      ],
       "correct": false
     },
     {
@@ -3248,10 +3073,6 @@
       "missing": [
         "Godling Dedication"
       ],
-      "extra": [
-        "Champion",
-        "Fighter"
-      ],
       "correct": false
     },
     {
@@ -3264,11 +3085,6 @@
       "recall": 0.0,
       "missing": [
         "Prophesied Monarch Dedication"
-      ],
-      "extra": [
-        "Demon",
-        "Dragon",
-        "Legacy"
       ],
       "correct": false
     },
@@ -3284,11 +3100,6 @@
         "Double Prey",
         "Warden's Boon"
       ],
-      "extra": [
-        "Archetype",
-        "Class",
-        "Ranger"
-      ],
       "correct": false
     },
     {
@@ -3302,11 +3113,6 @@
       "missing": [
         "Guerrilla Dedication",
         "Poisoned Sticks and Stones"
-      ],
-      "extra": [
-        "Class",
-        "Fighter",
-        "Ranger"
       ],
       "correct": false
     },
@@ -3322,13 +3128,6 @@
         "Battle Medicine",
         "Trained in Medicine"
       ],
-      "extra": [
-        "Class",
-        "Dedication",
-        "General",
-        "Healing",
-        "Oath"
-      ],
       "correct": false
     },
     {
@@ -3341,10 +3140,6 @@
       "recall": 0.0,
       "missing": [
         "Halcyon Spellcasting Adept"
-      ],
-      "extra": [
-        "Human",
-        "Humanoid"
       ],
       "correct": false
     },
@@ -3359,11 +3154,6 @@
       "missing": [
         "precise strike"
       ],
-      "extra": [
-        "Attack",
-        "Light",
-        "Move"
-      ],
       "correct": false
     },
     {
@@ -3376,15 +3166,6 @@
       "recall": 0.0,
       "missing": [
         "Trained in Crafting"
-      ],
-      "extra": [
-        "Alchemist",
-        "Class",
-        "Common",
-        "Dedication",
-        "Multiclass",
-        "Rogue",
-        "Witch"
       ],
       "correct": false
     },
@@ -3400,11 +3181,6 @@
         "Basic Wizard Spellcasting",
         "Master in Arcana"
       ],
-      "extra": [
-        "Class",
-        "Sorcerer",
-        "Wizard"
-      ],
       "correct": false
     },
     {
@@ -3419,11 +3195,6 @@
         "Deflect Projectile",
         "Monastic Archer Stance"
       ],
-      "extra": [
-        "Attack",
-        "Class",
-        "Fire"
-      ],
       "correct": false
     },
     {
@@ -3437,13 +3208,6 @@
       "missing": [
         "Exorcist Dedication"
       ],
-      "extra": [
-        "Archetype",
-        "Class",
-        "Cleric",
-        "Healing",
-        "Spirit"
-      ],
       "correct": false
     },
     {
@@ -3456,9 +3220,6 @@
       "recall": 0.0,
       "missing": [
         "Sister of the Golden Erinys Dedication"
-      ],
-      "extra": [
-        "Skill"
       ],
       "correct": false
     },
@@ -3476,16 +3237,6 @@
         "Musetouched",
         "or or another lineage feat associated with celestials"
       ],
-      "extra": [
-        "Celestial",
-        "Class",
-        "Common",
-        "Divine",
-        "General",
-        "Oracle",
-        "Skill",
-        "Witch"
-      ],
       "correct": false
     },
     {
@@ -3498,12 +3249,6 @@
       "recall": 0.0,
       "missing": [
         "Mummy Dedication"
-      ],
-      "extra": [
-        "Archetype",
-        "Class",
-        "Healing",
-        "Ranger"
       ],
       "correct": false
     },
@@ -3518,12 +3263,6 @@
       "missing": [
         "Dragon's Flight"
       ],
-      "extra": [
-        "Class",
-        "Move",
-        "Ranger",
-        "Skill"
-      ],
       "correct": false
     },
     {
@@ -3536,11 +3275,6 @@
       "recall": 0.0,
       "missing": [
         "Fan Dancer Dedication"
-      ],
-      "extra": [
-        "Class",
-        "Dragon",
-        "Multiclass"
       ],
       "correct": false
     },
@@ -3556,10 +3290,6 @@
         "Unexpected Sharpshooter Dedication",
         "Trained in Deception"
       ],
-      "extra": [
-        "Attack",
-        "Secret"
-      ],
       "correct": false
     },
     {
@@ -3572,9 +3302,6 @@
       "recall": 0.0,
       "missing": [
         "tenets of good"
-      ],
-      "extra": [
-        "Class"
       ],
       "correct": false
     },
@@ -3589,9 +3316,6 @@
       "missing": [
         "Sister of the Golden Erinys Dedication"
       ],
-      "extra": [
-        "Stance"
-      ],
       "correct": false
     },
     {
@@ -3604,11 +3328,6 @@
       "recall": 0.0,
       "missing": [
         "Master in Intimidation"
-      ],
-      "extra": [
-        "Attack",
-        "Fear",
-        "Move"
       ],
       "correct": false
     },
@@ -3624,10 +3343,6 @@
         "Master in Religion",
         "you follow a deity"
       ],
-      "extra": [
-        "Attack",
-        "Cleric"
-      ],
       "correct": false
     },
     {
@@ -3640,9 +3355,6 @@
       "recall": 0.0,
       "missing": [
         "Masquerade of Seasons Stance"
-      ],
-      "extra": [
-        "Class"
       ],
       "correct": false
     },
@@ -3657,13 +3369,6 @@
       "missing": [
         "Godling Dedication"
       ],
-      "extra": [
-        "Class",
-        "Cleric",
-        "Druid",
-        "Ranger",
-        "Wizard"
-      ],
       "correct": false
     },
     {
@@ -3677,7 +3382,6 @@
       "missing": [
         "tusks unarmed attack"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -3690,11 +3394,6 @@
       "recall": 0.0,
       "missing": [
         "Battle Harbinger Dedication"
-      ],
-      "extra": [
-        "Aura",
-        "Class",
-        "Vitality"
       ],
       "correct": false
     },
@@ -3709,7 +3408,6 @@
       "missing": [
         "Basic Synergy"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -3721,12 +3419,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Barbarian",
-        "Class",
-        "Fighter"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0034",
@@ -3738,12 +3431,6 @@
       "recall": 0.0,
       "missing": [
         "leaf order"
-      ],
-      "extra": [
-        "Class",
-        "Move",
-        "Ranger",
-        "Skill"
       ],
       "correct": false
     },
@@ -3757,11 +3444,6 @@
       "recall": 0.0,
       "missing": [
         "Captain Dedication"
-      ],
-      "extra": [
-        "Archetype",
-        "Class",
-        "General"
       ],
       "correct": false
     },
@@ -3777,7 +3459,6 @@
         "Legendary in Nature",
         "Master Monster Hunter"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -3790,10 +3471,6 @@
       "recall": 0.0,
       "missing": [
         "Kijimuna Gnome heritage or at least one primal innate spell from a gnome heritage or feat"
-      ],
-      "extra": [
-        "Human",
-        "Plant"
       ],
       "correct": false
     },
@@ -3808,11 +3485,6 @@
       "missing": [
         "Tsukumogami Poppet heritage"
       ],
-      "extra": [
-        "Class",
-        "Fighter",
-        "Ranger"
-      ],
       "correct": false
     },
     {
@@ -3825,14 +3497,6 @@
       "recall": 0.0,
       "missing": [
         "Chronoskimmer Dedication"
-      ],
-      "extra": [
-        "Class",
-        "Common",
-        "Focused",
-        "Move",
-        "Skill",
-        "Time"
       ],
       "correct": false
     },
@@ -3848,10 +3512,6 @@
         "Beastmaster Dedication",
         "animal companion with a jaws or fangs unarmed attack"
       ],
-      "extra": [
-        "Class",
-        "Rogue"
-      ],
       "correct": false
     },
     {
@@ -3864,13 +3524,6 @@
       "recall": 0.0,
       "missing": [
         "Wyldsinger"
-      ],
-      "extra": [
-        "Archetype",
-        "Barbarian",
-        "Class",
-        "Guardian",
-        "Primal"
       ],
       "correct": false
     },
@@ -3885,14 +3538,6 @@
       "missing": [
         "Lastwall Sentry Dedication"
       ],
-      "extra": [
-        "Bulwark",
-        "Class",
-        "Cleric",
-        "Death",
-        "Necromancer",
-        "Necromancy"
-      ],
       "correct": false
     },
     {
@@ -3906,10 +3551,6 @@
       "missing": [
         "Aldori Duelist Dedication"
       ],
-      "extra": [
-        "Class",
-        "Fighter"
-      ],
       "correct": false
     },
     {
@@ -3922,11 +3563,6 @@
       "recall": 0.0,
       "missing": [
         "Werecreature Dedication"
-      ],
-      "extra": [
-        "Class",
-        "Psychic",
-        "Skill"
       ],
       "correct": false
     },
@@ -3942,9 +3578,6 @@
         "Golden League Xun Dedication",
         "Expert in Athletics"
       ],
-      "extra": [
-        "Skill"
-      ],
       "correct": false
     },
     {
@@ -3957,17 +3590,6 @@
       "recall": 0.0,
       "missing": [
         "Ostilli Host Dedication"
-      ],
-      "extra": [
-        "Acid",
-        "Alchemist",
-        "Archetype",
-        "Attack",
-        "Class",
-        "Common",
-        "Mutagen",
-        "Mutant",
-        "Splash"
       ],
       "correct": false
     },
@@ -3982,13 +3604,6 @@
       "missing": [
         "Evanescent Wings"
       ],
-      "extra": [
-        "Archetype",
-        "Class",
-        "Cleric",
-        "Druid",
-        "Monk"
-      ],
       "correct": false
     },
     {
@@ -4001,9 +3616,6 @@
       "recall": 0.0,
       "missing": [
         "champion's reaction"
-      ],
-      "extra": [
-        "Attack"
       ],
       "correct": false
     },
@@ -4018,9 +3630,6 @@
       "missing": [
         "Shifting Faces"
       ],
-      "extra": [
-        "Kitsune"
-      ],
       "correct": false
     },
     {
@@ -4033,9 +3642,6 @@
       "recall": 0.0,
       "missing": [
         "You are not sanctified with the holy or unholy trait"
-      ],
-      "extra": [
-        "Human"
       ],
       "correct": false
     },
@@ -4050,11 +3656,6 @@
       "missing": [
         "Demolitionist Dedication"
       ],
-      "extra": [
-        "Class",
-        "Structure",
-        "Wizard"
-      ],
       "correct": false
     },
     {
@@ -4067,12 +3668,6 @@
       "recall": 0.0,
       "missing": [
         "Behold My Creation!"
-      ],
-      "extra": [
-        "Alchemical",
-        "Alchemist",
-        "Class",
-        "Transmutation"
       ],
       "correct": false
     },
@@ -4087,7 +3682,6 @@
       "missing": [
         "Clawdancer Dedication"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -4100,10 +3694,6 @@
       "recall": 0.0,
       "missing": [
         "Eldritch Archer Dedication"
-      ],
-      "extra": [
-        "Class",
-        "Time"
       ],
       "correct": false
     },
@@ -4119,9 +3709,6 @@
         "powerful fist or expert in unarmed attacks",
         "member of a House of Perfection"
       ],
-      "extra": [
-        "Dedication"
-      ],
       "correct": false
     },
     {
@@ -4134,11 +3721,6 @@
       "recall": 0.0,
       "missing": [
         "Advanced Construct Companion"
-      ],
-      "extra": [
-        "Class",
-        "Companion",
-        "Construct"
       ],
       "correct": false
     },
@@ -4153,13 +3735,6 @@
       "missing": [
         "spirit instinct"
       ],
-      "extra": [
-        "Class",
-        "Cleric",
-        "Oracle",
-        "Ranger",
-        "Spirit"
-      ],
       "correct": false
     },
     {
@@ -4172,14 +3747,6 @@
       "recall": 0.0,
       "missing": [
         "Bone Magic"
-      ],
-      "extra": [
-        "Animal",
-        "Archetype",
-        "Beast",
-        "Class",
-        "General",
-        "Skill"
       ],
       "correct": false
     },
@@ -4194,9 +3761,6 @@
       "missing": [
         "Trained in Stealth"
       ],
-      "extra": [
-        "Skill"
-      ],
       "correct": false
     },
     {
@@ -4209,17 +3773,6 @@
       "recall": 0.0,
       "missing": [
         "Arcana of Iron"
-      ],
-      "extra": [
-        "Air",
-        "Aquatic",
-        "Earth",
-        "Fire",
-        "Necromancy",
-        "Psychic",
-        "Secret",
-        "Void",
-        "Water"
       ],
       "correct": false
     },
@@ -4234,11 +3787,6 @@
       "missing": [
         "Chrysanthemum Leshy heritage or Peachchild Leshy heritage"
       ],
-      "extra": [
-        "Druid",
-        "Plant",
-        "Ranger"
-      ],
       "correct": false
     },
     {
@@ -4251,10 +3799,6 @@
       "recall": 0.0,
       "missing": [
         "Dragon Disciple Dedication"
-      ],
-      "extra": [
-        "Class",
-        "Dragon"
       ],
       "correct": false
     },
@@ -4269,10 +3813,6 @@
       "missing": [
         "Scion of Domora Dedication"
       ],
-      "extra": [
-        "Class",
-        "Monk"
-      ],
       "correct": false
     },
     {
@@ -4286,12 +3826,6 @@
       "missing": [
         "Trained in Deception"
       ],
-      "extra": [
-        "Class",
-        "Maneuver",
-        "Monk",
-        "Stance"
-      ],
       "correct": false
     },
     {
@@ -4303,14 +3837,7 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Archetype",
-        "Attack",
-        "Class",
-        "Move",
-        "Sorcerer"
-      ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "prereq-0066",
@@ -4323,10 +3850,6 @@
       "missing": [
         "Uzunjati Storytelling",
         "ability to cast _shield_"
-      ],
-      "extra": [
-        "Attack",
-        "Skill"
       ],
       "correct": false
     },
@@ -4342,9 +3865,6 @@
         "Adapted Cantrip",
         "can cast 3rd-level spells"
       ],
-      "extra": [
-        "Class"
-      ],
       "correct": false
     },
     {
@@ -4358,11 +3878,6 @@
       "missing": [
         "Trained in Hero-God Lore  or Trained in Legendary Beast Lore"
       ],
-      "extra": [
-        "Class",
-        "Mythic",
-        "Ranger"
-      ],
       "correct": false
     },
     {
@@ -4375,11 +3890,6 @@
       "recall": 0.0,
       "missing": [
         "Quick Draw"
-      ],
-      "extra": [
-        "Attack",
-        "Skill",
-        "Subtle"
       ],
       "correct": false
     },
@@ -4395,7 +3905,6 @@
         "Ghost Dedication",
         "Master in Acrobatics"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -4410,9 +3919,6 @@
         "Lastwall Sentry Dedication",
         "you worship a good-aligned deity"
       ],
-      "extra": [
-        "Legacy"
-      ],
       "correct": false
     },
     {
@@ -4425,10 +3931,6 @@
       "recall": 0.0,
       "missing": [
         "Expert in Stealth"
-      ],
-      "extra": [
-        "Class",
-        "Rogue"
       ],
       "correct": false
     },
@@ -4444,15 +3946,6 @@
         "Avenging Runelord Dedication",
         "expert proficiency in a spear or polearm"
       ],
-      "extra": [
-        "Alchemical",
-        "Class",
-        "Construct",
-        "Focus",
-        "Light",
-        "Mechanical",
-        "Training"
-      ],
       "correct": false
     },
     {
@@ -4465,14 +3958,6 @@
       "recall": 0.0,
       "missing": [
         "Butterfly Blade Dedication"
-      ],
-      "extra": [
-        "Attack",
-        "Class",
-        "Deadly",
-        "Fighter",
-        "Light",
-        "Maneuver"
       ],
       "correct": false
     },
@@ -4487,7 +3972,6 @@
       "missing": [
         "Aldori Duelist Dedication"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -4502,9 +3986,6 @@
         "Ki Strike",
         "you follow a deity"
       ],
-      "extra": [
-        "Divine"
-      ],
       "correct": false
     },
     {
@@ -4517,9 +3998,6 @@
       "recall": 0.0,
       "missing": [
         "Lethoci heritage or Xyloshi heritage"
-      ],
-      "extra": [
-        "Class"
       ],
       "correct": false
     },
@@ -4535,7 +4013,6 @@
         "Hallowed Necromancer Dedication",
         "necromancer initial school spell or death initial domain spell"
       ],
-      "extra": [],
       "correct": false
     },
     {
@@ -4548,10 +4025,6 @@
       "recall": 0.0,
       "missing": [
         "Necrologist Dedication"
-      ],
-      "extra": [
-        "Class",
-        "Witch"
       ],
       "correct": false
     },
