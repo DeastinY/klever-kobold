@@ -156,7 +156,8 @@ def strip_thinking(text: str) -> str:
 
 
 def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
-           load_4bit: bool, chat_kwargs: dict, system: str = SYSTEM) -> list[dict]:
+           load_4bit: bool, chat_kwargs: dict, system: str = SYSTEM,
+           adapter: pathlib.Path | None = None) -> list[dict]:
     import torch
     from transformers import AutoTokenizer, BitsAndBytesConfig
 
@@ -173,6 +174,10 @@ def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
     model = _load_hf(model_id, quant)
+    if adapter:
+        from peft import PeftModel
+        model = PeftModel.from_pretrained(model, str(adapter))
+        print(f"  applied adapter {adapter}")
     model.eval()
     device = next(model.parameters()).device
 
@@ -257,6 +262,8 @@ def main() -> int:
     ap.add_argument("--reasoning-effort", help="e.g. low; omit for non-reasoning models")
     ap.add_argument("--batch-size", type=int, default=8, help="hf backend only")
     ap.add_argument("--no-4bit", action="store_true", help="hf backend: load in bf16 instead")
+    ap.add_argument("--adapter", type=pathlib.Path,
+                    help="hf backend: LoRA adapter directory to load onto the base model")
     ap.add_argument("--chat-kwargs", default="{}",
                     help='hf backend: JSON passed to apply_chat_template, e.g. '
                          "'{\"enable_thinking\": false}'. Qwen3.x defaults to thinking at "
@@ -320,7 +327,7 @@ def main() -> int:
                        args.max_tokens, args.reasoning_effort, system)
     else:
         rows = run_hf(items, args.model, args.max_tokens, args.batch_size, not args.no_4bit,
-                      json.loads(args.chat_kwargs), system)
+                      json.loads(args.chat_kwargs), system, args.adapter)
 
     rows = kept + rows
     rows.sort(key=lambda r: r["id"])
@@ -342,6 +349,7 @@ def main() -> int:
                            "mode": args.retrieval_mode, "context_chars": args.context_chars}
                           if args.retrieve else None),
             "quantization": (None if args.backend == "api" else ("bf16" if args.no_4bit else "nf4-4bit")),
+            "adapter": str(args.adapter) if args.adapter else None,
             "usage": usage, "empty_responses": sum(1 for r in rows if not r["response"].strip())}
     out_path.with_suffix(".meta.json").write_bytes(orjson.dumps(meta, option=orjson.OPT_INDENT_2))
 

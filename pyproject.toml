@@ -28,6 +28,11 @@ retrieval = [
     "sentence-transformers>=3.0",
     "rank-bm25>=0.2.2",
 ]
+train = [
+    "peft>=0.14",
+    "trl>=0.12",
+    "datasets>=3.0",
+]
 
 [build-system]
 requires = ["hatchling"]
