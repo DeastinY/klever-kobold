@@ -22,9 +22,10 @@ local = [
     "huggingface_hub>=0.26",
     "hf_transfer>=0.1",
 ]
+# 41k chunks is small enough that brute-force cosine over a numpy matrix beats
+# carrying a vector database; the whole index is ~60 MB.
 retrieval = [
     "sentence-transformers>=3.0",
-    "lancedb>=0.13",
     "rank-bm25>=0.2.2",
 ]
 

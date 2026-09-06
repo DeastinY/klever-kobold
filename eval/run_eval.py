@@ -39,14 +39,36 @@ SYSTEM = (
     "does not exist, say so plainly rather than guessing."
 )
 
+# The retrieval prompt has to differ -- the model needs telling that excerpts are
+# authoritative and that their absence is an answer. It still says nothing about
+# D&D 5e, so the contamination measurement stays uncontaminated by the prompt.
+SYSTEM_RAG = (
+    "You are answering questions about the Pathfinder Second Edition tabletop roleplaying game. "
+    "Rules excerpts from the Archives of Nethys are provided below. Treat them as authoritative "
+    "and prefer them over your own recollection. Answer concisely and directly, and cite the "
+    "source URL of any excerpt you use. If the excerpts do not contain the answer, say so plainly "
+    "rather than guessing."
+)
+
+
+def format_context(hits: list[tuple[str, dict]], bodies: dict[str, str], max_chars: int) -> str:
+    blocks = []
+    for n, (chunk_id, meta) in enumerate(hits, 1):
+        head = f"[{n}] {meta.get('name')} ({meta.get('category', '').replace('-', ' ')}"
+        if meta.get("level") is not None:
+            head += f", level {meta['level']}"
+        head += f") — {meta.get('url')}"
+        blocks.append(head + "\n" + (bodies.get(chunk_id, "") or "")[:max_chars].strip())
+    return "<rules_excerpts>\n" + "\n\n".join(blocks) + "\n</rules_excerpts>"
+
 
 # --- OpenAI-compatible backend ---------------------------------------------
 
 def _chat(client: httpx.Client, url: str, headers: dict, model: str, question: str,
-          max_tokens: int, reasoning_effort: str | None) -> tuple[str, dict]:
+          max_tokens: int, reasoning_effort: str | None, system: str = SYSTEM) -> tuple[str, dict]:
     body: dict = {
         "model": model,
-        "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": question}],
+        "messages": [{"role": "system", "content": system}, {"role": "user", "content": question}],
         "max_completion_tokens": max_tokens,
     }
     if reasoning_effort:
@@ -67,7 +89,7 @@ def _chat(client: httpx.Client, url: str, headers: dict, model: str, question: s
 
 
 def run_api(items: list[dict], model: str, base_url: str, api_key: str, workers: int,
-            max_tokens: int, reasoning_effort: str | None) -> list[dict]:
+            max_tokens: int, reasoning_effort: str | None, system: str = SYSTEM) -> list[dict]:
     url = base_url.rstrip("/") + "/chat/completions"
     headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
     out: list[dict] = []
@@ -75,8 +97,10 @@ def run_api(items: list[dict], model: str, base_url: str, api_key: str, workers:
 
     with httpx.Client() as client:
         def one(item: dict) -> dict:
-            text, usage = _chat(client, url, headers, model, item["question"], max_tokens, reasoning_effort)
-            return {"id": item["id"], "family": item["family"], "response": text, "usage": usage}
+            text, usage = _chat(client, url, headers, model, item["prompt"], max_tokens,
+                                reasoning_effort, system)
+            return {"id": item["id"], "family": item["family"], "response": text,
+                    "usage": usage, "retrieved": item.get("retrieved")}
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
             for res in pool.map(one, items):
@@ -132,7 +156,7 @@ def strip_thinking(text: str) -> str:
 
 
 def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
-           load_4bit: bool, chat_kwargs: dict) -> list[dict]:
+           load_4bit: bool, chat_kwargs: dict, system: str = SYSTEM) -> list[dict]:
     import torch
     from transformers import AutoTokenizer, BitsAndBytesConfig
 
@@ -157,7 +181,7 @@ def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
         batch = items[start:start + batch_size]
         prompts = [
             tok.apply_chat_template(
-                [{"role": "system", "content": SYSTEM}, {"role": "user", "content": it["question"]}],
+                [{"role": "system", "content": system}, {"role": "user", "content": it["prompt"]}],
                 tokenize=False, add_generation_prompt=True, **chat_kwargs,
             )
             for it in batch
@@ -172,9 +196,49 @@ def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
         for it, seq in zip(batch, gen):
             text = tok.decode(seq[enc["input_ids"].shape[1]:], skip_special_tokens=True)
             out.append({"id": it["id"], "family": it["family"],
-                        "response": strip_thinking(text), "usage": {}})
+                        "response": strip_thinking(text), "usage": {},
+                        "retrieved": it.get("retrieved")})
         print(f"  {min(start + batch_size, len(items))}/{len(items)}", flush=True)
     return out
+
+
+def attach_context(items: list[dict], retriever: str, mode: str, k: int,
+                   context_chars: int) -> None:
+    """Retrieve for every item and fold the excerpts into its prompt."""
+    sys.path.insert(0, str(ROOT / "src"))
+    sys.path.insert(0, str(ROOT / "eval"))
+    import numpy as np
+    from pf2etune import retrieval as R
+    import retrieval_eval
+
+    index = retrieval_eval.load_index(retriever)
+    bodies = {}
+    for line in (ROOT / "data" / "processed" / "aon_chunks.jsonl").open("rb"):
+        row = orjson.loads(line)
+        bodies[row["id"]] = row["text"]
+
+    qvecs = retrieval_eval.encode_queries(retriever, [i["question"] for i in items])
+    hop = mode.endswith("+hop")
+    base = mode[:-4] if hop else mode
+    mask = index.allowed(exclude_legacy=not hop)
+    pool = k * 2 if hop else k
+
+    for item, qvec in zip(items, qvecs):
+        if base == "bm25":
+            order = index.lexical(item["question"], mask, pool)
+        elif base == "dense":
+            order = index.dense(qvec, mask, pool)
+        else:
+            order = R.rrf([index.dense(qvec, mask, 50),
+                           index.lexical(item["question"], mask, 50)], pool)
+        if hop:
+            order = R.follow_remaster(index, order)
+        order = order[:k]
+        hits = [(index.ids[i], index.meta[i]) for i in order]
+        item["retrieved"] = [h[0] for h in hits]
+        item["prompt"] = (format_context(hits, bodies, context_chars)
+                          + "\n\nQuestion: " + item["question"])
+    print(f"attached {k} excerpts per item via {retriever} / {mode}")
 
 
 def main() -> int:
@@ -201,6 +265,12 @@ def main() -> int:
                     help="re-run only the items whose response is empty in --out, and merge")
     ap.add_argument("--merge", action="store_true",
                     help="keep rows already in --out that this run does not cover")
+    ap.add_argument("--retrieve", type=int, default=0, metavar="K",
+                    help="prepend the top K retrieved rules excerpts to each question")
+    ap.add_argument("--retriever", default="Kaylebor/pf2e-codex-embed-xs")
+    ap.add_argument("--retrieval-mode", default="hybrid+hop")
+    ap.add_argument("--context-chars", type=int, default=1600,
+                    help="per-excerpt truncation")
     args = ap.parse_args()
 
     items = [orjson.loads(l) for l in args.benchmark.open("rb")]
@@ -208,6 +278,14 @@ def main() -> int:
         items = [i for i in items if i["family"] in set(args.family)]
     if args.limit:
         items = items[:args.limit]
+
+    system = SYSTEM_RAG if args.retrieve else SYSTEM
+    if args.retrieve:
+        attach_context(items, args.retriever, args.retrieval_mode, args.retrieve,
+                       args.context_chars)
+    else:
+        for it in items:
+            it["prompt"] = it["question"]
 
     label = args.label or args.model.replace("/", "_").replace(":", "-")
     out_path = args.out or ROOT / "eval" / "runs" / f"{label}.jsonl"
@@ -239,10 +317,10 @@ def main() -> int:
             print(f"${args.api_key_env} is not set", file=sys.stderr)
             return 1
         rows = run_api(items, args.model, args.base_url, key, args.workers,
-                       args.max_tokens, args.reasoning_effort)
+                       args.max_tokens, args.reasoning_effort, system)
     else:
         rows = run_hf(items, args.model, args.max_tokens, args.batch_size, not args.no_4bit,
-                      json.loads(args.chat_kwargs))
+                      json.loads(args.chat_kwargs), system)
 
     rows = kept + rows
     rows.sort(key=lambda r: r["id"])
@@ -260,6 +338,9 @@ def main() -> int:
             "items": len(rows), "seconds": round(time.time() - started, 1),
             "max_tokens": args.max_tokens, "reasoning_effort": args.reasoning_effort,
             "chat_kwargs": json.loads(args.chat_kwargs) if args.backend == "hf" else None,
+            "retrieval": ({"k": args.retrieve, "retriever": args.retriever,
+                           "mode": args.retrieval_mode, "context_chars": args.context_chars}
+                          if args.retrieve else None),
             "quantization": (None if args.backend == "api" else ("bf16" if args.no_4bit else "nf4-4bit")),
             "usage": usage, "empty_responses": sum(1 for r in rows if not r["response"].strip())}
     out_path.with_suffix(".meta.json").write_bytes(orjson.dumps(meta, option=orjson.OPT_INDENT_2))

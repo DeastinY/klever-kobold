@@ -1,0 +1,23 @@
+{
+  "label": "gpt-4.1-mini_rag5",
+  "model": "gpt-4.1-mini",
+  "backend": "api",
+  "base_url": "https://api.openai.com/v1",
+  "items": 486,
+  "seconds": 76.9,
+  "max_tokens": 600,
+  "reasoning_effort": null,
+  "chat_kwargs": null,
+  "retrieval": {
+    "k": 5,
+    "retriever": "Kaylebor/pf2e-codex-embed-xs",
+    "mode": "hybrid+hop",
+    "context_chars": 1600
+  },
+  "quantization": null,
+  "usage": {
+    "prompt_tokens": 727280,
+    "completion_tokens": 28066
+  },
+  "empty_responses": 0
+}

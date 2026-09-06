@@ -420,16 +420,19 @@
       <div>
         <h3>Failure two</h3>
         <p>Answers with bonus actions, death saves, and advantage.</p>
-        <div class="verdict">Fine-tuning.</div>
-        <p>That is a corrupted prior, not a missing fact. Retrieval does not remove a prior; it competes with one, and the prior often wins.</p>
+        <div class="verdict" style="text-decoration: line-through; opacity: 0.55;">Fine-tuning.</div>
+        <p><s>That is a corrupted prior, not a missing fact. Retrieval does not remove a prior; it competes with one, and the prior often wins.</s></p>
+        <p><strong>Measured: wrong.</strong> Retrieval removed the prior. The 9B's grounding went 9% &rarr; 81% with five excerpts in the prompt. The adapter's real job turned out to be excerpt selection and abstention.</p>
       </div>
     </div>
 
     <p><strong>Retrieval fixes facts. Fine-tuning fixes priors.</strong> So: retrieval carries the load, and a small LoRA does the things retrieval cannot &mdash; enforce Remaster vocabulary, and teach grounded citation and abstention.</p>
 
-    <p class="note">Both halves now measured. Retrieval's case is overwhelming. The prior's case
-    holds for open weights specifically: Qwen3.8-27B still puts death saving throws and short rests
-    into Pathfinder rulings, where two frontier models do not. See <a href="#results-tag">Results</a>.</p>
+    <p class="note">Both halves now measured, and the second one did not survive. Retrieval's case
+    is overwhelming &mdash; it roughly triples every model. But it also fixed the priors it was not
+    supposed to fix: given the right rules entry, even the 9B stops reaching for 5e. What retrieval
+    does <em>not</em> fix, and actively makes worse, is knowing which excerpt to use and when to
+    admit the answer is in none of them. See <a href="#results-tag">Results</a>.</p>
 
     <p>The literature agrees, and points at the hybrid rather than either pole. <a href="https://arxiv.org/abs/2403.10131">RAFT</a> trains on retrieved context including distractors, with answers that quote the source verbatim &mdash; a near-perfect fit, since "cite the entry you used" is the target behaviour. <a href="https://arxiv.org/pdf/2409.07431">EntiGraph</a> synthetic pretraining recovers over 80% of RAG's gain parametrically and stacks with it; <a href="https://arxiv.org/pdf/2603.23562">Synthetic Mixed Training</a> measures +2.6% over RAG alone but <strong>+9.1% combined</strong>. And on small corpora specifically, <a href="https://arxiv.org/pdf/2508.06178">plain continued pretraining barely moves the needle</a> &mdash; diverse synthetic rephrasing is what lands.</p>
   </section>
@@ -526,8 +529,70 @@
 
   <section>
     <div class="block-head">
+      <h2>Retrieval</h2>
+      <span class="tag">400 gold labels, free</span>
+    </div>
+    <p>The benchmark was generated <em>from</em> the corpus, so 400 of its 486 items carry the id of
+    the exact chunk their answer came from. That is a labelled retrieval set for nothing, and it lets
+    the two halves of a RAG system be diagnosed apart: <em>did the right chunk come back</em>, and
+    then <em>given it, was the answer right</em>.</p>
+    <!-- retrieval:start -->
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Retriever</th><th>mode</th><th class="num">R@1</th><th class="num">R@5</th><th class="num">R@20</th><th class="num">MRR</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="rowname mono">Qwen/Qwen3-Embedding-0.6B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid+hop</td><td class="num">76%</td><td class="num"><strong>93%</strong></td><td class="num">97%</td><td class="num">0.837</td></tr>
+          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid+hop</td><td class="num">78%</td><td class="num"><strong>92%</strong></td><td class="num">95%</td><td class="num">0.839</td></tr>
+          <tr><td class="rowname mono">Snowflake/snowflake-arctic-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid+hop</td><td class="num">78%</td><td class="num"><strong>92%</strong></td><td class="num">95%</td><td class="num">0.839</td></tr>
+          <tr><td class="rowname mono">— (lexical only)</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">bm25+hop</td><td class="num">68%</td><td class="num"><strong>89%</strong></td><td class="num">92%</td><td class="num">0.768</td></tr>
+          <tr><td class="rowname mono">Snowflake/snowflake-arctic-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid</td><td class="num">76%</td><td class="num"><strong>89%</strong></td><td class="num">92%</td><td class="num">0.812</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3-Embedding-0.6B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid</td><td class="num">76%</td><td class="num"><strong>89%</strong></td><td class="num">93%</td><td class="num">0.814</td></tr>
+          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid</td><td class="num">76%</td><td class="num"><strong>89%</strong></td><td class="num">92%</td><td class="num">0.810</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3-Embedding-0.6B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">dense</td><td class="num">66%</td><td class="num"><strong>87%</strong></td><td class="num">92%</td><td class="num">0.744</td></tr>
+          <tr><td class="rowname mono">— (lexical only)</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">bm25</td><td class="num">69%</td><td class="num"><strong>84%</strong></td><td class="num">89%</td><td class="num">0.759</td></tr>
+          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">dense</td><td class="num">68%</td><td class="num"><strong>82%</strong></td><td class="num">90%</td><td class="num">0.740</td></tr>
+          <tr><td class="rowname mono">Snowflake/snowflake-arctic-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">dense</td><td class="num">68%</td><td class="num"><strong>82%</strong></td><td class="num">90%</td><td class="num">0.740</td></tr>
+        </tbody>
+        <caption>Did the right chunk come back? Scored on the 400 benchmark items that carry a gold chunk id. No model involved.</caption>
+      </table>
+    </div>
+    <!-- retrieval:end -->
+    <p>Chunks are entity-granular, never token windows &mdash; every AoN document is already one
+    atomic game object. Lexical and dense rankings are fused by reciprocal rank, which sidesteps
+    making a BM25 score of 31.4 commensurable with a cosine of 0.82.</p>
+
+    <h3 class="finding">The hop</h3>
+    <p>One family resisted everything: <span class="mono">remaster_rename</span> sat at 46% while
+    every other family was at 97&ndash;100%. The reason is structural. Those questions name the
+    <em>old</em> entity, so both retrievers land squarely on the legacy chunk &mdash; the one that
+    must never be served as current rules.</p>
+    <p>Filtering legacy content out up front makes it worse, because that chunk is the only one that
+    knows where the answer went: it stores a <span class="mono">remaster_id</span> pointing at its
+    replacement. So the fix is to hop rather than to filter &mdash; retrieve the legacy entry, then
+    hand back the entry that superseded it. That moved the family from 46.2% to 65.0% and overall
+    R@5 from 88.8% to 92.5%. It only exists because the corpus build kept the cross-references.</p>
+
+    <h3 class="finding">The embedder bake-off has an awkward answer</h3>
+    <p><code>Kaylebor/pf2e-codex-embed-xs</code> is the only PF2e-adapted retriever anyone has
+    published, so the honest control is its own base model,
+    <code>Snowflake/snowflake-arctic-embed-xs</code>. They score <em>identically</em> &mdash;
+    67.5 / 82.5 / 89.5 R@1/5/20, MRR 0.740, to three decimals across 400 queries.</p>
+    <p>That is not a coincidence. Comparing the two checkpoints tensor by tensor, the largest weight
+    difference anywhere is <strong>3.1&times;10<sup>&minus;4</sup></strong>, and the two sets of
+    corpus embeddings have a mean cosine similarity of <strong>1.0</strong> with a maximum element
+    difference of 7&times;10<sup>&minus;5</sup>. Whatever separates the fine-tune from its base is
+    at the magnitude of a precision round-trip. On this benchmark it conveys no measurable advantage.</p>
+    <p>The practical upshot is cheerful anyway: a 22M-parameter embedder that indexes the whole
+    corpus in 28 seconds is within half a point of <code>Qwen3-Embedding-0.6B</code>, which takes
+    213 seconds. The retrieval work here is mostly lexical, and the corpus is small.</p>
+  </section>
+
+  <section>
+    <div class="block-head">
       <h2>Results</h2>
-      <span class="tag" id="results-tag">4 runs scored</span>
+      <span class="tag" id="results-tag">8 runs scored</span>
     </div>
     <p>Closed-book means no retrieval: the model answers from weights alone. These numbers are the
     floor every later phase is measured against. Read them against the trivial baselines
@@ -538,81 +603,74 @@
     <div class="scroller">
       <table>
         <thead>
-          <tr><th>Model</th><th class="num">overall</th><th class="num">level</th><th class="num">traits</th><th class="num">rarity</th><th class="num">prereq</th><th class="num">remaster</th><th class="num">abstain</th><th class="num">5e trap</th></tr>
+          <tr><th>Model</th><th>mode</th><th class="num">overall</th><th class="num">level</th><th class="num">traits</th><th class="num">rarity</th><th class="num">prereq</th><th class="num">remaster</th><th class="num">abstain</th><th class="num">5e trap</th></tr>
         </thead>
         <tbody>
-          <tr><td class="rowname mono">gpt-5</td><td class="num"><strong>25%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">2%</td><td class="num">6%</td><td class="num">78%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="num"><strong>22%</strong></td><td class="num">11%</td><td class="num">0%</td><td class="num">19%</td><td class="num">1%</td><td class="num">14%</td><td class="num">78%</td><td class="num">87%</td></tr>
-          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="num"><strong>21%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">0%</td><td class="num">12%</td><td class="num">5%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="num"><strong>16%</strong></td><td class="num">9%</td><td class="num">0%</td><td class="num">22%</td><td class="num">0%</td><td class="num">11%</td><td class="num">28%</td><td class="num">70%</td></tr>
+          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>68%</strong></td><td class="num">88%</td><td class="num">82%</td><td class="num">96%</td><td class="num">30%</td><td class="num">50%</td><td class="num">18%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>65%</strong></td><td class="num">96%</td><td class="num">57%</td><td class="num">96%</td><td class="num">21%</td><td class="num">50%</td><td class="num">35%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>63%</strong></td><td class="num">95%</td><td class="num">70%</td><td class="num">96%</td><td class="num">21%</td><td class="num">44%</td><td class="num">8%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>63%</strong></td><td class="num">99%</td><td class="num">68%</td><td class="num">95%</td><td class="num">21%</td><td class="num">46%</td><td class="num">0%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>25%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">2%</td><td class="num">6%</td><td class="num">78%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>22%</strong></td><td class="num">11%</td><td class="num">0%</td><td class="num">19%</td><td class="num">1%</td><td class="num">14%</td><td class="num">78%</td><td class="num">87%</td></tr>
+          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>21%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">0%</td><td class="num">12%</td><td class="num">5%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>16%</strong></td><td class="num">9%</td><td class="num">0%</td><td class="num">22%</td><td class="num">0%</td><td class="num">11%</td><td class="num">28%</td><td class="num">70%</td></tr>
         </tbody>
         <caption>Closed-book accuracy by family. Every grade is deterministic.</caption>
       </table>
     </div>
-    <ul><li><strong>gpt-5</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-5</strong> invented a level for 1 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.8-27B</strong> leaked D&amp;D 5e vocabulary into 4 of 30 trap questions.</li><li><strong>Qwen/Qwen3.8-27B</strong> invented a level for 3 of 40 feats that do not exist.</li><li><strong>gpt-4.1-mini</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-4.1-mini</strong> invented a level for 33 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.5-9B</strong> leaked D&amp;D 5e vocabulary into 9 of 30 trap questions.</li><li><strong>Qwen/Qwen3.5-9B</strong> invented a level for 21 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
+    <ul><li><strong>gpt-5</strong>: 25% &rarr; 68% with retrieval, 2.7&times;.</li><li><strong>Qwen/Qwen3.5-9B</strong>: 16% &rarr; 65% with retrieval, 4.1&times;.</li><li><strong>gpt-4.1-mini</strong>: 21% &rarr; 63% with retrieval, 3.0&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong>: 22% &rarr; 63% with retrieval, 2.9&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
     <!-- results:end -->
 
-    <h3 class="finding">What phase 01 settled</h3>
-    <p><strong>Closed-book lookup is hopeless at any scale.</strong> 17.5% on feat levels at best,
-    1.2% on complete trait lists, 2.5% on prerequisites &mdash; and <em>below the trivial baseline</em>
-    on rarity, where answering "uncommon" to all eighty would have scored 70% against gpt-5's 31%.
-    Retrieval is not an optimisation here, it is the entire load-bearing structure.</p>
+    <h3 class="finding">Phase 01 &mdash; closed book</h3>
+    <p>Everything lands between 15.8% and 25.3%. Lookup is hopeless at any scale, and on rarity every
+    model scores <em>below the trivial baseline</em> &mdash; answering "uncommon" to all eighty gets
+    70%, gpt-5 got 31%. Contamination showed up exactly where it was supposed to: Qwen3.8-27B put
+    <em>death saving throws</em> and an invented "Short Rest: typically 1 hour" into Pathfinder
+    rulings, and Qwen3.5-9B named the correct Pathfinder machinery in 9% of rulings against gpt-5's
+    78%. A thinking-mode control ruled out the obvious confound.</p>
 
-    <p><strong>Contamination is real, and it is specifically an open-weight problem.</strong> The
-    first trap family quizzes &mdash; "does Pathfinder use advantage?" &mdash; and both frontier
-    models scored 30/30, because the question telegraphs its own answer. Qwen3.8-27B did not:
-    it leaked on five of thirty, and the leaks are not vocabulary slips.</p>
+    <h3 class="finding">Phase 02 &mdash; with the book open</h3>
+    <p>Retrieval roughly triples every model, and the local-versus-frontier gap nearly closes:</p>
 
-    <div class="samples">
-      <div class="sample">
-        <div class="fam">trap_5e &middot; Qwen3.8-27B, verbatim</div>
-        <div class="q">What happens when a Pathfinder 2e character is reduced to 0 hit points, and how do death saves work?</div>
-        <div class="a">"&hellip; they become <strong>Unconscious</strong> and begin making <strong>Death Saving Throws</strong>."</div>
-        <div class="meta">Pathfinder has the dying condition and a flat recovery check against DC 10 + dying value. Death saving throws are 5e, imported whole.</div>
-      </div>
-      <div class="sample">
-        <div class="fam">trap_5e &middot; Qwen3.8-27B, verbatim</div>
-        <div class="q">How do Pathfinder 2e characters recover hit points during a day of adventuring?</div>
-        <div class="a">"<strong>Short Rest:</strong> Typically 1 hour. You can take a short rest to recover some hit points&hellip;"</div>
-        <div class="meta">There is no short rest in Pathfinder 2e. The duration is invented too.</div>
-      </div>
+    <div class="bars" role="img" aria-label="Benchmark accuracy closed-book versus with retrieval: gpt-5 25.3 to 67.9 percent, Qwen3.5-9B 15.8 to 65.0, gpt-4.1-mini 21.4 to 63.2, Qwen3.8-27B 21.8 to 63.2">
+      <span class="k">gpt-5</span><span class="track"><span class="fill" style="width:67.9%"></span><span class="fill alt" style="width:0"></span></span><span class="v">67.9%</span>
+      <span class="k">Qwen3.5-9B</span><span class="track"><span class="fill" style="width:65.0%"></span></span><span class="v">65.0%</span>
+      <span class="k">gpt-4.1-mini</span><span class="track"><span class="fill" style="width:63.2%"></span></span><span class="v">63.2%</span>
+      <span class="k">Qwen3.8-27B</span><span class="track"><span class="fill" style="width:63.2%"></span></span><span class="v">63.2%</span>
     </div>
+    <p><span class="mono" style="font-size:0.78rem;color:var(--muted)">With five retrieved excerpts.
+    Closed-book, the same four scored 25.3 / 15.8 / 21.4 / 21.8.</span></p>
 
-    <p>It also stated the multiple attack penalty as &minus;4 on both the second and third Strike
-    (it is &minus;5 and &minus;10, or &minus;4/&minus;8 only with an agile weapon), and said Focus
-    Points come back on a short or long rest rather than through Refocus. On the applied family it
-    named the correct Pathfinder machinery in only <strong>36%</strong> of rulings, against gpt-5's
-    78%.</p>
+    <p>A 9B model running in 4-bit on one desktop card is <strong>2.9 points</strong> off gpt-5. That
+    is the single most useful number produced so far, and it was produced by indexing, not training.</p>
 
-    <p class="note"><strong>A control rules out the obvious confound.</strong> The main run has
-    thinking disabled. Re-running just the trap families with thinking on at low effort moves the
-    quiz family from 83.3% to 90.0% and leaves the applied family unchanged at 81.2%, with grounding
-    slightly worse. Contamination is not an artifact of turning reasoning off.</p>
+    <p class="note"><strong>The thesis was half wrong, and this is the half.</strong> "Retrieval fixes
+    facts, fine-tuning fixes priors" &mdash; retrieval fixed the priors too. Qwen3.5-9B's
+    applied-trap grounding went from <strong>9% to 81%</strong> and its quiz leaks from nine to zero.
+    Every model is now at or above 87.5% clean. A model reading the correct rules entry does not
+    reach for D&amp;D 5e; it did not need its prior corrected, it needed the page.</p>
 
-    <p><strong>And it scales.</strong> Adding Qwen3.5-9B turns the finding into a gradient rather
-    than a single data point &mdash; contamination rises and grounding collapses as the model gets
-    smaller, monotonically, across every trap measure:</p>
+    <h3 class="finding">Retrieval also created a new failure</h3>
+    <p>Abstention collapsed. gpt-5 went from 77.5% to <strong>17.5%</strong>, and Qwen3.8-27B from
+    77.5% to <strong>0.0%</strong> &mdash; it now invents a level for 27 of 40 feats that do not
+    exist, having invented three before. Handed five plausible neighbouring feats and asked about one
+    that was never written, a model answers about a neighbour. Retrieval does not just fail to fix
+    this; it makes it substantially worse, because the distractors are now sitting in the prompt
+    looking authoritative.</p>
 
-    <div class="bars" role="img" aria-label="Percentage of applied-trap rulings using correct Pathfinder machinery: gpt-5 78 percent, gpt-4.1-mini 43 percent, Qwen3.8-27B 36 percent, Qwen3.5-9B 9 percent">
-      <span class="k">gpt-5</span><span class="track"><span class="fill" style="width:78%"></span></span><span class="v">78%</span>
-      <span class="k">gpt-4.1-mini</span><span class="track"><span class="fill" style="width:43%"></span></span><span class="v">43%</span>
-      <span class="k">Qwen3.8-27B</span><span class="track"><span class="fill" style="width:36%"></span></span><span class="v">36%</span>
-      <span class="k">Qwen3.5-9B</span><span class="track"><span class="fill" style="width:9%"></span></span><span class="v">9%</span>
-    </div>
-    <p style="max-width:66ch"><span class="mono" style="font-size:0.78rem;color:var(--muted)">Share
-    of applied-trap rulings that name the correct Pathfinder machinery. 5e leaks run the other way:
-    0, 0, 5 and 9 of thirty quiz items.</span></p>
+    <h3 class="finding">And the residual gap is precision, not knowledge</h3>
+    <p><span class="mono">prereq</span> is the clearest case. Retrieval finds the gold chunk for
+    88&ndash;96% of those questions &mdash; the answer is <em>right there in the context window</em>
+    &mdash; and accuracy is 21&ndash;30%. Every model over-answered on 55 to 61 of the 80, reciting
+    prerequisites from all five excerpts instead of the one that was asked about.
+    <span class="mono">lookup_traits</span> shows the same shape: 94&ndash;95% recall, 57&ndash;82%
+    accuracy, over-answered on 6 to 31.</p>
 
-    <p><strong>So the premise survives where it matters.</strong> It is wrong about frontier models
-    and right about the models this project would actually fine-tune &mdash; the only ones whose
-    weights are ours to change. The number to beat is now concrete: for the 27B, 83.3% and 81.2%
-    clean at 36% grounded; for the 9B, 70.0% and 68.8% at 9% grounded.</p>
-
-    <p><strong>And one finding nothing predicted.</strong> Abstention is a capability axis, not a
-    knowledge one. Handed forty feats that do not exist, gpt-4.1-mini invented a level for
-    thirty-three, Qwen3.5-9B for twenty-one, Qwen3.8-27B for three, and gpt-5 for one. It does not
-    track model size and it does not track knowledge &mdash; all four know equally little. It is
-    behaviour, which is exactly what a fine-tune teaches and retrieval cannot.</p>
+    <p class="note"><strong>So phase 03's job changed completely, and got sharper.</strong> Not "kill
+    the 5e prior" &mdash; retrieval did that for free. The adapter now has exactly two jobs, both
+    behavioural, both measurable, and both precisely what RAFT trains: <strong>answer from the one
+    relevant excerpt and ignore the other four</strong>, and <strong>say the thing does not exist
+    when it is not in any of them</strong>.</p>
   </section>
 
   <section>
@@ -664,17 +722,17 @@
       <div class="phase">
         <div class="n">02</div>
         <div class="body">
-          <h3>Retrieval <span class="status now">next</span></h3>
-          <p>Index at entity granularity, never token windows &mdash; each entry is already atomic. Hybrid BM25 and dense, with hard metadata filters, because "level 4 fighter feats with the flourish trait" is a filter, not a similarity query. Default to excluding legacy content. Bake off the <a href="https://huggingface.co/Kaylebor/pf2e-codex-embed-xs">existing PF2e embedder</a> against a strong general model.</p>
-          <div class="exit"><b>Exit criterion</b>The gap between "gold chunk was retrieved" and "answer was right" is the exact size of the prior problem &mdash; and the entire justification for phase 03.</div>
+          <h3>Retrieval <span class="status done">done</span></h3>
+          <p>Entity-granular chunks, hybrid BM25 and dense fused by reciprocal rank, and a legacy-to-Remaster hop that reads the cross-references the corpus build preserved. R@5 of 92.5%. The embedder bake-off found the only published PF2e retriever to be numerically indistinguishable from its own base model.</p>
+          <div class="exit"><b>Exit criterion &mdash; answered</b>Retrieval recall is 88&ndash;96% on the families where accuracy is 21&ndash;30%. That gap is not a prior problem, it is a precision problem: the right chunk is in the context and the model answers from the wrong one.</div>
         </div>
       </div>
       <div class="phase">
         <div class="n">03</div>
         <div class="body">
-          <h3>RAFT LoRA <span class="status next">queued</span></h3>
+          <h3>RAFT LoRA <span class="status now">next</span></h3>
           <p>Train on retrieved context, not raw rules text: question, gold chunk plus distractors, and an answer that quotes the source and cites its URL. Deliberately include unanswerable questions, legacy-name questions whose correct answer is the Remaster name, and items where every retrieved chunk is a distractor.</p>
-          <div class="exit"><b>Exit criterion</b>Does the adapter beat base-plus-retrieval on contamination and abstention <em>without</em> regressing lookup? Those two families measure prior, not knowledge.</div>
+          <div class="exit"><b>Exit criterion &mdash; revised after phase 02</b>Contamination is off the list; retrieval solved it. The adapter has to move <span class="mono">prereq</span> and <span class="mono">lookup_traits</span> up toward their retrieval ceilings, and drag <span class="mono">abstention</span> back from the collapse retrieval caused, without regressing anything else.</div>
         </div>
       </div>
       <div class="phase">

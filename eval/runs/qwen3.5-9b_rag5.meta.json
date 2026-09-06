@@ -1,0 +1,25 @@
+{
+  "label": "qwen3.5-9b_rag5",
+  "model": "Qwen/Qwen3.5-9B",
+  "backend": "hf",
+  "base_url": null,
+  "items": 486,
+  "seconds": 394.9,
+  "max_tokens": 600,
+  "reasoning_effort": null,
+  "chat_kwargs": {
+    "enable_thinking": false
+  },
+  "retrieval": {
+    "k": 5,
+    "retriever": "Kaylebor/pf2e-codex-embed-xs",
+    "mode": "hybrid+hop",
+    "context_chars": 1600
+  },
+  "quantization": "nf4-4bit",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0
+  },
+  "empty_responses": 0
+}

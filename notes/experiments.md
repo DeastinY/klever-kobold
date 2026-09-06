@@ -194,21 +194,108 @@ silently scoring as a clean one. gpt-5 had 15 truncations at a 1500-token cap, f
   (470 → 486). Both frontier runs were re-run on the new family and merged rather than re-scored
   from stale responses.
 
+---
+
+# Phase 2 — retrieval
+
+## Retriever comparison
+
+400 benchmark items carry a gold chunk id. No annotation, no judge.
+
+| Retriever | Mode | R@1 | R@5 | R@20 | MRR |
+| --- | --- | ---: | ---: | ---: | ---: |
+| — | bm25 | 69.2% | 84.5% | 88.8% | 0.759 |
+| — | bm25+hop | 68.5% | 89.0% | 92.0% | 0.768 |
+| `pf2e-codex-embed-xs` | dense | 67.5% | 82.5% | 89.5% | 0.740 |
+| `arctic-embed-xs` (its base) | dense | 67.5% | 82.5% | 89.5% | 0.740 |
+| `Qwen3-Embedding-0.6B` | dense | 65.8% | 86.8% | 92.5% | 0.744 |
+| `pf2e-codex-embed-xs` | hybrid+hop | 78.0% | 92.5% | 95.0% | 0.839 |
+| `Qwen3-Embedding-0.6B` | hybrid+hop | 76.5% | **92.8%** | 96.8% | 0.837 |
+
+### The hop
+
+`remaster_rename` sat at 46.2% R@5 while every other family was at 97–100%. Those questions name the
+*old* entity, so both retrievers land on the legacy chunk — the one that must never be served as
+current rules. Filtering legacy out first makes it worse: that chunk is the only one carrying
+`remaster_id`, the pointer to its replacement. Retrieve it, then hop. 46.2% → 65.0% for the family,
+88.8% → 92.5% overall.
+
+### The embedder bake-off
+
+`Kaylebor/pf2e-codex-embed-xs` and `Snowflake/snowflake-arctic-embed-xs` — the fine-tune and its own
+base — score **identically to three decimals across 400 queries**. Checked at the weight level:
+
+- largest weight difference across all 101 shared tensors: **3.1e-4**
+- corpus embeddings: mean cosine **1.0**, max element difference **6.8e-5**
+
+That is precision-round-trip magnitude. On this benchmark the only published PF2e retriever conveys
+no measurable advantage over its base. Practical upshot is still cheerful: the 22M model indexes the
+corpus in 28s and is within half a point of `Qwen3-Embedding-0.6B` at 213s.
+
+## Retrieval-augmented runs (k=5, hybrid+hop)
+
+| Model | Closed-book | + retrieval | Δ |
+| --- | ---: | ---: | ---: |
+| gpt-5 | 25.3% | **67.9%** | 2.7x |
+| Qwen3.5-9B | 15.8% | **65.0%** | 4.1x |
+| gpt-4.1-mini | 21.4% | **63.2%** | 3.0x |
+| Qwen3.8-27B | 21.8% | **63.2%** | 2.9x |
+
+A 9B in 4-bit on one desktop card lands 2.9 points off gpt-5.
+
+### Per family, with retrieval
+
+| Family | gpt-5 | Qwen3.5-9B | Qwen3.8-27B | gpt-4.1-mini | retrieval R@5 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `lookup_level` | 87.5% | 96.2% | 98.8% | 95.0% | 100% |
+| `lookup_rarity` | 96.2% | 96.2% | 95.0% | 96.2% | 97.5% |
+| `lookup_traits` | 82.5% | 57.5% | 67.5% | 70.0% | 100% |
+| `prereq` | 30.0% | 21.2% | 21.2% | 21.2% | 100% |
+| `remaster_rename` | 50.0% | 50.0% | 46.2% | 43.8% | 65% |
+| `abstention` | 17.5% | 35.0% | **0.0%** | 7.5% | — |
+| `trap_5e` | 100% | 100% | 100% | 96.7% | — |
+| `trap_5e_applied` | 100% | 93.8% | 87.5% | 87.5% | — |
+
+## Reading phase 2
+
+**The thesis was half wrong.** "Retrieval fixes facts, fine-tuning fixes priors" — retrieval fixed
+the priors too. Qwen3.5-9B's applied-trap grounding went from **9% to 81%** and its quiz leaks from
+nine to zero. A model reading the correct rules entry does not reach for 5e. It never needed its
+prior corrected; it needed the page.
+
+**Retrieval created a new failure.** Abstention collapsed: gpt-5 77.5% → 17.5%, Qwen3.8-27B
+77.5% → **0.0%** (27 of 40 fabricated levels, up from 3). Hand a model five plausible neighbouring
+feats and ask about one that was never written, and it answers about a neighbour. The distractors
+are now in the prompt looking authoritative.
+
+**The residual gap is precision, not knowledge.** `prereq` has 100% R@5 and 21–30% accuracy — the
+answer is in the context window and the model answers from the wrong excerpt, over-answering on
+55–61 of 80. `lookup_traits` is the same shape.
+
+**`remaster_rename` is the one family still retrieval-bound**: 65% R@5, and every model sits at
+43–50%, i.e. roughly at its ceiling. Improving it means better retrieval, not a better model.
+
 ## Targets for phase 03
 
-The LoRA has to move these, without regressing the recall families:
+**Revised after phase 2.** Contamination is off the list — retrieval solved it. The adapter has two
+jobs left, both behavioural, both exactly what RAFT trains: *use the one relevant excerpt and ignore
+the other four*, and *say it does not exist when it is in none of them*.
 
-| Metric | Qwen3.8-27B | Qwen3.5-9B | gpt-5 |
-| --- | ---: | ---: | ---: |
-| `trap_5e` clean | 83.3% | 70.0% | 100% |
-| `trap_5e_applied` clean | 81.2% | 68.8% | 93.8% |
-| applied grounding | 36% | 9% | 78% |
-| `abstention` | 77.5% | 27.5% | 77.5% |
+Baseline is Qwen3.5-9B + retrieval (65.0% overall), the development target: 2.5x faster to evaluate
+than the 27B and slightly better with retrieval anyway.
 
-The 9B is the better development target: 2.5x faster to evaluate, and with twice the contamination
-and a quarter the grounding it has far more headroom to demonstrate the adapter is doing anything.
-Prove it there, then port to the 27B.
+| Metric | Now | Ceiling | Gap |
+| --- | ---: | ---: | --- |
+| `prereq` | 21.2% | 100% R@5 | pure precision — the answer is in the prompt |
+| `lookup_traits` | 57.5% | 100% R@5 | over-answered on 31 of 80 |
+| `abstention` | 35.0% | — | must survive distractors, not be destroyed by them |
+| `remaster_rename` | 50.0% | 65% R@5 | near ceiling; needs retrieval work, not training |
+| `trap_5e_applied` | 93.8% | 100% | mostly solved by retrieval |
+
+Do not regress: `lookup_level` 96.2%, `lookup_rarity` 96.2%, `trap_5e` 100%.
 
 ## Pending
 
-- Retrieval-augmented reruns of all four, which is the number that actually decides the project.
+- Phase 3: RAFT training data generation and the first LoRA.
+- `remaster_rename` retrieval is the one place more indexing work still pays: 65% R@5 caps every
+  model at ~50%.

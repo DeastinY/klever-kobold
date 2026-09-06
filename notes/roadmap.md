@@ -49,7 +49,7 @@ Still outstanding: the `Qwen3.8-27B` run, which is the one the premise actually 
 
 ---
 
-## Phase 2 — Retrieval ← next
+## Phase 2 — Retrieval ✅ done
 
 The benchmark hands us **free retrieval labels**: 400 of the 470 items carry `source_ids` naming the
 exact gold chunk. Recall@k is measurable without annotating anything.
@@ -63,13 +63,18 @@ exact gold chunk. Recall@k is measurable without annotating anything.
   strong general model, scored on recall@{1,5,20}.
 - Re-run the benchmark **with** retrieval.
 
-**Exit criterion:** retrieval recall@5 and the with-retrieval scoreboard. The gap between
-"gold chunk was retrieved" and "answer was right" is the exact size of the prior problem — and the
-justification for Phase 3.
+**Exit criterion — answered.** R@5 is 92.5% overall (hybrid + the legacy→Remaster hop). With five
+excerpts every model roughly triples: gpt-5 67.9%, Qwen3.5-9B 65.0%, Qwen3.8-27B and gpt-4.1-mini
+63.2%. A 9B in 4-bit lands 2.9 points off gpt-5.
+
+The gap turned out not to be a prior problem. Retrieval fixed the priors too — the 9B's applied-trap
+grounding went 9% → 81%. What it did not fix is precision (`prereq`: 100% R@5, 21% accuracy,
+over-answering on 61 of 80) and what it actively broke is abstention (Qwen3.8-27B 77.5% → 0.0%).
+Full numbers in [`notes/experiments.md`](experiments.md).
 
 ---
 
-## Phase 3 — RAFT LoRA
+## Phase 3 — RAFT LoRA ← next
 
 Train on retrieved context, not on raw rules text.
 
@@ -83,8 +88,13 @@ Train on retrieved context, not on raw rules text.
 - **Strict hygiene:** the benchmark's `source_ids` are excluded from training generation. No entity
   in the test set contributes a training item.
 
-**Exit criterion:** does the LoRA beat base+retrieval on `trap_5e` and `abstention` without
-regressing `lookup_*`? Those are the two families that measure prior, not knowledge.
+**Exit criterion — revised after Phase 2.** `trap_5e` is off the list; retrieval solved it. The
+adapter must move `prereq` (21.2%) and `lookup_traits` (57.5%) toward their 100% retrieval ceilings,
+and drag `abstention` back from the collapse retrieval caused, without regressing `lookup_level`
+(96.2%), `lookup_rarity` (96.2%) or `trap_5e` (100%).
+
+Development target is **Qwen3.5-9B + retrieval at 65.0%** — faster to iterate than the 27B and
+marginally better with retrieval anyway.
 
 ---
 

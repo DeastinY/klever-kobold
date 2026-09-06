@@ -6,7 +6,8 @@ artifacts. Everything between a ``<!-- name:start -->`` / ``<!-- name:end -->``
 pair is owned by this script; everything else is hand-written prose.
 
 Blocks:
-    ``results``   scored eval runs from ``eval/runs/*.scores.json``
+    ``results``    scored eval runs from ``eval/runs/*.scores.json``
+    ``retrieval``  retriever comparison from ``eval/runs/retrieval.scores.json``
 """
 
 from __future__ import annotations
@@ -37,12 +38,21 @@ def load_runs() -> list[dict]:
     runs = []
     for path in sorted(RUNS.glob("*.scores.json")):
         data = orjson.loads(path.read_bytes())
+        if not isinstance(data, dict) or "report" not in data:
+            continue  # retrieval.scores.json has its own shape
         report = data["report"]
         meta_path = path.with_name(path.name.replace(".scores.json", ".meta.json"))
         meta = orjson.loads(meta_path.read_bytes()) if meta_path.exists() else {}
         runs.append({"report": report, "meta": meta, "label": report.get("run", path.stem)})
     runs.sort(key=lambda r: (r["report"].get("partial", False), -r["report"]["accuracy"]))
     return runs
+
+
+def load_retrieval() -> list[dict]:
+    path = RUNS / "retrieval.scores.json"
+    if not path.exists():
+        return []
+    return orjson.loads(path.read_bytes())
 
 
 def pct(x: float) -> str:
@@ -67,32 +77,26 @@ def render_results(runs: list[dict]) -> str:
             f'<td class="num">{pct(fams[f]["accuracy"]) if f in fams else "&mdash;"}</td>'
             for f in FAMILY_ORDER
         )
+        ret = run["meta"].get("retrieval")
+        mode = f'+ retrieval (k={ret["k"]})' if ret else "closed-book"
         rows.append(
             f'<tr><td class="rowname mono">{model}</td>'
+            f'<td class="mono" style="font-size:0.82rem;color:var(--muted)">{mode}</td>'
             f'<td class="num"><strong>{pct(run["report"]["accuracy"])}</strong></td>{cells}</tr>'
         )
 
     notes = []
+    paired = {}
     for run in full:
-        fams = run["report"]["families"]
-        model = html.escape(run["meta"].get("model", run["label"]))
-        trap = fams.get("trap_5e")
-        if trap and "contaminated" in trap:
+        key = run["meta"].get("model", run["label"])
+        paired.setdefault(key, {})["rag" if run["meta"].get("retrieval") else "closed"] = run
+    for model, pair in paired.items():
+        if "closed" in pair and "rag" in pair:
+            a = pair["closed"]["report"]["accuracy"]
+            b = pair["rag"]["report"]["accuracy"]
             notes.append(
-                f'<li><strong>{model}</strong> leaked D&amp;D 5e vocabulary into '
-                f'{trap["contaminated"]} of {trap["n"]} trap questions.</li>'
-            )
-        ab = fams.get("abstention")
-        if ab and ab.get("fabricated"):
-            notes.append(
-                f'<li><strong>{model}</strong> invented a level for '
-                f'{ab["fabricated"]} of {ab["n"]} feats that do not exist.</li>'
-            )
-        rn = fams.get("remaster_rename")
-        if rn and rn.get("used_legacy_name"):
-            notes.append(
-                f'<li><strong>{model}</strong> answered with the pre-Remaster name '
-                f'{rn["used_legacy_name"]} times out of {rn["n"]}.</li>'
+                f'<li><strong>{html.escape(model)}</strong>: {pct(a)} &rarr; {pct(b)} with '
+                f'retrieval, {b / a:.1f}&times;.</li>'
             )
 
     for run in partial:
@@ -107,7 +111,7 @@ def render_results(runs: list[dict]) -> str:
     return f"""<div class="scroller">
       <table>
         <thead>
-          <tr><th>Model</th><th class="num">overall</th>{head}</tr>
+          <tr><th>Model</th><th>mode</th><th class="num">overall</th>{head}</tr>
         </thead>
         <tbody>
           {chr(10).join("          " + r for r in rows).strip()}
@@ -116,6 +120,33 @@ def render_results(runs: list[dict]) -> str:
       </table>
     </div>
     {note_block}"""
+
+
+def render_retrieval(rows: list[dict]) -> str:
+    if not rows:
+        return '<p class="note">No retrieval evaluation yet. Run <code>eval/retrieval_eval.py</code>.</p>'
+    body = []
+    for r in sorted(rows, key=lambda r: -r["recall"]["5"]):
+        name = html.escape(r["model"] or "\u2014 (lexical only)")
+        body.append(
+            f'<tr><td class="rowname mono">{name}</td>'
+            f'<td class="mono" style="font-size:0.82rem;color:var(--muted)">{r["mode"]}</td>'
+            f'<td class="num">{pct(r["recall"]["1"])}</td>'
+            f'<td class="num"><strong>{pct(r["recall"]["5"])}</strong></td>'
+            f'<td class="num">{pct(r["recall"]["20"])}</td>'
+            f'<td class="num">{r["mrr"]:.3f}</td></tr>'
+        )
+    return f"""<div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Retriever</th><th>mode</th><th class="num">R@1</th><th class="num">R@5</th><th class="num">R@20</th><th class="num">MRR</th></tr>
+        </thead>
+        <tbody>
+          {chr(10).join("          " + b for b in body).strip()}
+        </tbody>
+        <caption>Did the right chunk come back? Scored on the 400 benchmark items that carry a gold chunk id. No model involved.</caption>
+      </table>
+    </div>"""
 
 
 def replace_block(text: str, name: str, body: str) -> str:
@@ -135,6 +166,7 @@ def main() -> int:
     runs = load_runs()
     text = args.dossier.read_text()
     text = replace_block(text, "results", render_results(runs))
+    text = replace_block(text, "retrieval", render_retrieval(load_retrieval()))
 
     n_full = sum(1 for r in runs if not r["report"].get("partial"))
     tag = f"{n_full} run{'s' if n_full != 1 else ''} scored" if runs else "no runs scored yet"
