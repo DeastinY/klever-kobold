@@ -5,6 +5,12 @@ data/processed/
 *.parquet
 *.sqlite
 
+# ...but the benchmark and its hand-authored seeds are source, not derived data.
+# The benchmark is a frozen test set: regenerating with a different --seed makes a
+# new benchmark, it does not replace this one.
+!eval/benchmark.jsonl
+!eval/seeds/*.jsonl
+
 # Python
 __pycache__/
 *.py[cod]
