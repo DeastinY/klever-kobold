@@ -12,6 +12,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Local inference on Blackwell (sm_120): torch must be a cu128-or-newer build and
+# bitsandbytes >=0.45 for 4-bit on this architecture.
+local = [
+    "torch>=2.7",
+    "transformers>=4.57",
+    "accelerate>=1.0",
+    "bitsandbytes>=0.45",
+    "huggingface_hub[hf_transfer]>=0.26",
+]
 retrieval = [
     "sentence-transformers>=3.0",
     "lancedb>=0.13",

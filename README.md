@@ -2,7 +2,8 @@
 
 Adapting an open-weight LLM to **Pathfinder 2e** rules and lore.
 
-The premise, from the research writeup in [`notes/research.md`](notes/research.md): a general
+The premise, from the research writeup in [`notes/research.md`](notes/research.md)
+(prior art with links: [`notes/prior-art.md`](notes/prior-art.md)): a general
 model's PF2e failures are two different problems with two different fixes.
 
 | Failure | Fix |
@@ -11,7 +12,7 @@ model's PF2e failures are two different problems with two different fixes.
 | Answers with bonus actions, death saves, and advantage | **Fine-tuning.** That's a corrupted D&D 5e prior, not a missing fact. |
 
 Retrieval fixes facts; fine-tuning fixes priors. PF2e gives you both problems, which is why the
-handful of existing hobby PF2e RAG bots underdeliver — they hand correct chunks to a model that
+handful of [existing hobby PF2e RAG bots](notes/prior-art.md) underdeliver — they hand correct chunks to a model that
 still thinks in 5e. The plan is a retrieval-first stack plus a small LoRA that kills the 5e prior,
 enforces Remaster vocabulary, and teaches grounded citation and abstention.
 
@@ -24,8 +25,8 @@ Both sources are rebuilt from scratch by the scripts below; nothing derived is c
 
 | Source | Documents | ~Tokens | Content | License |
 | --- | ---: | ---: | --- | --- |
-| Archives of Nethys | 41,743 | 13.5 M | Rules, feats, spells, creatures, equipment | ORC / Paizo CUP |
-| PathfinderWiki | 22,604 | 5.6 M | Golarion lore, people, places, organizations | Paizo CUP |
+| [Archives of Nethys](https://2e.aonprd.com/) | 41,743 | 13.5 M | Rules, feats, spells, creatures, equipment | ORC / Paizo CUP |
+| [PathfinderWiki](https://pathfinderwiki.com/) | 22,604 | 5.6 M | Golarion lore, people, places, organizations | Paizo CUP |
 
 AoN serves its search index from an anonymously readable Elasticsearch cluster with a
 pre-rendered `markdown` field per entity — the cleanest PF2e rules text available anywhere.

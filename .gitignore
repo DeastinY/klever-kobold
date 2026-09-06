@@ -28,3 +28,9 @@ wandb/
 
 # Secrets
 .env
+
+# Eval runs: raw responses are large and re-derivable; scored reports are not.
+eval/runs/*.jsonl
+eval/runs/*.log
+!eval/runs/*.scores.json
+!eval/runs/*.meta.json

@@ -382,11 +382,12 @@
           <tr><th>Existing work</th><th>What it is</th><th class="num">Reach</th></tr>
         </thead>
         <tbody>
-          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td>Arctic-Embed fine-tune, PF2e retrieval</td><td class="num">93 dl</td></tr>
-          <tr><td class="rowname mono">Kaylebor/pf2e-codex-reranker-*</td><td>Cross-encoder rerankers, 3 variants</td><td class="num">&lt;5 dl</td></tr>
-          <tr><td class="rowname mono">Pathfinder-Rules-LLM</td><td>Pf2ools + SRD &rarr; ChromaDB &rarr; Claude/GPT</td><td class="num">0 &starf;</td></tr>
-          <tr><td class="rowname mono">PF2e-RAG</td><td>Capstone project, PF2e RAG assistant</td><td class="num">0 &starf;</td></tr>
-          <tr><td class="rowname mono">pathfinder-society-scribe</td><td>Discord bot, local models</td><td class="num">0 &starf;</td></tr>
+          <tr><td class="rowname mono"><a href="https://huggingface.co/Kaylebor/pf2e-codex-embed-xs">Kaylebor/pf2e-codex-embed-xs</a></td><td>Arctic-Embed fine-tune, PF2e retrieval</td><td class="num">93 dl</td></tr>
+          <tr><td class="rowname mono"><a href="https://huggingface.co/Kaylebor/pf2e-codex-reranker">Kaylebor/pf2e-codex-reranker</a></td><td>Cross-encoder rerankers, 4 variants</td><td class="num">&lt;5 dl</td></tr>
+          <tr><td class="rowname mono"><a href="https://github.com/MahmuudIbrahim/Pathfinder-Rules-LLM">Pathfinder-Rules-LLM</a></td><td>Pf2ools + SRD &rarr; ChromaDB &rarr; Claude/GPT</td><td class="num">0 &starf;</td></tr>
+          <tr><td class="rowname mono"><a href="https://github.com/ClawedMaple/PF2e-RAG">PF2e-RAG</a></td><td>Capstone project, PF2e RAG assistant</td><td class="num">0 &starf;</td></tr>
+          <tr><td class="rowname mono"><a href="https://github.com/tvanfossen/pathfinder-society-scribe">pathfinder-society-scribe</a></td><td>Discord bot, local models</td><td class="num">0 &starf;</td></tr>
+          <tr><td class="rowname mono"><a href="https://github.com/wyrdsmith/agentic-pathfinder2e-module-generator">agentic-pf2e-module-generator</a></td><td>Adventure generation, Pydantic AI</td><td class="num">0 &starf;</td></tr>
         </tbody>
         <caption>Everything that exists is retrieval. Nothing addresses the prior.</caption>
       </table>
@@ -433,8 +434,8 @@
           <tr><th>Source</th><th>Content</th><th class="num">Chunks</th><th class="num">Tokens</th><th>License</th></tr>
         </thead>
         <tbody>
-          <tr><td class="rowname">Archives of Nethys</td><td>Rules, feats, spells, creatures, equipment</td><td class="num">41,743</td><td class="num">13.5M</td><td>ORC / CUP</td></tr>
-          <tr><td class="rowname">PathfinderWiki</td><td>Golarion lore, people, places, factions</td><td class="num">22,604</td><td class="num">5.6M</td><td>Paizo CUP</td></tr>
+          <tr><td class="rowname"><a href="https://2e.aonprd.com/">Archives of Nethys</a></td><td>Rules, feats, spells, creatures, equipment</td><td class="num">41,743</td><td class="num">13.5M</td><td>ORC / CUP</td></tr>
+          <tr><td class="rowname"><a href="https://pathfinderwiki.com/">PathfinderWiki</a></td><td>Golarion lore, people, places, factions</td><td class="num">22,604</td><td class="num">5.6M</td><td>Paizo CUP</td></tr>
         </tbody>
       </table>
       <caption>Tiny for pretraining. Ample for retrieval &mdash; which already hints at the architecture.</caption>
@@ -546,7 +547,7 @@
         <div class="n">02</div>
         <div class="body">
           <h3>Retrieval <span class="status next">queued</span></h3>
-          <p>Index at entity granularity, never token windows &mdash; each entry is already atomic. Hybrid BM25 and dense, with hard metadata filters, because "level 4 fighter feats with the flourish trait" is a filter, not a similarity query. Default to excluding legacy content. Bake off the existing PF2e embedder against a strong general model.</p>
+          <p>Index at entity granularity, never token windows &mdash; each entry is already atomic. Hybrid BM25 and dense, with hard metadata filters, because "level 4 fighter feats with the flourish trait" is a filter, not a similarity query. Default to excluding legacy content. Bake off the <a href="https://huggingface.co/Kaylebor/pf2e-codex-embed-xs">existing PF2e embedder</a> against a strong general model.</p>
           <div class="exit"><b>Exit criterion</b>The gap between "gold chunk was retrieved" and "answer was right" is the exact size of the prior problem &mdash; and the entire justification for phase 03.</div>
         </div>
       </div>
@@ -569,7 +570,7 @@
         <div class="n">05</div>
         <div class="body">
           <h3>Serving <span class="status next">queued</span></h3>
-          <p>vLLM on the FP8 weights, or GGUF for a smaller footprint. Surface it where it gets used: an MCP server, or a Foundry VTT module. Every answer cites its source URL &mdash; that is both the trust mechanism and the attribution mechanism.</p>
+          <p>vLLM on the FP8 weights, or GGUF for a smaller footprint. Surface it where it gets used: an MCP server, or a <a href="https://github.com/foundryvtt/pf2e">Foundry VTT module</a>. Every answer cites its source URL &mdash; that is both the trust mechanism and the attribution mechanism.</p>
         </div>
       </div>
     </div>
@@ -615,6 +616,9 @@ python eval/generate_benchmark.py     # -&gt; benchmark.jsonl (seed 20260906)</p
       <a href="https://arxiv.org/pdf/2603.23562">Synthetic Mixed Training</a>
       <a href="https://arxiv.org/pdf/2508.06178">Low-resource injection</a>
       <a href="https://huggingface.co/Qwen/Qwen3.8-27B">Qwen3.8-27B</a>
+      <a href="https://github.com/Pf2ools/pf2ools-data">Pf2ools data</a>
+      <a href="https://github.com/foundryvtt/pf2e">foundryvtt/pf2e</a>
+      <a href="https://github.com/skaldarnar/awesome-pf2e">awesome-pf2e</a>
     </div>
   </footer>
 
