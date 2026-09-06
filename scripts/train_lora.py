@@ -53,6 +53,9 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=11)
     ap.add_argument("--no-grad-checkpointing", action="store_true",
                     help="~30%% faster and fits at this sequence length on 32 GB")
+    ap.add_argument("--resume", nargs="?", const=True, default=None,
+                    help="resume from the latest checkpoint in --out, or a named one")
+    ap.add_argument("--save-steps", type=int, default=50)
     args = ap.parse_args()
 
     import torch
@@ -106,7 +109,7 @@ def main() -> int:
         eval_strategy="steps",
         eval_steps=50,
         save_strategy="steps",
-        save_steps=100,
+        save_steps=args.save_steps,
         save_total_limit=3,
         bf16=True,
         max_length=args.max_length,
@@ -127,7 +130,16 @@ def main() -> int:
     total = sum(p.numel() for p in trainer.model.parameters())
     print(f"trainable {trainable / 1e6:.1f}M / {total / 1e9:.2f}B ({trainable / total:.2%})")
 
-    trainer.train()
+    # Host RAM, not VRAM, is the fragile resource on this box: a desktop file
+    # indexer competing for it killed a run at step 160. Checkpoint often and be
+    # able to pick the run back up.
+    resume = args.resume
+    if resume is True:
+        checkpoints = sorted(args.out.glob("checkpoint-*"),
+                             key=lambda p: int(p.name.split("-")[1]))
+        resume = str(checkpoints[-1]) if checkpoints else None
+        print(f"resuming from {resume}" if resume else "no checkpoint found; starting fresh")
+    trainer.train(resume_from_checkpoint=resume)
     trainer.save_model(str(args.out / "final"))
     print(f"saved adapter -> {args.out / 'final'}")
     return 0
