@@ -26,6 +26,22 @@ Grading by ``answer_type``:
 
 ``must_not_contain`` is also applied to ``remaster_rename``, where the forbidden
 string is the legacy name the model is expected to reach for.
+
+Two corrections keep the contamination metric honest, both found by reading the
+first run's responses rather than its scores:
+
+1. **A term that appears in the question cannot count against the answer.**
+   "Does the game have an Insight skill?" cannot be answered without saying
+   "Insight skill".  Naive substring matching scored four correct refutations as
+   contamination.
+2. **An explicit denial is not a use.**  "Pathfinder does not use hit dice" is
+   the right answer, not a 5e leak, so a forbidden term directly governed by a
+   negation or contrast cue is excused.  The window is deliberately tight -- a
+   loose one would excuse real contamination sitting in the same sentence as an
+   unrelated "not".
+
+Both the raw and the adjusted counts are kept per item so the metric can be
+audited rather than trusted.
 """
 
 from __future__ import annotations
@@ -50,6 +66,18 @@ REFUSALS = (
 )
 RE_LEVEL_CLAIM = re.compile(r"\blevel\s+(\d{1,2})\b|\bis\s+a\s+(\d{1,2})(?:st|nd|rd|th)[- ]level\b", re.I)
 
+# Cues that turn a mention into a denial. Matched only when they directly govern
+# the term -- at most four words in between -- so an unrelated "not" elsewhere in
+# the sentence does not launder a real leak.
+NEGATION_CUES = (
+    r"no", r"not", r"n't", r"never", r"without", r"unlike", r"rather than",
+    r"instead of", r"equivalent of", r"equivalent to", r"analogue of", r"no such",
+    r"replaces?", r"replaced", r"removed", r"lacks", r"lack", r"unlike in",
+    r"as in", r"in 5e", r"in d&d", r"dungeons & dragons", r"fifth edition",
+    r"5th edition", r"other rpgs?", r"other systems?", r"does away with",
+)
+RE_NEGATION = "|".join(NEGATION_CUES)
+
 
 def norm(text: str) -> str:
     text = text.lower().replace("’", "'").replace("–", "-").replace("—", "-")
@@ -57,11 +85,35 @@ def norm(text: str) -> str:
 
 
 def contains(haystack: str, needle: str) -> bool:
-    """Word-boundary containment, so 'rare' does not match inside 'rarely'."""
+    """Word-boundary containment, tolerating a plural.
+
+    'rare' must not match inside 'rarely', but "there are no bonus actions" has
+    to count as a mention of "bonus action" -- models pluralise freely and an
+    exact-boundary match silently misses half the contamination.
+    """
     needle = norm(needle).strip()
     if not needle:
         return False
-    return re.search(rf"(?<![\w-]){re.escape(needle)}(?![\w-])", haystack) is not None
+    return re.search(rf"(?<![\w-]){re.escape(needle)}(?:e?s)?(?![\w-])", haystack) is not None
+
+
+def denied(haystack: str, term: str) -> bool:
+    """True when ``term`` is governed by a negation or contrast cue, not asserted."""
+    # Separators are limited to spaces, commas and hyphens so the cue cannot reach
+    # across a clause break: "do not move; a bonus action lets you dash" is a leak.
+    gap = r"(?:[ ,\-]+[\w'’]+){0,4}[ ,\-]+"
+    pattern = rf"(?:{RE_NEGATION}){gap}{re.escape(norm(term).strip())}(?:e?s)?(?![\w-])"
+    return re.search(pattern, haystack) is not None
+
+
+def scorable_forbidden(item: dict) -> list[str]:
+    """Forbidden terms the answer could actually have avoided.
+
+    A term already present in the question is unavoidable in any coherent answer,
+    so it is dropped before scoring.
+    """
+    question = norm(item.get("question", ""))
+    return [f for f in (item.get("must_not_contain") or []) if not contains(question, f)]
 
 
 def grade(item: dict, response: str, vocab: set[str] | None = None) -> dict:
@@ -69,8 +121,14 @@ def grade(item: dict, response: str, vocab: set[str] | None = None) -> dict:
     hay = norm(response or "")
     out: dict = {"id": item["id"], "family": item["family"]}
 
-    forbidden = [f for f in (item.get("must_not_contain") or []) if contains(hay, f)]
+    candidates = scorable_forbidden(item)
+    mentioned = [f for f in candidates if contains(hay, f)]
+    forbidden = [f for f in mentioned if not denied(hay, f)]
     out["forbidden_hits"] = forbidden
+    out["forbidden_mentioned"] = mentioned
+    out["forbidden_echoed_from_question"] = [
+        f for f in (item.get("must_not_contain") or []) if f not in candidates
+    ]
 
     kind = item["answer_type"]
     if kind in ("int", "exact"):
