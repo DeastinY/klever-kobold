@@ -32,20 +32,27 @@ git clone git@github.com:DeastinY/pf2etune.git
 cd pf2etune
 python3 -m venv .venv && .venv/bin/pip install -r deploy/requirements.txt
 
-# 4. The index — build it once (needs ~15 min and network), or copy dist/pf2e-index across
-.venv/bin/python scripts/dump_aon.py
-.venv/bin/python scripts/build_chunks.py
-.venv/bin/python scripts/package_index.py     # requires the dev extras to embed; see below
+# 4. The index (143 MB download, 244 MB unpacked)
+gh release download index-v1 --pattern 'pf2e-index.tar.gz'
+mkdir -p dist && tar -xzf pf2e-index.tar.gz -C dist
 
 # 5. Check
 PYTHONPATH=src .venv/bin/python -m pf2etune doctor
 ```
 
-Building the index from scratch needs an embedding model, which means the heavier
-`[retrieval]` extra. **Copying `dist/pf2e-index/` from another machine avoids that
-entirely** and is the recommended path — the index is portable, and the runtime
-reproduces its query embeddings through Ollama (verified: cosine 0.999 against the
-embeddings the index was built with).
+The index is a release asset rather than a repo file, and downloading it is the
+recommended path: building one from scratch needs an embedding model and so the
+much heavier `[retrieval]` extra. The prebuilt index is portable because the
+runtime reproduces its query embeddings through Ollama — verified at cosine 0.999
+against the embeddings the index was actually built with.
+
+Or, without the `gh` CLI:
+
+```bash
+curl -L -o pf2e-index.tar.gz \
+  https://github.com/DeastinY/pf2etune/releases/download/index-v1/pf2e-index.tar.gz
+mkdir -p dist && tar -xzf pf2e-index.tar.gz -C dist
+```
 
 ## Use
 

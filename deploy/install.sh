@@ -14,11 +14,16 @@ done
 [ -d .venv ] || python3 -m venv .venv
 .venv/bin/pip install -q -r deploy/requirements.txt
 
-[ -d dist/pf2e-index ] || {
-  echo
-  echo "No index found at dist/pf2e-index."
-  echo "Copy it from a machine that has one, or build it:"
-  echo "  .venv/bin/python scripts/dump_aon.py && .venv/bin/python scripts/build_chunks.py"
-  exit 1; }
+if [ ! -d dist/pf2e-index ]; then
+  echo "Fetching the packaged index (143 MB)..."
+  mkdir -p dist
+  if command -v gh >/dev/null; then
+    gh release download index-v1 --pattern 'pf2e-index.tar.gz' --clobber -O /tmp/pf2e-index.tar.gz
+  else
+    curl -fL -o /tmp/pf2e-index.tar.gz \
+      https://github.com/DeastinY/pf2etune/releases/download/index-v1/pf2e-index.tar.gz
+  fi
+  tar -xzf /tmp/pf2e-index.tar.gz -C dist
+fi
 
 PYTHONPATH=src .venv/bin/python -m pf2etune doctor
