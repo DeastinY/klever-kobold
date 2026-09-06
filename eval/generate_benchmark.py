@@ -14,6 +14,14 @@ failure mode:
 ``remaster_rename``
     The Remaster renamed ~2k entities.  Models trained on pre-2023 web text
     answer with legacy names; this measures that specific staleness.
+
+    Two corrections, found by diagnosing why retrieval capped at 65% here while
+    every other family sat at 97-100%.  AoN's ``legacy_name`` is many-to-one:
+    "Tanglefoot Bag" is claimed by Glue Bomb and all four of its grades, so
+    demanding one particular grade punishes a correct answer.  Every claimant is
+    now acceptable.  And where the legacy name is *still* a live entry --
+    Invisibility, Perfected Form -- the question's premise is simply false, so
+    those items are marked excluded rather than scored.
 ``abstention``
     Plausible-sounding entities that do not exist.  Measures whether the model
     will invent a feat rather than say it cannot find one.
@@ -131,21 +139,49 @@ def gen_prereq(pool: list[dict], rng: random.Random, n: int) -> list[dict]:
     return out
 
 
+def _legacy_name(row: dict) -> str | None:
+    value = row.get("legacy_name")
+    if not value:
+        return None
+    return value[0] if isinstance(value, list) else value
+
+
 def gen_remaster_rename(rows: list[dict], rng: random.Random, n: int) -> list[dict]:
     cands = [r for r in rows if r.get("legacy_name") and r["remaster_status"] == "remaster"]
+
+    # Who else claims to be the Remaster version of this legacy name?
+    claims: dict[tuple[str, str], list[dict]] = collections.defaultdict(list)
+    for r in cands:
+        claims[(r["category"], _legacy_name(r).lower())].append(r)
+    # Scoped per category: a spell named X does not make an *equipment* question
+    # about X false-premised.
+    current: set[tuple[str, str]] = {
+        (r["category"], r["name"].lower()) for r in rows
+        if r["name"] and r["remaster_status"] != "legacy"
+    }
+
     out = []
     for i, r in enumerate(rng.sample(cands, min(n, len(cands)))):
-        old = r["legacy_name"][0] if isinstance(r["legacy_name"], list) else r["legacy_name"]
+        old = _legacy_name(r)
         if old == r["name"]:
             continue
-        out.append(_item(
+        siblings = claims[(r["category"], old.lower())]
+        item = _item(
             "remaster_rename", i,
             question=(f"The Pathfinder 2e {r['category'].replace('-', ' ')} formerly called "
                       f"{old} was renamed in the Remaster. What is its current name?"),
-            answer=r["name"], answer_type="exact", acceptable=[r["name"]],
+            answer=r["name"], answer_type="exact",
+            acceptable=sorted({s["name"] for s in siblings}),
             must_not_contain=[old],
-            source_ids=[r["id"]], source_urls=[r["url"]],
-        ))
+            source_ids=[r["id"]],
+            alt_source_ids=sorted({s["id"] for s in siblings if s["id"] != r["id"]}),
+            source_urls=[r["url"]],
+        )
+        if (r["category"], old.lower()) in current:
+            # The premise is false: the "old" name is still a current entry.
+            item["excluded"] = True
+            item["exclusion_reason"] = f"{old!r} is still a current Pathfinder 2e entry"
+        out.append(item)
     return out
 
 

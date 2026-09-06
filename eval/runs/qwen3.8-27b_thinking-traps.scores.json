@@ -19,7 +19,8 @@
       }
     },
     "run": "qwen3.8-27b_thinking-traps",
-    "benchmark_items": 486,
+    "benchmark_items": 459,
+    "excluded_items": 27,
     "partial": true,
     "trait_vocab": 569
   },

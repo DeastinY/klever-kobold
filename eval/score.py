@@ -71,12 +71,18 @@ RE_LEVEL_CLAIM = re.compile(r"\blevel\s+(\d{1,2})\b|\bis\s+a\s+(\d{1,2})(?:st|nd
 # the sentence does not launder a real leak.
 NEGATION_CUES = (
     r"no", r"not", r"n't", r"never", r"without", r"unlike", r"rather than",
-    r"instead of", r"equivalent of", r"equivalent to", r"analogue of", r"no such",
-    r"replaces?", r"replaced", r"removed", r"lacks", r"lack", r"unlike in",
-    r"as in", r"in 5e", r"in d&d", r"dungeons & dragons", r"fifth edition",
-    r"5th edition", r"other rpgs?", r"other systems?", r"does away with",
+    r"instead of", r"instead", r"equivalent of", r"equivalent to", r"analogue of",
+    r"no such", r"no longer", r"replaces?", r"replaced", r"removed", r"lacks",
+    r"lack", r"unlike in", r"as in", r"in 5e", r"in d&d", r"dungeons & dragons",
+    r"fifth edition", r"5th edition", r"other rpgs?", r"other systems?",
+    r"does away with", r"separate from", r"distinct from", r"as opposed to",
+    r"differs? from", r"there is no", r"nothing like", r"not like",
 )
 RE_NEGATION = "|".join(NEGATION_CUES)
+RE_CLAUSE_BREAK = re.compile(r"[.;:!?]")
+# A comma followed by a fresh subject starts a new clause, so the cue before it
+# does not govern what comes after.
+RE_NEW_SUBJECT = re.compile(r",\s*(?:they|you|it|we|i|he|she|there|this|that)\b")
 
 
 def norm(text: str) -> str:
@@ -98,14 +104,42 @@ def contains(haystack: str, needle: str) -> bool:
 
 
 def denied(haystack: str, term: str) -> bool:
-    """True when ``term`` is governed by a negation or contrast cue, not asserted."""
-    # Separators cover spaces, commas, hyphens, slashes and brackets, but not
-    # sentence or clause terminators, so the cue cannot reach across a break:
-    # "do not move; a bonus action lets you dash" stays a leak, while
-    # "instead of using weight (pounds/kilograms)" is correctly read as a denial.
-    gap = r"(?:[ ,\-/()]+[\w'’]+){0,4}[ ,\-/()]+"
-    pattern = rf"(?:{RE_NEGATION}){gap}{re.escape(norm(term).strip())}(?:e?s)?(?![\w-])"
-    return re.search(pattern, haystack) is not None
+    """True when ``term`` is governed by a negation or contrast cue, not asserted.
+
+    Scanning the gap text explicitly rather than with one large regex, because the
+    rule has three separate parts and each was added to fix an observed
+    misclassification:
+
+    * **at most eight words.** A four-word window punished models that explain the
+      contrast -- "characters no longer have rules-defined labels like lawful
+      good" is a correct refutation.
+    * **no clause terminator.** "do not move; a bonus action lets you dash" is a
+      leak; the cue belongs to a different clause.
+    * **no comma followed by a new subject.** "did not critically succeed, they
+      take half damage" is a leak for the same reason, but a comma alone cannot
+      be the test -- "does not have hit dice, short rests, or death saves" is a
+      denial whose terms sit in a list under the same verb.
+    """
+    needle = norm(term).strip()
+    if not needle:
+        return False
+    pattern = re.compile(rf"(?<![\w-]){re.escape(needle)}(?:e?s)?(?![\w-])")
+    cue = re.compile(rf"(?:(?<![\w-])|^)(?:{RE_NEGATION})(?![\w-])")
+
+    for hit in pattern.finditer(haystack):
+        window = haystack[max(0, hit.start() - 140):hit.start()]
+        cues = list(cue.finditer(window))
+        if not cues:
+            continue
+        gap = window[cues[-1].end():]
+        if RE_CLAUSE_BREAK.search(gap):
+            continue
+        if RE_NEW_SUBJECT.search(gap):
+            continue
+        if len(gap.split()) > 8:
+            continue
+        return True
+    return False
 
 
 def scorable_forbidden(item: dict) -> list[str]:
@@ -247,23 +281,31 @@ def main() -> int:
         row = orjson.loads(line)
         responses[row["id"]] = row.get("response", "")
 
-    missing = set(items) - set(responses)
+    # Items whose premise turned out to be false are not scored against anyone.
+    excluded = [i for i in items if items[i].get("excluded")]
+
+    missing = set(items) - set(responses) - set(excluded)
     if missing:
         print(f"warning: {len(missing)} items have no response", file=sys.stderr)
 
     vocab = load_vocab(args.chunks)
-    verdicts = [grade(items[i], responses[i], vocab) for i in items if i in responses]
+    verdicts = [grade(items[i], responses[i], vocab)
+                for i in items if i in responses and not items[i].get("excluded")]
     report = summarise(verdicts)
     report["run"] = args.responses.stem
-    report["benchmark_items"] = len(items)
+    report["benchmark_items"] = len(items) - len(excluded)
+    report["excluded_items"] = len(excluded)
     # A control run deliberately covers only some families; the dossier lists
     # those separately rather than showing a misleading overall figure.
-    report["partial"] = len(verdicts) < len(items)
+    report["partial"] = len(verdicts) < len(items) - len(excluded)
     if vocab:
         report["trait_vocab"] = len(vocab)
 
     label = args.responses.stem
-    print(f"\n{label}   {report['correct']}/{report['items']}  ({report['accuracy']:.1%})\n")
+    print(f"\n{label}   {report['correct']}/{report['items']}  ({report['accuracy']:.1%})")
+    if excluded:
+        print(f"  ({len(excluded)} items excluded: premise false)")
+    print()
     print(f"  {'family':18s} {'n':>4s} {'correct':>8s} {'acc':>7s}   notes")
     print(f"  {'-' * 18} {'-' * 4} {'-' * 8} {'-' * 7}   {'-' * 30}")
     for fam, e in report["families"].items():

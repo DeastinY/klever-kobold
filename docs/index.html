@@ -486,7 +486,7 @@
   <section>
     <div class="block-head">
       <h2>Benchmark</h2>
-      <span class="tag">486 items &middot; 8 families</span>
+      <span class="tag">459 scored &middot; 8 families</span>
     </div>
     <p>No public Pathfinder benchmark exists, so this one is generated from the corpus with every answer derived from a structured field rather than a model's opinion. It is the most reusable thing the project will produce, and it has to come first &mdash; otherwise there is no way to tell whether the fine-tune helped.</p>
 
@@ -500,7 +500,7 @@
           <tr><td class="rowname mono">lookup_traits</td><td class="num">80</td><td>Complete set recall, no omissions</td></tr>
           <tr><td class="rowname mono">lookup_rarity</td><td class="num">80</td><td>Recall against the majority-class guess</td></tr>
           <tr><td class="rowname mono">prereq</td><td class="num">80</td><td>Multi-hop feat prerequisites</td></tr>
-          <tr><td class="rowname mono">remaster_rename</td><td class="num">80</td><td>Legacy-name staleness</td></tr>
+          <tr><td class="rowname mono">remaster_rename</td><td class="num">53</td><td>Legacy-name staleness (27 excluded, see below)</td></tr>
           <tr><td class="rowname mono">abstention</td><td class="num">40</td><td>Inventing feats that do not exist</td></tr>
           <tr><td class="rowname mono">trap_5e</td><td class="num">30</td><td>D&amp;D 5e contamination, quizzed &mdash; hand-authored</td></tr>
           <tr><td class="rowname mono">trap_5e_applied</td><td class="num">16</td><td>D&amp;D 5e contamination, adjudicated &mdash; hand-authored</td></tr>
@@ -525,6 +525,36 @@
     </div>
 
     <p>The <code>must_not_contain</code> lists are the design decision worth defending. Contamination is detectable by substring &mdash; "bonus action", "death saving throw", "advantage" &mdash; so the headline number needs no LLM judge, which keeps it cheap, reproducible, and not itself model-dependent.</p>
+
+    <h3 class="finding">Four bugs in my own metric</h3>
+    <p>Every one was found by reading model responses rather than model scores, and every one is now
+    a case in <code>eval/test_score.py</code>. The pattern is worth stating plainly: a benchmark's
+    scorer is code, it has bugs, and the bugs are invisible from the leaderboard.</p>
+    <ol>
+      <li><strong>Question echo.</strong> "Does the game have an Insight skill?" cannot be answered
+      without the phrase. Scored four correct refutations as contamination.</li>
+      <li><strong>Denial counted as use.</strong> "Pathfinder does not use hit dice" is the right
+      answer.</li>
+      <li><strong>Empty responses scored clean.</strong> Under a negative check, a truncated run
+      looked like a perfect one. gpt-5 had 15 truncations, five of them in that family.</li>
+      <li><strong>The denial window punished articulate models.</strong> A four-word window read
+      "characters no longer have rules-defined labels like lawful good" as a leak. Widening it to
+      eight then let a real leak through &mdash; "did not critically succeed, they take half damage"
+      &mdash; so the rule now also refuses to cross a clause terminator, or a comma followed by a
+      fresh subject.</li>
+    </ol>
+    <p>The first three flattered the project's premise. The fourth penalised exactly the models that
+    explain themselves well, which is why the current frontier model looked worse than gpt-5 on
+    contamination until it was fixed.</p>
+
+    <h3 class="finding">And one bug in the benchmark itself</h3>
+    <p>Diagnosing why retrieval capped at 65% on <span class="mono">remaster_rename</span> while
+    every other family sat at 97&ndash;100% found the cause in the questions, not the retriever.
+    AoN's <span class="mono">legacy_name</span> is many-to-one: "Tanglefoot Bag" is claimed by Glue
+    Bomb and all four of its grades, so demanding one particular grade marks a correct answer wrong.
+    Every claimant is now acceptable. And 27 items had a false premise outright &mdash; the "old"
+    name is still a live entry, so "what was Invisibility renamed to?" has no answer. Those are
+    excluded rather than scored, which is why the benchmark reports 459 of 486.</p>
   </section>
 
   <section>
@@ -543,17 +573,17 @@
           <tr><th>Retriever</th><th>mode</th><th class="num">R@1</th><th class="num">R@5</th><th class="num">R@20</th><th class="num">MRR</th></tr>
         </thead>
         <tbody>
-          <tr><td class="rowname mono">Qwen/Qwen3-Embedding-0.6B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid+hop</td><td class="num">76%</td><td class="num"><strong>93%</strong></td><td class="num">97%</td><td class="num">0.837</td></tr>
-          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid+hop</td><td class="num">78%</td><td class="num"><strong>92%</strong></td><td class="num">95%</td><td class="num">0.839</td></tr>
-          <tr><td class="rowname mono">Snowflake/snowflake-arctic-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid+hop</td><td class="num">78%</td><td class="num"><strong>92%</strong></td><td class="num">95%</td><td class="num">0.839</td></tr>
-          <tr><td class="rowname mono">— (lexical only)</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">bm25+hop</td><td class="num">68%</td><td class="num"><strong>89%</strong></td><td class="num">92%</td><td class="num">0.768</td></tr>
-          <tr><td class="rowname mono">Snowflake/snowflake-arctic-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid</td><td class="num">76%</td><td class="num"><strong>89%</strong></td><td class="num">92%</td><td class="num">0.812</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3-Embedding-0.6B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid</td><td class="num">76%</td><td class="num"><strong>89%</strong></td><td class="num">93%</td><td class="num">0.814</td></tr>
-          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid</td><td class="num">76%</td><td class="num"><strong>89%</strong></td><td class="num">92%</td><td class="num">0.810</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3-Embedding-0.6B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">dense</td><td class="num">66%</td><td class="num"><strong>87%</strong></td><td class="num">92%</td><td class="num">0.744</td></tr>
-          <tr><td class="rowname mono">— (lexical only)</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">bm25</td><td class="num">69%</td><td class="num"><strong>84%</strong></td><td class="num">89%</td><td class="num">0.759</td></tr>
-          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">dense</td><td class="num">68%</td><td class="num"><strong>82%</strong></td><td class="num">90%</td><td class="num">0.740</td></tr>
-          <tr><td class="rowname mono">Snowflake/snowflake-arctic-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">dense</td><td class="num">68%</td><td class="num"><strong>82%</strong></td><td class="num">90%</td><td class="num">0.740</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3-Embedding-0.6B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid+hop</td><td class="num">84%</td><td class="num"><strong>98%</strong></td><td class="num">99%</td><td class="num">0.905</td></tr>
+          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid+hop</td><td class="num">84%</td><td class="num"><strong>97%</strong></td><td class="num">99%</td><td class="num">0.898</td></tr>
+          <tr><td class="rowname mono">Snowflake/snowflake-arctic-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid+hop</td><td class="num">85%</td><td class="num"><strong>97%</strong></td><td class="num">99%</td><td class="num">0.899</td></tr>
+          <tr><td class="rowname mono">— (lexical only)</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">bm25+hop</td><td class="num">75%</td><td class="num"><strong>95%</strong></td><td class="num">97%</td><td class="num">0.832</td></tr>
+          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid</td><td class="num">81%</td><td class="num"><strong>92%</strong></td><td class="num">95%</td><td class="num">0.859</td></tr>
+          <tr><td class="rowname mono">Snowflake/snowflake-arctic-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid</td><td class="num">81%</td><td class="num"><strong>92%</strong></td><td class="num">95%</td><td class="num">0.859</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3-Embedding-0.6B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">hybrid</td><td class="num">81%</td><td class="num"><strong>92%</strong></td><td class="num">94%</td><td class="num">0.862</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3-Embedding-0.6B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">dense</td><td class="num">70%</td><td class="num"><strong>89%</strong></td><td class="num">94%</td><td class="num">0.780</td></tr>
+          <tr><td class="rowname mono">— (lexical only)</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">bm25</td><td class="num">75%</td><td class="num"><strong>88%</strong></td><td class="num">92%</td><td class="num">0.810</td></tr>
+          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">dense</td><td class="num">72%</td><td class="num"><strong>86%</strong></td><td class="num">92%</td><td class="num">0.784</td></tr>
+          <tr><td class="rowname mono">Snowflake/snowflake-arctic-embed-xs</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">dense</td><td class="num">72%</td><td class="num"><strong>86%</strong></td><td class="num">92%</td><td class="num">0.784</td></tr>
         </tbody>
         <caption>Did the right chunk come back? Scored on the 400 benchmark items that carry a gold chunk id. No model involved.</caption>
       </table>
@@ -571,14 +601,15 @@
     <p>Filtering legacy content out up front makes it worse, because that chunk is the only one that
     knows where the answer went: it stores a <span class="mono">remaster_id</span> pointing at its
     replacement. So the fix is to hop rather than to filter &mdash; retrieve the legacy entry, then
-    hand back the entry that superseded it. That moved the family from 46.2% to 65.0% and overall
-    R@5 from 88.8% to 92.5%. It only exists because the corpus build kept the cross-references.</p>
+    hand back the entry that superseded it. Combined with fixing the benchmark's own many-to-one
+    ambiguity, that took the family from 46.2% to <strong>88.7%</strong> and overall R@5 to
+    <strong>97.1%</strong>. It only exists because the corpus build kept the cross-references.</p>
 
     <h3 class="finding">The embedder bake-off has an awkward answer</h3>
     <p><code>Kaylebor/pf2e-codex-embed-xs</code> is the only PF2e-adapted retriever anyone has
     published, so the honest control is its own base model,
     <code>Snowflake/snowflake-arctic-embed-xs</code>. They score <em>identically</em> &mdash;
-    67.5 / 82.5 / 89.5 R@1/5/20, MRR 0.740, to three decimals across 400 queries.</p>
+    72.4 / 86.1 / 91.7 R@1/5/20, MRR 0.784, to three decimals across every query.</p>
     <p>That is not a coincidence. Comparing the two checkpoints tensor by tensor, the largest weight
     difference anywhere is <strong>3.1&times;10<sup>&minus;4</sup></strong>, and the two sets of
     corpus embeddings have a mean cosine similarity of <strong>1.0</strong> with a maximum element
@@ -592,7 +623,7 @@
   <section>
     <div class="block-head">
       <h2>Results</h2>
-      <span class="tag" id="results-tag">8 runs scored</span>
+      <span class="tag" id="results-tag">9 runs scored</span>
     </div>
     <p>Closed-book means no retrieval: the model answers from weights alone. These numbers are the
     floor every later phase is measured against. Read them against the trivial baselines
@@ -606,19 +637,20 @@
           <tr><th>Model</th><th>mode</th><th class="num">overall</th><th class="num">level</th><th class="num">traits</th><th class="num">rarity</th><th class="num">prereq</th><th class="num">remaster</th><th class="num">abstain</th><th class="num">5e trap</th></tr>
         </thead>
         <tbody>
-          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>68%</strong></td><td class="num">88%</td><td class="num">82%</td><td class="num">96%</td><td class="num">30%</td><td class="num">50%</td><td class="num">18%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>65%</strong></td><td class="num">96%</td><td class="num">57%</td><td class="num">96%</td><td class="num">21%</td><td class="num">50%</td><td class="num">35%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>63%</strong></td><td class="num">95%</td><td class="num">70%</td><td class="num">96%</td><td class="num">21%</td><td class="num">44%</td><td class="num">8%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>63%</strong></td><td class="num">99%</td><td class="num">68%</td><td class="num">95%</td><td class="num">21%</td><td class="num">46%</td><td class="num">0%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>25%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">2%</td><td class="num">6%</td><td class="num">78%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>22%</strong></td><td class="num">11%</td><td class="num">0%</td><td class="num">19%</td><td class="num">1%</td><td class="num">14%</td><td class="num">78%</td><td class="num">87%</td></tr>
-          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>21%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">0%</td><td class="num">12%</td><td class="num">5%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>16%</strong></td><td class="num">9%</td><td class="num">0%</td><td class="num">22%</td><td class="num">0%</td><td class="num">11%</td><td class="num">28%</td><td class="num">70%</td></tr>
+          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>72%</strong></td><td class="num">88%</td><td class="num">82%</td><td class="num">96%</td><td class="num">30%</td><td class="num">77%</td><td class="num">18%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>68%</strong></td><td class="num">96%</td><td class="num">57%</td><td class="num">96%</td><td class="num">21%</td><td class="num">74%</td><td class="num">35%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>67%</strong></td><td class="num">99%</td><td class="num">68%</td><td class="num">95%</td><td class="num">21%</td><td class="num">72%</td><td class="num">0%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>66%</strong></td><td class="num">95%</td><td class="num">70%</td><td class="num">96%</td><td class="num">21%</td><td class="num">62%</td><td class="num">8%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">gpt-6-astra</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>29%</strong></td><td class="num">16%</td><td class="num">4%</td><td class="num">28%</td><td class="num">2%</td><td class="num">45%</td><td class="num">60%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>27%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">2%</td><td class="num">9%</td><td class="num">78%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>23%</strong></td><td class="num">11%</td><td class="num">0%</td><td class="num">19%</td><td class="num">1%</td><td class="num">19%</td><td class="num">78%</td><td class="num">87%</td></tr>
+          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>22%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">0%</td><td class="num">15%</td><td class="num">5%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>17%</strong></td><td class="num">9%</td><td class="num">0%</td><td class="num">22%</td><td class="num">0%</td><td class="num">15%</td><td class="num">28%</td><td class="num">70%</td></tr>
         </tbody>
         <caption>Closed-book accuracy by family. Every grade is deterministic.</caption>
       </table>
     </div>
-    <ul><li><strong>gpt-5</strong>: 25% &rarr; 68% with retrieval, 2.7&times;.</li><li><strong>Qwen/Qwen3.5-9B</strong>: 16% &rarr; 65% with retrieval, 4.1&times;.</li><li><strong>gpt-4.1-mini</strong>: 21% &rarr; 63% with retrieval, 3.0&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong>: 22% &rarr; 63% with retrieval, 2.9&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
+    <ul><li><strong>gpt-5</strong>: 27% &rarr; 72% with retrieval, 2.7&times;.</li><li><strong>Qwen/Qwen3.5-9B</strong>: 17% &rarr; 68% with retrieval, 4.1&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong>: 23% &rarr; 67% with retrieval, 2.9&times;.</li><li><strong>gpt-4.1-mini</strong>: 22% &rarr; 66% with retrieval, 3.0&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
     <!-- results:end -->
 
     <h3 class="finding">Phase 01 &mdash; closed book</h3>
@@ -659,12 +691,14 @@
     looking authoritative.</p>
 
     <h3 class="finding">And the residual gap is precision, not knowledge</h3>
-    <p><span class="mono">prereq</span> is the clearest case. Retrieval finds the gold chunk for
-    88&ndash;96% of those questions &mdash; the answer is <em>right there in the context window</em>
-    &mdash; and accuracy is 21&ndash;30%. Every model over-answered on 55 to 61 of the 80, reciting
-    prerequisites from all five excerpts instead of the one that was asked about.
-    <span class="mono">lookup_traits</span> shows the same shape: 94&ndash;95% recall, 57&ndash;82%
-    accuracy, over-answered on 6 to 31.</p>
+    <p>Retrieval is no longer the bottleneck anywhere. <strong>R@5 is 97.1%</strong> and the best
+    model scores <strong>71.9%</strong>. Roughly thirty points sit between "the right rules text is
+    in the context window" and "the answer is right".</p>
+    <p><span class="mono">prereq</span> is the clearest case: retrieval finds the gold chunk for
+    <strong>100%</strong> of those questions and accuracy is 21&ndash;30%. Every model over-answered
+    on 55 to 61 of the 80, reciting prerequisites from all five excerpts instead of the one that was
+    asked about. <span class="mono">lookup_traits</span> has the same shape: 100% recall,
+    57&ndash;82% accuracy.</p>
 
     <p class="note"><strong>So phase 03's job changed completely, and got sharper.</strong> Not "kill
     the 5e prior" &mdash; retrieval did that for free. The adapter now has exactly two jobs, both

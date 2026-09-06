@@ -1,8 +1,8 @@
 {
   "report": {
-    "items": 486,
+    "items": 459,
     "correct": 77,
-    "accuracy": 0.15843621399176955,
+    "accuracy": 0.16775599128540306,
     "families": {
       "abstention": {
         "n": 40,
@@ -35,9 +35,9 @@
         "over_answered": 72
       },
       "remaster_rename": {
-        "n": 80,
-        "correct": 9,
-        "accuracy": 0.1125,
+        "n": 53,
+        "correct": 8,
+        "accuracy": 0.1509433962264151,
         "used_legacy_name": 0
       },
       "trap_5e": {
@@ -48,14 +48,15 @@
       },
       "trap_5e_applied": {
         "n": 16,
-        "correct": 11,
-        "accuracy": 0.6875,
-        "contaminated": 5,
+        "correct": 12,
+        "accuracy": 0.75,
+        "contaminated": 4,
         "mean_grounding": 0.09375
       }
     },
     "run": "qwen3.5-9b_closed-book",
-    "benchmark_items": 486,
+    "benchmark_items": 459,
+    "excluded_items": 27,
     "partial": false,
     "trait_vocab": 569
   },
@@ -4577,17 +4578,6 @@
       "correct": false
     },
     {
-      "id": "remaster_rename-0002",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Dragonhide"
-      ],
-      "correct": false
-    },
-    {
       "id": "remaster_rename-0003",
       "family": "remaster_rename",
       "empty": false,
@@ -4621,17 +4611,6 @@
       "correct": false
     },
     {
-      "id": "remaster_rename-0006",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Basic Chair"
-      ],
-      "correct": false
-    },
-    {
       "id": "remaster_rename-0007",
       "family": "remaster_rename",
       "empty": false,
@@ -4639,28 +4618,6 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [
         "Key Ability"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0008",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Invisibility"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0009",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Bestial Mutagen"
       ],
       "correct": false
     },
@@ -4705,17 +4662,6 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [
         "Perfected Form"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0014",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Multiclass Archetypes"
       ],
       "correct": false
     },
@@ -4786,17 +4732,6 @@
       "correct": false
     },
     {
-      "id": "remaster_rename-0021",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Potion of Resistance"
-      ],
-      "correct": false
-    },
-    {
       "id": "remaster_rename-0022",
       "family": "remaster_rename",
       "empty": false,
@@ -4815,28 +4750,6 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [
         "Coward's Roots"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0024",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Lodging"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0025",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Mentalist's Staff"
       ],
       "correct": false
     },
@@ -4870,17 +4783,6 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [
         "Cognitive Mutagen"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0029",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Activating Items"
       ],
       "correct": false
     },
@@ -4951,17 +4853,6 @@
       "correct": false
     },
     {
-      "id": "remaster_rename-0036",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Shrinking Potion"
-      ],
-      "correct": false
-    },
-    {
       "id": "remaster_rename-0037",
       "family": "remaster_rename",
       "empty": false,
@@ -4969,17 +4860,6 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [
         "Raja Rakshasa"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0038",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "In This Book"
       ],
       "correct": false
     },
@@ -4995,50 +4875,6 @@
       "correct": false
     },
     {
-      "id": "remaster_rename-0040",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Magic Armor"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0041",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Spellcasting"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0042",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Spellcasting"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0043",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Silvertongue Mutagen"
-      ],
-      "correct": false
-    },
-    {
       "id": "remaster_rename-0044",
       "family": "remaster_rename",
       "empty": false,
@@ -5046,28 +4882,6 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [
         "Tanglefoot Bag"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0045",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Wand of the Spider"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0046",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Silvertongue Mutagen"
       ],
       "correct": false
     },
@@ -5094,17 +4908,6 @@
       "correct": false
     },
     {
-      "id": "remaster_rename-0049",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Handwraps of Mighty Blows"
-      ],
-      "correct": false
-    },
-    {
       "id": "remaster_rename-0050",
       "family": "remaster_rename",
       "empty": false,
@@ -5112,17 +4915,6 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [
         "Elite Adjustment"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0051",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Alchemical Items"
       ],
       "correct": false
     },
@@ -5226,17 +5018,6 @@
       "correct": false
     },
     {
-      "id": "remaster_rename-0061",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Oil of Unlife"
-      ],
-      "correct": false
-    },
-    {
       "id": "remaster_rename-0062",
       "family": "remaster_rename",
       "empty": false,
@@ -5248,17 +5029,6 @@
       "correct": false
     },
     {
-      "id": "remaster_rename-0063",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Resilient"
-      ],
-      "correct": false
-    },
-    {
       "id": "remaster_rename-0064",
       "family": "remaster_rename",
       "empty": false,
@@ -5266,28 +5036,6 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [
         "Commune with Nature"
-      ],
-      "correct": true
-    },
-    {
-      "id": "remaster_rename-0065",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Wand of Widening"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0066",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Areas"
       ],
       "correct": true
     },
@@ -5314,17 +5062,6 @@
       "correct": false
     },
     {
-      "id": "remaster_rename-0069",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Wand of Overflowing Life"
-      ],
-      "correct": false
-    },
-    {
       "id": "remaster_rename-0070",
       "family": "remaster_rename",
       "empty": false,
@@ -5343,39 +5080,6 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [
         "Cloudkill"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0072",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Antiplague"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0073",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Silver Shield"
-      ],
-      "correct": false
-    },
-    {
-      "id": "remaster_rename-0074",
-      "family": "remaster_rename",
-      "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
-      "forbidden_echoed_from_question": [
-        "Ghost Charge"
       ],
       "correct": false
     },
@@ -6188,15 +5892,13 @@
       "id": "trap_5e_applied-0000",
       "family": "trap_5e_applied",
       "empty": false,
-      "forbidden_hits": [
-        "extra attack"
-      ],
+      "forbidden_hits": [],
       "forbidden_mentioned": [
         "extra attack"
       ],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "clean": false,
+      "correct": true,
+      "clean": true,
       "grounding": 0.5,
       "missing": [
         "multiple attack penalty"

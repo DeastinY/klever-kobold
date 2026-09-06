@@ -74,18 +74,27 @@ def _chat(client: httpx.Client, url: str, headers: dict, model: str, question: s
     if reasoning_effort:
         body["reasoning_effort"] = reasoning_effort
 
-    for attempt in range(5):
-        r = client.post(url, headers=headers, json=body, timeout=180.0)
+    last = ""
+    for attempt in range(8):
+        try:
+            r = client.post(url, headers=headers, json=body, timeout=300.0)
+        except httpx.HTTPError as exc:  # transport hiccup, not a refusal
+            last = f"{type(exc).__name__}: {exc}"
+            time.sleep(min(2**attempt, 60))
+            continue
         if r.status_code == 400 and "max_completion_tokens" in r.text:
             body["max_tokens"] = body.pop("max_completion_tokens")  # older / non-OpenAI servers
             continue
-        if r.status_code in (429, 500, 502, 503, 529):
-            time.sleep(2**attempt)
+        if r.status_code in (408, 409, 429, 500, 502, 503, 504, 529):
+            last = f"HTTP {r.status_code}: {r.text[:200]}"
+            # Rate limits on a long-context run need real backoff, not 16 seconds.
+            time.sleep(min(2**attempt, 60))
             continue
-        r.raise_for_status()
+        if r.status_code >= 400:
+            raise RuntimeError(f"HTTP {r.status_code} on {question[:50]!r}: {r.text[:300]}")
         data = orjson.loads(r.content)
         return data["choices"][0]["message"].get("content") or "", data.get("usage", {})
-    raise RuntimeError(f"giving up on: {question[:60]}")
+    raise RuntimeError(f"giving up after 8 attempts on {question[:50]!r}; last: {last}")
 
 
 def run_api(items: list[dict], model: str, base_url: str, api_key: str, workers: int,

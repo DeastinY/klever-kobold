@@ -123,7 +123,10 @@ def main() -> int:
 
     # --- hygiene: nothing the benchmark touches may produce a training item ---
     bench = [orjson.loads(l) for l in args.benchmark.open("rb")]
-    banned_ids = {sid for item in bench for sid in item["source_ids"]}
+    # Alternates count: a benchmark item that accepts several Remaster names must
+    # not have any of those entities appear as a training gold.
+    banned_ids = {sid for item in bench
+                  for sid in item["source_ids"] + (item.get("alt_source_ids") or [])}
     banned_names = {by_id[i]["name"].lower() for i in banned_ids if i in by_id}
     print(f"excluded {len(banned_ids)} benchmark chunks / {len(banned_names)} names")
 
@@ -152,8 +155,25 @@ def main() -> int:
     take(lambda r: (r["rarity"] or "").lower() not in ("", "common"), args.per_family // 2, "rarity")
     take(lambda r: r["category"] == "feat" and RE_PREREQ.search(r["text"]), args.per_family, "prereq")
 
+    # Skip renames AoN records ambiguously: "Tanglefoot Bag" maps to Glue Bomb and
+    # all four of its grades, and training the adapter to pick one grade teaches a
+    # coin flip. Also skip names that are still live entries, where the premise of
+    # the question is false.
+    claims: collections.Counter = collections.Counter()
+    for r in rows:
+        if r["remaster_status"] == "remaster" and r.get("legacy_name"):
+            old = r["legacy_name"][0] if isinstance(r["legacy_name"], list) else r["legacy_name"]
+            claims[(r["category"], old.lower())] += 1
+    live = {(r["category"], r["name"].lower()) for r in rows
+            if r["name"] and r["remaster_status"] != "legacy"}
+
+    def unambiguous(r: dict) -> bool:
+        old = r["legacy_name"][0] if isinstance(r["legacy_name"], list) else r["legacy_name"]
+        key = (r["category"], old.lower())
+        return claims[key] == 1 and key not in live
+
     renames = [r for r in rows if r.get("legacy_name") and r["remaster_status"] == "remaster"
-               and r["id"] not in banned_ids]
+               and r["id"] not in banned_ids and unambiguous(r)]
     rng.shuffle(renames)
     for r in renames[:args.per_family // 2]:
         specs.append({"kind": "rename", "chunk": r})

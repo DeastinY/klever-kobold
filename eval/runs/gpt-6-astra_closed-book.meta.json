@@ -1,0 +1,19 @@
+{
+  "label": "gpt-6-astra_closed-book",
+  "model": "gpt-6-astra",
+  "backend": "api",
+  "base_url": "https://api.openai.com/v1",
+  "items": 486,
+  "seconds": 468.1,
+  "max_tokens": 2500,
+  "reasoning_effort": null,
+  "chat_kwargs": null,
+  "retrieval": null,
+  "quantization": null,
+  "adapter": null,
+  "usage": {
+    "prompt_tokens": 36074,
+    "completion_tokens": 154629
+  },
+  "empty_responses": 0
+}

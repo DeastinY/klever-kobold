@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import os
 import pathlib
 import pickle
 import sys
@@ -49,7 +50,10 @@ def load_index(model_name: str | None, want_bm25: bool = True) -> retrieval.Inde
 
 def encode_queries(model_name: str, queries: list[str]) -> np.ndarray:
     from sentence_transformers import SentenceTransformer
-    model = SentenceTransformer(model_name, device="cuda")
+    # Overridable so an API run can encode on CPU without contending with a
+    # training job for the GPU.
+    device = os.environ.get("PF2E_EMBED_DEVICE", "cuda")
+    model = SentenceTransformer(model_name, device=device)
     kwargs = {}
     # Asymmetric retrievers want the query side marked. Honour whatever the
     # checkpoint declares rather than hard-coding a prefix per family.
@@ -74,7 +78,7 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
 
     started = time.time()
     for i, item in enumerate(items):
-        gold = set(item["source_ids"])
+        gold = set(item["source_ids"]) | set(item.get("alt_source_ids") or [])
         positions = {index.position(g) for g in gold} - {None}
         if not positions or not any(mask[p] for p in positions):
             # The gold chunk is filtered out -- a ceiling on what retrieval can do,
@@ -124,7 +128,8 @@ def main() -> int:
     ap.add_argument("--include-legacy", action="store_true")
     args = ap.parse_args()
 
-    items = [orjson.loads(l) for l in args.benchmark.open("rb") if orjson.loads(l)["source_ids"]]
+    items = [orjson.loads(l) for l in args.benchmark.open("rb")
+             if orjson.loads(l)["source_ids"] and not orjson.loads(l).get("excluded")]
     print(f"{len(items)} benchmark items carry a gold chunk id")
 
     results = []
