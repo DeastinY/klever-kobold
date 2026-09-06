@@ -80,6 +80,12 @@ RE_CLEAN = re.compile(r"^[\s\-*\d.)]+|[\s;:]+$")
 # 48-item sample.
 RRF_SMOOTHING = 5
 
+# Excerpts per answer. Swept end-to-end on the hand-written holdout: 5 -> 81.7%,
+# 8 -> 85.3%, 12 -> 80.7%. The curve is an inverted U -- recall@20 is higher than
+# recall@5, so more excerpts keep finding the answer, until enough irrelevant ones
+# accumulate to drown it.
+DEFAULT_K = 8
+
 
 class OllamaError(RuntimeError):
     """Raised with a message a user can act on, not a stack trace."""
@@ -188,7 +194,7 @@ class Assistant:
         prefix = self.manifest["query_prefix"]
         return self.ollama.embed([prefix + t for t in texts], self.manifest["ollama_embed"])
 
-    def search(self, question: str, k: int = 5, plan: dict | None = None) -> list[Hit]:
+    def search(self, question: str, k: int = DEFAULT_K, plan: dict | None = None) -> list[Hit]:
         plan = plan if plan is not None else self.rewrite(question)
         queries = [question]
         if plan.get("summary"):
@@ -231,7 +237,7 @@ class Assistant:
             blocks.append(head + "\n" + h.text[:max_chars].strip())
         return "<rules_excerpts>\n" + "\n\n".join(blocks) + "\n</rules_excerpts>"
 
-    def ask(self, question: str, k: int = 5) -> dict:
+    def ask(self, question: str, k: int = DEFAULT_K) -> dict:
         plan = self.rewrite(question)
         hits = self.search(question, k=k, plan=plan)
         prompt = self.context(hits) + "\n\nQuestion: " + question

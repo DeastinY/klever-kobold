@@ -14,7 +14,7 @@ import sys
 
 import orjson
 
-from .app import DEFAULT_INDEX, DEFAULT_OLLAMA, Assistant, Ollama, OllamaError
+from .app import DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, Assistant, Ollama, OllamaError
 
 
 def cmd_ask(args) -> int:
@@ -94,13 +94,13 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("ask", help="answer a rules question with citations")
     p.add_argument("question")
-    p.add_argument("-k", type=int, default=5)
+    p.add_argument("-k", type=int, default=DEFAULT_K)
     p.add_argument("--json", action="store_true")
     p.set_defaults(func=cmd_ask)
 
     p = sub.add_parser("search", help="show what retrieval finds, without answering")
     p.add_argument("question")
-    p.add_argument("-k", type=int, default=8)
+    p.add_argument("-k", type=int, default=DEFAULT_K)
     p.set_defaults(func=cmd_search)
 
     p = sub.add_parser("doctor", help="check Ollama, models and index")

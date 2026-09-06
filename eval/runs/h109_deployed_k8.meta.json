@@ -1,0 +1,25 @@
+{
+  "label": "h109_deployed_k8",
+  "model": "deployed-runtime",
+  "backend": "app",
+  "base_url": null,
+  "items": 109,
+  "seconds": 186.6,
+  "max_tokens": 1200,
+  "reasoning_effort": null,
+  "chat_kwargs": null,
+  "retrieval": {
+    "k": 8,
+    "retriever": "Qwen/Qwen3-Embedding-0.6B",
+    "mode": "hybrid3+hyde+cat+hop",
+    "rewriter": "Qwen/Qwen3.5-9B",
+    "context_chars": 1600
+  },
+  "quantization": "nf4-4bit",
+  "adapter": null,
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0
+  },
+  "empty_responses": 0
+}

@@ -19,7 +19,7 @@ import sys
 
 import orjson
 
-from .app import Assistant, OllamaError
+from .app import DEFAULT_K, Assistant, OllamaError
 
 PROTOCOL_VERSION = "2024-11-05"
 
@@ -35,7 +35,7 @@ TOOLS = [
             "type": "object",
             "properties": {
                 "question": {"type": "string", "description": "The rules question."},
-                "k": {"type": "integer", "description": "Excerpts to retrieve (default 5)."},
+                "k": {"type": "integer", "description": "Excerpts to retrieve (default 8)."},
             },
             "required": ["question"],
         },
@@ -90,12 +90,12 @@ def serve(index_dir: pathlib.Path, ollama_url: str) -> None:
             try:
                 a = get()
                 if name == "pf2e_ask":
-                    out = a.ask(question, k=int(args.get("k") or 5))
+                    out = a.ask(question, k=int(args.get("k") or DEFAULT_K))
                     lines = [out["answer"], "", "Sources:"]
                     lines += [f"- {s['name']} ({s['category']}) {s['url']}" for s in out["sources"]]
                     return _result("\n".join(lines))
                 if name == "pf2e_search":
-                    hits = a.search(question, k=int(args.get("k") or 8))
+                    hits = a.search(question, k=int(args.get("k") or DEFAULT_K))
                     blocks = [f"## {h.name} ({h.category})\n{h.url}\n\n{h.text[:1600]}"
                               for h in hits]
                     return _result("\n\n---\n\n".join(blocks) or "Nothing matched.")

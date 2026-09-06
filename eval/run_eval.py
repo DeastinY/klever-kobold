@@ -287,10 +287,33 @@ def attach_context(items: list[dict], retriever: str, mode: str, k: int,
           + (f" / rewriter {rewriter}" if rewrites else ""))
 
 
+def run_app(items: list[dict], index_dir: pathlib.Path, ollama_url: str, k: int) -> list[dict]:
+    """Evaluate the shipped runtime itself, not a lab reimplementation of it.
+
+    Everything else in this file drives transformers directly. That is fine for
+    comparing models, but it is not what a user runs: the deployed path goes
+    through Ollama, float16 embeddings and the packaged index. Measuring it
+    separately is the only way to know the published numbers describe the
+    published program.
+    """
+    sys.path.insert(0, str(ROOT / "src"))
+    from pf2etune.app import Assistant
+
+    assistant = Assistant(index_dir, ollama_url)
+    out = []
+    for n, item in enumerate(items, 1):
+        result = assistant.ask(item["question"], k=k)
+        out.append({"id": item["id"], "family": item["family"], "response": result["answer"],
+                    "usage": {}, "retrieved": [s["url"] for s in result["sources"]]})
+        if n % 20 == 0:
+            print(f"  {n}/{len(items)}", flush=True)
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True)
-    ap.add_argument("--backend", choices=("api", "hf"), default="api")
+    ap.add_argument("--backend", choices=("api", "hf", "app"), default="api")
     ap.add_argument("--benchmark", type=pathlib.Path, default=ROOT / "eval" / "benchmark.jsonl")
     ap.add_argument("--out", type=pathlib.Path, help="default: eval/runs/<label>.jsonl")
     ap.add_argument("--label", help="run name; defaults to a slug of the model id")
@@ -303,6 +326,9 @@ def main() -> int:
     ap.add_argument("--reasoning-effort", help="e.g. low; omit for non-reasoning models")
     ap.add_argument("--batch-size", type=int, default=8, help="hf backend only")
     ap.add_argument("--no-4bit", action="store_true", help="hf backend: load in bf16 instead")
+    ap.add_argument("--index-dir", type=pathlib.Path, default=ROOT / "dist" / "pf2e-index",
+                    help="app backend: the packaged index to run against")
+    ap.add_argument("--ollama", default="http://localhost:11434")
     ap.add_argument("--adapter", type=pathlib.Path,
                     help="hf backend: LoRA adapter directory to load onto the base model")
     ap.add_argument("--chat-kwargs", default="{}",
@@ -330,7 +356,10 @@ def main() -> int:
         items = items[:args.limit]
 
     system = SYSTEM_RAG if args.retrieve else SYSTEM
-    if args.retrieve:
+    if args.backend == "app":
+        for it in items:
+            it["prompt"] = it["question"]  # the runtime does its own retrieval
+    elif args.retrieve:
         attach_context(items, args.retriever, args.retrieval_mode, args.retrieve,
                        args.context_chars, args.rewriter)
     else:
@@ -368,6 +397,8 @@ def main() -> int:
             return 1
         rows = run_api(items, args.model, args.base_url, key, args.workers,
                        args.max_tokens, args.reasoning_effort, system)
+    elif args.backend == "app":
+        rows = run_app(items, args.index_dir, args.ollama, args.retrieve or 5)
     else:
         rows = run_hf(items, args.model, args.max_tokens, args.batch_size, not args.no_4bit,
                       json.loads(args.chat_kwargs), system, args.adapter)
