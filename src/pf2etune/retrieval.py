@@ -59,6 +59,7 @@ class Index:
     ids: list[str]
     meta: list[dict]
     embeddings: np.ndarray | None = None
+    summary_embeddings: np.ndarray | None = None
     bm25: object | None = None
     model_name: str | None = None
     _by_id: dict[str, int] = field(default_factory=dict, repr=False)
@@ -92,10 +93,12 @@ class Index:
 
     # --- retrieval -----------------------------------------------------------
 
-    def dense(self, query_vec: np.ndarray, mask: np.ndarray, k: int) -> list[int]:
-        if self.embeddings is None:
+    def dense(self, query_vec: np.ndarray, mask: np.ndarray, k: int,
+              view: str = "full") -> list[int]:
+        matrix = self.summary_embeddings if view == "summary" else self.embeddings
+        if matrix is None:
             return []
-        scores = self.embeddings @ query_vec
+        scores = matrix @ query_vec
         scores = np.where(mask, scores, -np.inf)
         k = min(k, int(mask.sum()))
         if k <= 0:

@@ -27,6 +27,20 @@ def slug(model_name: str) -> str:
     return model_name.replace("/", "__")
 
 
+def summary_text(chunk: dict) -> str:
+    """Name plus the one-line summary, and nothing else.
+
+    The full-text index buries an entry's *purpose* under its mechanics. A
+    description-shaped query ("a feat that makes falling less dangerous") matches
+    the summary almost verbatim and the body barely at all, so the two indexes
+    fail on different questions and fuse well.
+    """
+    head = chunk.get("name") or ""
+    if chunk.get("category"):
+        head += f" ({chunk['category'].replace('-', ' ')})"
+    return f"{head}: {chunk.get('summary') or ''}".strip()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="Kaylebor/pf2e-codex-embed-xs")
@@ -35,11 +49,16 @@ def main() -> int:
     ap.add_argument("--batch-size", type=int, default=256)
     ap.add_argument("--max-chars", type=int, default=1200)
     ap.add_argument("--bm25-only", action="store_true")
+    ap.add_argument("--field", choices=("full", "summary"), default="full",
+                    help="what to embed: the whole entry, or name + one-line summary")
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
     rows = [orjson.loads(l) for l in args.chunks.open("rb")]
-    texts = [retrieval.chunk_text(r, args.max_chars) for r in rows]
+    if args.field == "summary":
+        texts = [summary_text(r) for r in rows]
+    else:
+        texts = [retrieval.chunk_text(r, args.max_chars) for r in rows]
     meta = [{k: r.get(k) for k in META_FIELDS} for r in rows]
     ids = [r["id"] for r in rows]
     print(f"{len(rows):,} chunks, mean {sum(map(len, texts)) / len(texts):.0f} chars")
@@ -70,7 +89,8 @@ def main() -> int:
     model = SentenceTransformer(args.model, device="cuda")
     vecs = model.encode(texts, batch_size=args.batch_size, normalize_embeddings=True,
                         convert_to_numpy=True, show_progress_bar=True).astype(np.float32)
-    path = args.out / f"emb__{slug(args.model)}.npy"
+    suffix = "" if args.field == "full" else f"__{args.field}"
+    path = args.out / f"emb__{slug(args.model)}{suffix}.npy"
     np.save(path, vecs)
     print(f"embedded {len(ids):,} chunks in {time.time() - started:.0f}s "
           f"-> {path} {vecs.shape} ({vecs.nbytes / 1e6:.0f} MB)")

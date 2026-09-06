@@ -32,20 +32,35 @@ from pf2etune import retrieval  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 INDEX = ROOT / "data" / "processed" / "index"
+REWRITES = ROOT / "data" / "processed" / "query_rewrites.json"
 KS = (1, 5, 20)
+
+
+def load_rewrites(model: str) -> dict:
+    """Cached hypothetical summaries and category hints, keyed by rewriter model."""
+    if not REWRITES.exists():
+        return {}
+    raw = orjson.loads(REWRITES.read_bytes())
+    prefix = f"{model}|"
+    return {k[len(prefix):]: v for k, v in raw.items() if k.startswith(prefix)}
 
 
 def load_index(model_name: str | None, want_bm25: bool = True) -> retrieval.Index:
     meta = [orjson.loads(l) for l in (INDEX / "meta.jsonl").open("rb")]
     ids = [m["id"] for m in meta]
-    emb = None
+    emb = summary = None
     if model_name:
-        path = INDEX / f"emb__{model_name.replace('/', '__')}.npy"
+        slug = model_name.replace("/", "__")
+        path = INDEX / f"emb__{slug}.npy"
         if not path.exists():
             raise SystemExit(f"missing {path}; run scripts/build_index.py --model {model_name}")
         emb = np.load(path)
+        spath = INDEX / f"emb__{slug}__summary.npy"
+        if spath.exists():
+            summary = np.load(spath)
     bm25 = pickle.loads((INDEX / "bm25.pkl").read_bytes()) if want_bm25 else None
-    return retrieval.Index(ids=ids, meta=meta, embeddings=emb, bm25=bm25, model_name=model_name)
+    return retrieval.Index(ids=ids, meta=meta, embeddings=emb, summary_embeddings=summary,
+                           bm25=bm25, model_name=model_name)
 
 
 def encode_queries(model_name: str, queries: list[str]) -> np.ndarray:
@@ -64,12 +79,21 @@ def encode_queries(model_name: str, queries: list[str]) -> np.ndarray:
 
 
 def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None,
-             mode: str, exclude_legacy: bool) -> dict:
+             mode: str, exclude_legacy: bool, hyde_vecs: np.ndarray | None = None,
+             rewrites: dict | None = None) -> dict:
     # The hop mode searches legacy entries deliberately and rewrites the hits, so
     # it must not filter them out first.
-    hop = mode.endswith("+hop")
-    base_mode = mode[:-4] if hop else mode
-    mask = index.allowed(exclude_legacy=exclude_legacy and not hop)
+    parts = mode.split("+")
+    base_mode = parts[0]
+    hop = "hop" in parts
+    use_hyde = "hyde" in parts
+    use_cat = "cat" in parts
+    # base_mask is the corpus-level filter. Query-time narrowing (category routing)
+    # reassigns `mask` per item and its mistakes must count as retrieval failures,
+    # not as unreachable items -- otherwise a filter that hides the answer scores
+    # better than one that does not.
+    base_mask = index.allowed(exclude_legacy=exclude_legacy and not hop)
+    mask = base_mask
     kmax = max(KS)
     hits = {k: 0 for k in KS}
     per_family: dict[str, dict] = collections.defaultdict(lambda: {"n": 0, **{k: 0 for k in KS}})
@@ -80,17 +104,42 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
     for i, item in enumerate(items):
         gold = set(item["source_ids"]) | set(item.get("alt_source_ids") or [])
         positions = {index.position(g) for g in gold} - {None}
-        if not positions or not any(mask[p] for p in positions):
-            # The gold chunk is filtered out -- a ceiling on what retrieval can do,
-            # not a retrieval failure. Counted separately rather than hidden.
+        if not positions or not any(base_mask[p] for p in positions):
+            # Not in the index at all, or removed by the corpus-level legacy filter:
+            # a ceiling on what retrieval could ever do, counted separately.
             unreachable += 1
             continue
         qvec = qvecs[i] if qvecs is not None else None
         pool = kmax if not hop else kmax * 2
+
+        mask = base_mask
+        if use_cat and rewrites:
+            cats = (rewrites.get(item["question"]) or {}).get("categories") or []
+            if cats:
+                # Narrow to the kinds of entry that could answer this. Equipment and
+                # creatures are two thirds of the corpus and answer almost nothing.
+                narrowed = base_mask & index.allowed(
+                    exclude_legacy=exclude_legacy and not hop, categories=cats)
+                if narrowed.sum() >= kmax:
+                    mask = narrowed
         if base_mode == "dense":
             order = index.dense(qvec, mask, pool)
+        elif base_mode == "summary":
+            order = index.dense(qvec, mask, pool, view="summary")
         elif base_mode == "bm25":
             order = index.lexical(item["question"], mask, pool)
+        elif base_mode == "hybrid3":
+            # bm25 + full-text dense + summary dense. The three views fail on
+            # different question shapes, which is the whole point of fusing them.
+            rankings = [index.dense(qvec, mask, 50),
+                        index.dense(qvec, mask, 50, view="summary"),
+                        index.lexical(item["question"], mask, 50)]
+            if use_hyde and hyde_vecs is not None:
+                # The generated summary is matched against the summary index: both
+                # sides of that comparison are one-line descriptions.
+                rankings.append(index.dense(hyde_vecs[i], mask, 50, view="summary"))
+                rankings.append(index.dense(hyde_vecs[i], mask, 50))
+            order = retrieval.rrf(rankings, pool)
         else:
             order = retrieval.rrf([index.dense(qvec, mask, 50),
                                    index.lexical(item["question"], mask, 50)], pool)
@@ -126,6 +175,8 @@ def main() -> int:
     ap.add_argument("--benchmark", type=pathlib.Path, default=ROOT / "eval" / "benchmark.jsonl")
     ap.add_argument("--out", type=pathlib.Path, default=ROOT / "eval" / "runs" / "retrieval.scores.json")
     ap.add_argument("--include-legacy", action="store_true")
+    ap.add_argument("--rewriter", default="Qwen/Qwen3.8-27B",
+                    help="which cached rewrite set to use for +hyde / +cat modes")
     args = ap.parse_args()
 
     items = [orjson.loads(l) for l in args.benchmark.open("rb")
@@ -139,11 +190,22 @@ def main() -> int:
         for mode in lexical_modes:
             results.append(evaluate(index, items, None, mode, not args.include_legacy))
 
+    rewrites = load_rewrites(args.rewriter)
+    needs_hyde = any("hyde" in m for m in args.modes)
+    if needs_hyde and not rewrites:
+        raise SystemExit(f"no cached rewrites for {args.rewriter}; run scripts/rewrite_queries.py")
+
     for model in args.models:
         index = load_index(model)
         qvecs = encode_queries(model, [i["question"] for i in items])
+        hyde_vecs = None
+        if needs_hyde:
+            hyde_vecs = encode_queries(
+                model, [(rewrites.get(i["question"]) or {}).get("summary") or i["question"]
+                        for i in items])
         for mode in [m for m in args.modes if not m.startswith("bm25")]:
-            results.append(evaluate(index, items, qvecs, mode, not args.include_legacy))
+            results.append(evaluate(index, items, qvecs, mode, not args.include_legacy,
+                                    hyde_vecs, rewrites))
 
     print(f"\n{'retriever':44s} {'mode':7s} {'R@1':>6s} {'R@5':>6s} {'R@20':>6s} {'MRR':>6s}")
     print(f"{'-' * 44} {'-' * 7} {'-' * 6} {'-' * 6} {'-' * 6} {'-' * 6}")
