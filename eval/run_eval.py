@@ -146,6 +146,8 @@ def main() -> int:
     ap.add_argument("--reasoning-effort", help="e.g. low; omit for non-reasoning models")
     ap.add_argument("--batch-size", type=int, default=8, help="hf backend only")
     ap.add_argument("--no-4bit", action="store_true", help="hf backend: load in bf16 instead")
+    ap.add_argument("--retry-empty", action="store_true",
+                    help="re-run only the items whose response is empty in --out, and merge")
     args = ap.parse_args()
 
     items = [orjson.loads(l) for l in args.benchmark.open("rb")]
@@ -157,6 +159,19 @@ def main() -> int:
     label = args.label or args.model.replace("/", "_").replace(":", "-")
     out_path = args.out or ROOT / "eval" / "runs" / f"{label}.jsonl"
     out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    kept: list[dict] = []
+    if args.retry_empty:
+        if not out_path.exists():
+            print(f"--retry-empty needs an existing {out_path}", file=sys.stderr)
+            return 1
+        previous = [orjson.loads(l) for l in out_path.open("rb")]
+        kept = [r for r in previous if r["response"].strip()]
+        redo = {r["id"] for r in previous if not r["response"].strip()}
+        items = [i for i in items if i["id"] in redo]
+        print(f"retrying {len(items)} empty of {len(previous)}")
+        if not items:
+            return 0
 
     print(f"{label}: {len(items)} items via {args.backend}")
     started = time.time()
@@ -171,6 +186,7 @@ def main() -> int:
     else:
         rows = run_hf(items, args.model, args.max_tokens, args.batch_size, not args.no_4bit)
 
+    rows = kept + rows
     rows.sort(key=lambda r: r["id"])
     with out_path.open("wb") as fh:
         for row in rows:

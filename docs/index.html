@@ -322,6 +322,15 @@
     display: block;
   }
 
+  h3.finding {
+    font-family: var(--slab);
+    font-size: var(--step-1);
+    font-weight: 600;
+    margin: 0.6rem 0 0;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--rule);
+  }
+
   /* --- misc -------------------------------------------------------------- */
 
   .note {
@@ -416,7 +425,12 @@
       </div>
     </div>
 
-    <p><strong>Retrieval fixes facts. Fine-tuning fixes priors.</strong> Pathfinder gives you both problems, which is exactly why the existing hobby bots underdeliver &mdash; they hand correct chunks to a model that still thinks in 5e. So: retrieval carries the load, and a small LoRA does the three things retrieval cannot &mdash; kill the 5e prior, enforce Remaster vocabulary, and teach grounded citation and abstention.</p>
+    <p><strong>Retrieval fixes facts. Fine-tuning fixes priors.</strong> So: retrieval carries the load, and a small LoRA does the things retrieval cannot &mdash; enforce Remaster vocabulary, and teach grounded citation and abstention.</p>
+
+    <p class="note">Measured since this was written: the first half holds emphatically, the second
+    half does not hold for frontier models. Two API models leaked no 5e vocabulary at all, so
+    "kill the 5e prior" has been struck from the list above pending the open-weight run. See
+    <a href="#results-tag">Results</a>.</p>
 
     <p>The literature agrees, and points at the hybrid rather than either pole. <a href="https://arxiv.org/abs/2403.10131">RAFT</a> trains on retrieved context including distractors, with answers that quote the source verbatim &mdash; a near-perfect fit, since "cite the entry you used" is the target behaviour. <a href="https://arxiv.org/pdf/2409.07431">EntiGraph</a> synthetic pretraining recovers over 80% of RAG's gain parametrically and stacks with it; <a href="https://arxiv.org/pdf/2603.23562">Synthetic Mixed Training</a> measures +2.6% over RAG alone but <strong>+9.1% combined</strong>. And on small corpora specifically, <a href="https://arxiv.org/pdf/2508.06178">plain continued pretraining barely moves the needle</a> &mdash; diverse synthetic rephrasing is what lands.</p>
   </section>
@@ -513,13 +527,47 @@
   <section>
     <div class="block-head">
       <h2>Results</h2>
-      <span class="tag" id="results-tag">no runs scored yet</span>
+      <span class="tag" id="results-tag">2 runs scored</span>
     </div>
     <p>Closed-book means no retrieval: the model answers from weights alone. These numbers are the
-    floor every later phase is measured against.</p>
+    floor every later phase is measured against. Read them against the trivial baselines
+    (<code>eval/baselines.py</code>) rather than against zero &mdash; answering "uncommon" to all
+    eighty rarity questions scores <strong>70%</strong>, and both frontier models come in well
+    under that.</p>
     <!-- results:start -->
-    <p class="note">No runs scored yet. Run <code>eval/run_eval.py</code> then <code>eval/score.py</code>, and <code>scripts/update_dossier.py</code> will fill this in.</p>
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Model</th><th class="num">overall</th><th class="num">level</th><th class="num">traits</th><th class="num">rarity</th><th class="num">prereq</th><th class="num">remaster</th><th class="num">abstain</th><th class="num">5e trap</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="rowname mono">gpt-5</td><td class="num"><strong>23%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">2%</td><td class="num">6%</td><td class="num">78%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="num"><strong>20%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">0%</td><td class="num">12%</td><td class="num">5%</td><td class="num">100%</td></tr>
+        </tbody>
+        <caption>Closed-book accuracy by family. Every grade is deterministic.</caption>
+      </table>
+    </div>
+    <ul><li><strong>gpt-5</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-5</strong> invented a level for 1 of 40 feats that do not exist.</li><li><strong>gpt-4.1-mini</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-4.1-mini</strong> invented a level for 33 of 40 feats that do not exist.</li></ul>
     <!-- results:end -->
+
+    <h3 class="finding">What the first two runs settled</h3>
+    <p><strong>The contamination half of the thesis did not survive contact with the benchmark</strong>
+    &mdash; not for frontier instruction-tuned models, anyway. Both models answered all thirty trap
+    questions without a single 5e leak. They know Pathfinder has three actions and no bonus actions,
+    that a natural 20 raises the degree of success rather than auto-critting, and that alignment was
+    removed in the Remaster. That was the stated exit criterion for phase&nbsp;01, and it fired
+    against the premise. Whether it holds for an open-weight base model is now the open question, and
+    the only thing the Qwen run has to answer.</p>
+    <p>Two caveats keep this from being the last word. The prompt names the game, which primes
+    correctly; a fairer contamination test asks "how many attacks can a 5th-level fighter make?"
+    without naming the system. And thirty hand-authored items is a small family.</p>
+    <p><strong>What survived overwhelmingly is the other half.</strong> Closed-book lookup is
+    hopeless at any scale: 17.5% on feat levels, 1.2% on complete trait lists, 2.5% on
+    prerequisites. Retrieval is not an optimisation here, it is the entire load-bearing structure.</p>
+    <p><strong>And one finding neither half predicted.</strong> Abstention is a capability axis, not
+    a knowledge one. Handed forty feats that do not exist, gpt-4.1-mini invented a level for
+    thirty-three of them. gpt-5 invented one. Same missing knowledge, opposite behaviour &mdash;
+    which is precisely the kind of thing a fine-tune can teach and retrieval cannot.</p>
   </section>
 
   <section>
@@ -550,9 +598,9 @@
       <div class="phase">
         <div class="n">01</div>
         <div class="body">
-          <h3>Baseline measurement <span class="status now">next</span></h3>
-          <p>Build the scorer &mdash; deterministic graders for every family, substring checks for contamination, an LLM judge only as a secondary number on free-form answers. Then three closed-book runs: the 27B baseline, a frontier ceiling check, and the 9B to price the iteration cost.</p>
-          <div class="exit"><b>Exit criterion</b>If <span class="mono">trap_5e</span> comes back clean, the fine-tune premise is wrong and this becomes a retrieval-only project. Better to learn that in week one.</div>
+          <h3>Baseline measurement <span class="status now">in progress</span></h3>
+          <p>Scorer built, all graders deterministic. Two frontier runs done; the Qwen3.8-27B run is waiting on the weights. Scoring the first run surfaced two false-positive bugs in the contamination metric &mdash; a forbidden term echoed from the question, and a term inside an explicit denial &mdash; both of which inflated measured contamination. Fixed and audited.</p>
+          <div class="exit"><b>Exit criterion &mdash; fired</b><span class="mono">trap_5e</span> came back clean at 30/30 for both frontier models. The premise now stands or falls on the open-weight run.</div>
         </div>
       </div>
       <div class="phase">

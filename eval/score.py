@@ -121,6 +121,23 @@ def grade(item: dict, response: str, vocab: set[str] | None = None) -> dict:
     hay = norm(response or "")
     out: dict = {"id": item["id"], "family": item["family"]}
 
+    # An empty response must never score. It is silently "clean" under a negative
+    # check like trap_5e, which would let a truncated run look like a perfect one.
+    out["empty"] = not (response or "").strip()
+    if out["empty"]:
+        out["forbidden_hits"] = []
+        out["forbidden_mentioned"] = []
+        out["forbidden_echoed_from_question"] = []
+        out["correct"] = False
+        if item["answer_type"] == "set":
+            out["recall"] = 0.0
+            out["missing"] = list(item["acceptable"])
+        if item["answer_type"] == "abstain":
+            out["fabricated"] = False
+        if item["answer_type"] == "free":
+            out["clean"] = False
+        return out
+
     candidates = scorable_forbidden(item)
     mentioned = [f for f in candidates if contains(hay, f)]
     forbidden = [f for f in mentioned if not denied(hay, f)]
@@ -187,6 +204,9 @@ def summarise(verdicts: list[dict]) -> dict:
             entry["over_answered"] = sum(1 for v in rows if v.get("extra"))
         if any("fabricated" in v for v in rows):
             entry["fabricated"] = sum(1 for v in rows if v.get("fabricated"))
+        empty = sum(1 for v in rows if v.get("empty"))
+        if empty:
+            entry["empty"] = empty
         if fam == "trap_5e":
             entry["contaminated"] = sum(1 for v in rows if v["forbidden_hits"])
         if fam == "remaster_rename":
@@ -241,6 +261,8 @@ def main() -> int:
             notes.append(f"fabricated a level {e['fabricated']}x")
         if "contaminated" in e:
             notes.append(f"5e vocabulary in {e['contaminated']}/{e['n']}")
+        if e.get("empty"):
+            notes.append(f"{e['empty']} empty")
         if "used_legacy_name" in e:
             notes.append(f"answered with legacy name {e['used_legacy_name']}x")
         print(f"  {fam:18s} {e['n']:4d} {e['correct']:8d} {e['accuracy']:6.1%}   {', '.join(notes)}")

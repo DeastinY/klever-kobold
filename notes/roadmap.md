@@ -14,7 +14,7 @@ Each phase produces a number that decides whether the next phase is worth doing.
 
 ---
 
-## Phase 1 — Baseline measurement ← next
+## Phase 1 — Baseline measurement ← in progress
 
 **Build `eval/score.py`.** Graders per `answer_type`, all deterministic except one:
 
@@ -35,10 +35,14 @@ headline number is cheap, reproducible, and not itself model-dependent.
    bar, the fine-tune only buys local/private/cheap. Know that before spending compute.
 3. `Qwen/Qwen3.5-9B` — is the 27B worth the iteration cost?
 
-**Exit criterion:** a per-family scoreboard. Expect near-zero on `lookup_*`, poor on
-`remaster_rename`, and bad `trap_5e` contamination. If `trap_5e` is already clean, the whole
-fine-tune premise is wrong and the project becomes retrieval-only — which is a good thing to learn
-in week one.
+**Exit criterion — fired.** `trap_5e` came back clean at 30/30 for both frontier models
+(`gpt-5`, `gpt-4.1-mini`), so the contamination premise does not hold at that end of the scale.
+`lookup_*` is as bad as predicted — 1–17%, and *below the trivial baseline* on rarity. Abstention
+turned out to be the discriminating axis nobody planned for: 33/40 fabricated levels for the small
+model, 1/40 for the large one. Full numbers in [`notes/experiments.md`](experiments.md).
+
+Still outstanding: the `Qwen3.8-27B` run, which is the one the premise actually depends on, and the
+`Qwen3.5-9B` run to price iteration cost.
 
 ---
 
