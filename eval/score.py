@@ -85,8 +85,16 @@ RE_CLAUSE_BREAK = re.compile(r"[.;:!?]")
 RE_NEW_SUBJECT = re.compile(r",\s*(?:they|you|it|we|i|he|she|there|this|that)\b")
 
 
+RE_ORDINAL = re.compile(r"\b(\d+)(?:st|nd|rd|th)\b")
+
+
 def norm(text: str) -> str:
     text = text.lower().replace("’", "'").replace("–", "-").replace("—", "-")
+    # "14th level" and "level 14" are the same answer. Without this, a model that
+    # phrases levels as ordinals scores zero on every level question -- which is
+    # exactly what happened to the fine-tuned model, whose training templates
+    # taught it the ordinal form.
+    text = RE_ORDINAL.sub(r"\1", text)
     return re.sub(r"\s+", " ", text)
 
 

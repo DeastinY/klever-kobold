@@ -74,7 +74,7 @@ Full numbers in [`notes/experiments.md`](experiments.md).
 
 ---
 
-## Phase 3 — RAFT LoRA ← next
+## Phase 3 — RAFT LoRA ✅ done
 
 Train on retrieved context, not on raw rules text.
 
@@ -98,7 +98,7 @@ marginally better with retrieval anyway.
 
 ---
 
-## Phase 4 — Lore continued pretraining (optional, gated on Phase 3)
+## Phase 4 — Lore continued pretraining (optional, gated on Phase 3) ← decision point
 
 Only worth doing if Phase 3 shows the model can hold PF2e framing. Lore is where parametric
 knowledge is actually appropriate — narrative, forgiving, few exact numbers.

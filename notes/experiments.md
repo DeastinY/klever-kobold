@@ -320,6 +320,67 @@ than the 27B and slightly better with retrieval anyway.
 
 Do not regress: `lookup_level` 96.2%, `lookup_rarity` 96.2%, `trap_5e` 100%.
 
+---
+
+# Phase 3 — the RAFT LoRA
+
+`Qwen/Qwen3.5-9B` + QLoRA rank 32 on the text decoder, 2,600 RAFT items, 2 epochs, 1h49m on one
+RTX 5090. Final eval loss 0.043, token accuracy 98.2%.
+
+| Family | base + RAG | + RAFT LoRA | Δ |
+| --- | ---: | ---: | ---: |
+| `abstention` | 35.0% | **100.0%** | **+65.0** |
+| `prereq` | 82.5% | 98.8% | +16.3 |
+| `remaster_rename` | 73.6% | 77.4% | +3.8 |
+| `lookup_level` | 96.2% | 100.0% | +3.8 |
+| `lookup_traits` | 87.5% | 90.0% | +2.5 |
+| `lookup_rarity` | 96.2% | 97.5% | +1.3 |
+| `trap_5e_applied` | 93.8% | 100.0% | +6.2 |
+| `trap_5e` | 96.7% | 93.3% | **−3.4** |
+| **Overall** | **84.5%** | **94.6%** | **+10.1** |
+
+For comparison, gpt-5 with the same retrieval scores 83.7%.
+
+Fabricated levels on non-existent feats went from 23 of 40 to **zero**.
+
+## The caveat, and the cross-check
+
+The benchmark and the training data come out of the same generator. No entity appears in both — that
+is enforced and verified — but the *shape* of a correct answer is shared, and the grader was written
+against that shape. Some of the +10.1 is house style.
+
+So the honest cross-check is a measurement with no generated text in it: the selection probe shows
+the model the same five excerpts and reads the logits for six tokens (`1 2 3 4 5 N`).
+
+| Selection accuracy | overall | abstention | chose N (51 correct) |
+| --- | ---: | ---: | ---: |
+| Qwen3.5-9B | **80.1%** | 100% | 89 |
+| Qwen3.5-9B + RAFT LoRA | 78.5% | 100% | 63 |
+
+**The adapter did not get smarter; it learned to behave.** Forced to choose, the *base* model already
+identifies "none of these" on 40 of 40 abstention items — it knew the feat was absent and would not
+say so in prose. The LoRA selects no better (78.5% vs 80.1%) and answers far better (94.6% vs 84.5%).
+It is better calibrated about when to refuse (63 N-choices vs 89, against 51 correct).
+
+This is the division of labour the project predicted for fine-tuning, reached from the opposite
+direction than expected: not correcting a false prior, but converting knowledge the model already had
+into behaviour it would actually perform.
+
+## Costs
+
+- `trap_5e` slipped 96.7% → 93.3% (2 items).
+- Applied-trap grounding — the share of rulings naming the correct Pathfinder machinery — fell
+  **81% → 58%**. Answers became terser. The adapter is more accurate and less forthcoming, which
+  accuracy does not capture and a user would notice.
+
+## Seventh scorer bug
+
+`lookup_level` first scored **23.8%** for the LoRA against 96.2% for the base. The LoRA's answers
+were correct — "Cleansing Transformation is 14th level" — and the grader could not match an ordinal
+against `"14"`. The adapter had faithfully learned the ordinal phrasing from *my own training
+template*, which also generated "1th level" and "2th level". Both fixed: `norm()` now folds ordinals,
+and the template computes real ordinals. Five exact-match cases added to `eval/test_score.py`.
+
 ## Pending
 
 - Phase 3: RAFT training data generation and the first LoRA.

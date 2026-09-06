@@ -48,6 +48,21 @@ CASES = [
 ]
 
 
+# Exact/int cases: phrasing must not decide correctness.
+EXACT_CASES = [
+    ({"answer_type": "int", "question": "What level is the feat X?", "acceptable": ["14", "level 14"]},
+     "Cleansing Transformation is 14th level. (Source: ...)", True),
+    ({"answer_type": "int", "question": "What level is the feat X?", "acceptable": ["14", "level 14"]},
+     "The feat is a level 14 feat.", True),
+    ({"answer_type": "int", "question": "What level is the feat X?", "acceptable": ["1", "level 1"]},
+     "It is 1st level.", True),
+    ({"answer_type": "int", "question": "What level is the feat X?", "acceptable": ["14", "level 14"]},
+     "It is 9th level.", False),
+    ({"answer_type": "int", "question": "What level is the feat X?", "acceptable": ["14", "level 14"]},
+     "It is level 140.", False),
+]
+
+
 # Set-grading cases. The gold sets and responses are verbatim from runs.
 SET_CASES = [
     # prereq: gold is not drawn from the trait vocabulary, so the over-answering
@@ -81,6 +96,16 @@ def main() -> int:
     for text, term, want, got, mentioned in failures:
         print(f"FAIL {term!r} want_leak={want} got={got} (mentioned={mentioned})")
         print(f"     {text[:100]}")
+    exact_failures = []
+    for item, response, want in EXACT_CASES:
+        item = {"id": "t", "family": "t", **item}
+        got = score.grade(item, response, None)["correct"]
+        if got != want:
+            exact_failures.append((item["acceptable"], response, want, got))
+    for gold, response, want, got in exact_failures:
+        print(f"FAIL exact gold={gold} want={want} got={got}")
+        print(f"     {response[:90]}")
+
     vocab = {"Fighter", "Flourish", "Magical", "Dedication", "Archetype"}
     set_failures = []
     for item, response, want in SET_CASES:
@@ -92,10 +117,10 @@ def main() -> int:
         print(f"FAIL set gold={gold} want={want} got={got}")
         print(f"     {response[:90]}")
 
-    total = len(CASES) + len(SET_CASES)
-    passed = total - len(failures) - len(set_failures)
+    total = len(CASES) + len(SET_CASES) + len(EXACT_CASES)
+    passed = total - len(failures) - len(set_failures) - len(exact_failures)
     print(f"\n{passed}/{total} cases pass")
-    return 1 if failures or set_failures else 0
+    return 1 if failures or set_failures or exact_failures else 0
 
 
 if __name__ == "__main__":

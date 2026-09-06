@@ -1,8 +1,8 @@
 {
   "report": {
     "items": 459,
-    "correct": 126,
-    "accuracy": 0.27450980392156865,
+    "correct": 127,
+    "accuracy": 0.2766884531590414,
     "families": {
       "abstention": {
         "n": 40,
@@ -12,8 +12,8 @@
       },
       "lookup_level": {
         "n": 80,
-        "correct": 14,
-        "accuracy": 0.175
+        "correct": 15,
+        "accuracy": 0.1875
       },
       "lookup_rarity": {
         "n": 80,
@@ -113,7 +113,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0006",

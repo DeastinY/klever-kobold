@@ -55,7 +55,7 @@ QUESTIONABLE = {
 SAY_LEVEL = [
     "{name} is a level {level} {kind}. (Source: {url})",
     "Level {level}. {name} is a {kind} at that level. (Source: {url})",
-    "{name} is {level}th level. (Source: {url})",
+    "{name} is {ordinal} level. (Source: {url})",
 ]
 SAY_TRAITS = [
     "{name} has the traits {traits}. (Source: {url})",
@@ -93,6 +93,16 @@ SAY_NOT_IN_CONTEXT = [
 
 def render(rng: random.Random, templates: list[str], **kw) -> str:
     return rng.choice(templates).format(**kw)
+
+
+def ordinal(n: int) -> str:
+    """1 -> 1st. Naive "{n}th" produced "1th level" in the first training set, and
+    the adapter faithfully learned to say it."""
+    if 10 <= n % 100 <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
 
 
 def noun(category: str) -> str:
@@ -244,6 +254,7 @@ def main() -> int:
         kind = spec["kind"]
         if kind == "level":
             answer = render(rng, SAY_LEVEL, name=c["name"], level=c["level"],
+                            ordinal=ordinal(int(c["level"])),
                             kind=noun(c["category"]), url=c["url"])
         elif kind == "traits":
             answer = render(rng, SAY_TRAITS, name=c["name"],

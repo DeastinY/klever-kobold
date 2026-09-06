@@ -1,37 +1,37 @@
 {
   "report": {
     "items": 459,
-    "correct": 384,
-    "accuracy": 0.8366013071895425,
+    "correct": 434,
+    "accuracy": 0.9455337690631809,
     "families": {
       "abstention": {
         "n": 40,
-        "correct": 7,
-        "accuracy": 0.175,
-        "fabricated": 8
+        "correct": 40,
+        "accuracy": 1.0,
+        "fabricated": 0
       },
       "lookup_level": {
         "n": 80,
-        "correct": 72,
-        "accuracy": 0.9
+        "correct": 80,
+        "accuracy": 1.0
       },
       "lookup_rarity": {
         "n": 80,
-        "correct": 77,
-        "accuracy": 0.9625
+        "correct": 78,
+        "accuracy": 0.975
       },
       "lookup_traits": {
         "n": 80,
-        "correct": 69,
-        "accuracy": 0.8625,
-        "mean_recall": 0.9447916666666666,
-        "over_answered": 3
+        "correct": 72,
+        "accuracy": 0.9,
+        "mean_recall": 0.9643750000000001,
+        "over_answered": 0
       },
       "prereq": {
         "n": 80,
-        "correct": 73,
-        "accuracy": 0.9125,
-        "mean_recall": 0.946875,
+        "correct": 79,
+        "accuracy": 0.9875,
+        "mean_recall": 0.996875,
         "over_answered": 0
       },
       "remaster_rename": {
@@ -42,19 +42,19 @@
       },
       "trap_5e": {
         "n": 30,
-        "correct": 29,
-        "accuracy": 0.9666666666666667,
-        "contaminated": 1
+        "correct": 28,
+        "accuracy": 0.9333333333333333,
+        "contaminated": 2
       },
       "trap_5e_applied": {
         "n": 16,
         "correct": 16,
         "accuracy": 1.0,
         "contaminated": 0,
-        "mean_grounding": 0.8125
+        "mean_grounding": 0.5833333333333334
       }
     },
-    "run": "gpt-5_rag5",
+    "run": "qwen3.5-9b_raft-lora_rag5",
     "benchmark_items": 459,
     "excluded_items": 27,
     "partial": false,
@@ -275,7 +275,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0024",
@@ -293,7 +293,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0026",
@@ -320,7 +320,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0029",
@@ -329,7 +329,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0030",
@@ -356,7 +356,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0033",
@@ -635,7 +635,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0064",
@@ -671,7 +671,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0068",
@@ -725,7 +725,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0074",
@@ -921,13 +921,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Arcane",
-        "Divine",
-        "Occult",
-        "Primal"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0012",
@@ -948,11 +943,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.6666666666666666,
       "missing": [
-        "Undead",
-        "Unique",
-        "Medium"
+        "Undead"
       ],
       "correct": false
     },
@@ -1047,10 +1040,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Common"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0022",
@@ -1082,11 +1073,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.6666666666666666,
-      "missing": [
-        "Small"
-      ],
-      "correct": false
+      "recall": 1.0,
+      "missing": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0025",
@@ -1145,10 +1134,8 @@
       "forbidden_echoed_from_question": [],
       "recall": 1.0,
       "missing": [],
-      "extra": [
-        "Common"
-      ],
-      "correct": false
+      "extra": [],
+      "correct": true
     },
     {
       "id": "lookup_traits-0030",
@@ -1277,11 +1264,10 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.3333333333333333,
       "missing": [
         "Beast",
-        "Uncommon",
-        "Medium"
+        "Uncommon"
       ],
       "correct": false
     },
@@ -1292,10 +1278,12 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 1.0,
-      "missing": [],
+      "recall": 0.8333333333333334,
+      "missing": [
+        "Concentrate"
+      ],
       "extra": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_traits-0042",
@@ -1445,12 +1433,10 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.4,
       "missing": [
         "Dero",
-        "Humanoid",
         "Shadow",
-        "Unique",
         "Small"
       ],
       "correct": false
@@ -1865,7 +1851,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0013",
@@ -2054,7 +2040,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0034",
@@ -2261,7 +2247,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0057",
@@ -2543,11 +2529,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
-      "missing": [
-        "Expert in Crafting"
-      ],
-      "correct": false
+      "recall": 1.0,
+      "missing": [],
+      "correct": true
     },
     {
       "id": "prereq-0007",
@@ -2644,11 +2628,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
-      "missing": [
-        "Master in Arcana"
-      ],
-      "correct": false
+      "recall": 1.0,
+      "missing": [],
+      "correct": true
     },
     {
       "id": "prereq-0016",
@@ -2813,11 +2795,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
-      "missing": [
-        "tusks unarmed attack"
-      ],
-      "correct": false
+      "recall": 1.0,
+      "missing": [],
+      "correct": true
     },
     {
       "id": "prereq-0031",
@@ -2892,11 +2872,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
-      "missing": [
-        "Kijimuna Gnome heritage or at least one primal innate spell from a gnome heritage or feat"
-      ],
-      "correct": false
+      "recall": 1.0,
+      "missing": [],
+      "correct": true
     },
     {
       "id": "prereq-0038",
@@ -3213,11 +3191,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
-      "missing": [
-        "ability to cast _shield_"
-      ],
-      "correct": false
+      "recall": 1.0,
+      "missing": [],
+      "correct": true
     },
     {
       "id": "prereq-0067",
@@ -3259,11 +3235,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
-      "missing": [
-        "Master in Acrobatics"
-      ],
-      "correct": false
+      "recall": 1.0,
+      "missing": [],
+      "correct": true
     },
     {
       "id": "prereq-0071",
@@ -3373,7 +3347,7 @@
       "forbidden_echoed_from_question": [
         "Staff of Necromancy"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0001",
@@ -3417,7 +3391,7 @@
       "forbidden_echoed_from_question": [
         "Healer's Tools"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0007",
@@ -3461,7 +3435,7 @@
       "forbidden_echoed_from_question": [
         "Silvertongue Mutagen"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0013",
@@ -3538,7 +3512,7 @@
       "forbidden_echoed_from_question": [
         "Pit Fiend"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0022",
@@ -3571,7 +3545,7 @@
       "forbidden_echoed_from_question": [
         "Mithral Weapon"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0027",
@@ -3582,7 +3556,7 @@
       "forbidden_echoed_from_question": [
         "Grim Sandglass (Major)"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0028",
@@ -3593,7 +3567,7 @@
       "forbidden_echoed_from_question": [
         "Cognitive Mutagen"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0030",
@@ -3604,7 +3578,7 @@
       "forbidden_echoed_from_question": [
         "Crystalline Dust"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0031",
@@ -3703,7 +3677,7 @@
       "forbidden_echoed_from_question": [
         "Breastplate of Command"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0048",
@@ -3725,7 +3699,7 @@
       "forbidden_echoed_from_question": [
         "Elite Adjustment"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0052",
@@ -3747,7 +3721,7 @@
       "forbidden_echoed_from_question": [
         "Bestial Mutagen"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0054",
@@ -3813,7 +3787,7 @@
       "forbidden_echoed_from_question": [
         "Negative"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0060",
@@ -3824,7 +3798,7 @@
       "forbidden_echoed_from_question": [
         "Silvertongue Mutagen"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0062",
@@ -3912,7 +3886,7 @@
       "forbidden_echoed_from_question": [
         "Stalk Goggles (Major)"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0077",
@@ -3954,7 +3928,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -3974,7 +3948,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -3984,7 +3958,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4004,7 +3978,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4014,7 +3988,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4034,8 +4008,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0009",
@@ -4044,7 +4018,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4054,8 +4028,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0011",
@@ -4064,8 +4038,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0012",
@@ -4074,7 +4048,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4084,7 +4058,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4094,8 +4068,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0015",
@@ -4104,7 +4078,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4114,7 +4088,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4124,7 +4098,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4134,7 +4108,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4144,7 +4118,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4154,7 +4128,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4164,7 +4138,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4174,7 +4148,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4184,7 +4158,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4194,7 +4168,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4214,8 +4188,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0027",
@@ -4234,8 +4208,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0029",
@@ -4244,7 +4218,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4264,7 +4238,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4274,7 +4248,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4284,8 +4258,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0034",
@@ -4294,7 +4268,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4304,7 +4278,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4314,7 +4288,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4334,8 +4308,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0039",
@@ -4344,7 +4318,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4363,11 +4337,15 @@
       "id": "trap_5e-0001",
       "family": "trap_5e",
       "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_hits": [
+        "any character can"
+      ],
+      "forbidden_mentioned": [
+        "any character can"
+      ],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "clean": true
+      "correct": false,
+      "clean": false
     },
     {
       "id": "trap_5e-0002",
@@ -4455,11 +4433,15 @@
       "id": "trap_5e-0010",
       "family": "trap_5e",
       "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_hits": [
+        "lose concentration"
+      ],
+      "forbidden_mentioned": [
+        "lose concentration"
+      ],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "clean": true
+      "correct": false,
+      "clean": false
     },
     {
       "id": "trap_5e-0011",
@@ -4549,15 +4531,11 @@
       "id": "trap_5e-0019",
       "family": "trap_5e",
       "empty": false,
-      "forbidden_hits": [
-        "spell slot"
-      ],
-      "forbidden_mentioned": [
-        "spell slot"
-      ],
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "clean": false
+      "correct": true,
+      "clean": true
     },
     {
       "id": "trap_5e-0020",
@@ -4710,8 +4688,11 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.3333333333333333,
+      "missing": [
+        "recovery check",
+        "wounded"
+      ]
     },
     {
       "id": "trap_5e_applied-0004",
@@ -4722,8 +4703,11 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.0,
+      "missing": [
+        "treat wounds",
+        "medicine"
+      ]
     },
     {
       "id": "trap_5e_applied-0005",
@@ -4734,8 +4718,11 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.0,
+      "missing": [
+        "raise a shield",
+        "action"
+      ]
     },
     {
       "id": "trap_5e_applied-0006",
@@ -4760,7 +4747,7 @@
       "clean": true,
       "grounding": 0.5,
       "missing": [
-        "10"
+        "constitution"
       ]
     },
     {
@@ -4810,8 +4797,11 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.0,
+      "missing": [
+        "off-guard",
+        "-2"
+      ]
     },
     {
       "id": "trap_5e_applied-0012",
@@ -4848,7 +4838,7 @@
       "clean": true,
       "grounding": 0.5,
       "missing": [
-        "perception"
+        "seek"
       ]
     },
     {

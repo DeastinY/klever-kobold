@@ -623,7 +623,7 @@
   <section>
     <div class="block-head">
       <h2>Results</h2>
-      <span class="tag" id="results-tag">9 runs scored</span>
+      <span class="tag" id="results-tag">10 runs scored</span>
     </div>
     <p>Closed-book means no retrieval: the model answers from weights alone. These numbers are the
     floor every later phase is measured against. Read them against the trivial baselines
@@ -637,20 +637,21 @@
           <tr><th>Model</th><th>mode</th><th class="num">overall</th><th class="num">level</th><th class="num">traits</th><th class="num">rarity</th><th class="num">prereq</th><th class="num">remaster</th><th class="num">abstain</th><th class="num">5e trap</th></tr>
         </thead>
         <tbody>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>84%</strong></td><td class="num">96%</td><td class="num">88%</td><td class="num">96%</td><td class="num">82%</td><td class="num">74%</td><td class="num">35%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>83%</strong></td><td class="num">88%</td><td class="num">86%</td><td class="num">96%</td><td class="num">91%</td><td class="num">77%</td><td class="num">18%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>95%</strong></td><td class="num">100%</td><td class="num">90%</td><td class="num">98%</td><td class="num">99%</td><td class="num">77%</td><td class="num">100%</td><td class="num">93%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>85%</strong></td><td class="num">98%</td><td class="num">88%</td><td class="num">96%</td><td class="num">82%</td><td class="num">74%</td><td class="num">35%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>84%</strong></td><td class="num">90%</td><td class="num">86%</td><td class="num">96%</td><td class="num">91%</td><td class="num">77%</td><td class="num">18%</td><td class="num">97%</td></tr>
           <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>83%</strong></td><td class="num">99%</td><td class="num">88%</td><td class="num">95%</td><td class="num">91%</td><td class="num">72%</td><td class="num">0%</td><td class="num">97%</td></tr>
           <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>82%</strong></td><td class="num">95%</td><td class="num">88%</td><td class="num">96%</td><td class="num">92%</td><td class="num">62%</td><td class="num">8%</td><td class="num">97%</td></tr>
           <tr><td class="rowname mono">gpt-6-astra</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>32%</strong></td><td class="num">16%</td><td class="num">6%</td><td class="num">28%</td><td class="num">16%</td><td class="num">45%</td><td class="num">60%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>27%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">8%</td><td class="num">9%</td><td class="num">78%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>23%</strong></td><td class="num">11%</td><td class="num">0%</td><td class="num">19%</td><td class="num">2%</td><td class="num">19%</td><td class="num">78%</td><td class="num">87%</td></tr>
-          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>23%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">4%</td><td class="num">15%</td><td class="num">5%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>17%</strong></td><td class="num">9%</td><td class="num">1%</td><td class="num">22%</td><td class="num">2%</td><td class="num">15%</td><td class="num">28%</td><td class="num">70%</td></tr>
+          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>28%</strong></td><td class="num">19%</td><td class="num">1%</td><td class="num">31%</td><td class="num">8%</td><td class="num">9%</td><td class="num">78%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>23%</strong></td><td class="num">12%</td><td class="num">0%</td><td class="num">19%</td><td class="num">2%</td><td class="num">19%</td><td class="num">78%</td><td class="num">87%</td></tr>
+          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>23%</strong></td><td class="num">6%</td><td class="num">0%</td><td class="num">57%</td><td class="num">4%</td><td class="num">15%</td><td class="num">5%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>18%</strong></td><td class="num">10%</td><td class="num">1%</td><td class="num">22%</td><td class="num">2%</td><td class="num">15%</td><td class="num">28%</td><td class="num">70%</td></tr>
         </tbody>
         <caption>Closed-book accuracy by family. Every grade is deterministic.</caption>
       </table>
     </div>
-    <ul><li><strong>Qwen/Qwen3.5-9B</strong>: 17% &rarr; 84% with retrieval, 4.8&times;.</li><li><strong>gpt-5</strong>: 27% &rarr; 83% with retrieval, 3.0&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong>: 23% &rarr; 83% with retrieval, 3.6&times;.</li><li><strong>gpt-4.1-mini</strong>: 23% &rarr; 82% with retrieval, 3.6&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
+    <ul><li><strong>Qwen/Qwen3.5-9B</strong>: 18% &rarr; 85% with retrieval, 4.8&times;.</li><li><strong>gpt-5</strong>: 28% &rarr; 84% with retrieval, 3.0&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong>: 23% &rarr; 83% with retrieval, 3.5&times;.</li><li><strong>gpt-4.1-mini</strong>: 23% &rarr; 82% with retrieval, 3.5&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
     <!-- results:end -->
 
     <h3 class="finding">Phase 01 &mdash; closed book</h3>
@@ -723,13 +724,61 @@
     on knowing this corpus. Its retrieval run is the one missing cell in the table &mdash; the API
     account ran out of credits partway through.</p>
 
-    <p class="note"><strong>What phase 03 is now for.</strong> Not the 5e prior, which retrieval
-    removed, and not precision, which was mostly a grading bug. One job: <strong>refuse when the
-    answer is in none of the excerpts</strong>, without becoming so cautious it stops answering the
-    other 92% correctly. RefusalBench's finding that selective refusal is "a trainable,
-    alignment-sensitive capability" is the reason to expect this to work; the
-    <a href="https://arxiv.org/pdf/2505.20871">Divide-Then-Align</a> finding that RAFT itself trains
-    models to answer when knowledge is absent is the reason to watch it closely.</p>
+    <h3 class="finding">Phase 03 &mdash; the adapter</h3>
+    <p>2,600 RAFT items, QLoRA rank 32 on the text decoder, 1h49m on one 5090. The result is the
+    largest single move the project has produced:</p>
+
+    <div class="bars" role="img" aria-label="Qwen3.5-9B with retrieval, before and after the RAFT LoRA: abstention 35 to 100, prereq 82.5 to 98.8, remaster 73.6 to 77.4, traits 87.5 to 90, level 96.2 to 100, overall 84.5 to 94.6">
+      <span class="k">abstention</span><span class="track"><span class="fill alt" style="width:35%"></span></span><span class="v">35 &rarr; 100</span>
+      <span class="k">prereq</span><span class="track"><span class="fill alt" style="width:82.5%"></span></span><span class="v">82.5 &rarr; 98.8</span>
+      <span class="k">traits</span><span class="track"><span class="fill alt" style="width:87.5%"></span></span><span class="v">87.5 &rarr; 90.0</span>
+      <span class="k">remaster</span><span class="track"><span class="fill alt" style="width:73.6%"></span></span><span class="v">73.6 &rarr; 77.4</span>
+      <span class="k">level</span><span class="track"><span class="fill alt" style="width:96.2%"></span></span><span class="v">96.2 &rarr; 100</span>
+      <span class="k">5e traps</span><span class="track"><span class="fill alt" style="width:96.7%"></span></span><span class="v">96.7 &rarr; 93.3</span>
+      <span class="k"><strong>overall</strong></span><span class="track"><span class="fill" style="width:84.5%"></span></span><span class="v"><strong>84.5 &rarr; 94.6</strong></span>
+    </div>
+    <p><span class="mono" style="font-size:0.78rem;color:var(--muted)">Bars show the before value;
+    labels give before &rarr; after. gpt-5 with the same retrieval scores 83.7%.</span></p>
+
+    <p><strong>Abstention went from 35% to 100%, with fabrications from 23 of 40 to zero.</strong>
+    The one unsolved family, which the literature says neither scale nor reasoning fixes, was solved
+    by 2,600 examples of which 520 taught refusal.</p>
+
+    <h3 class="finding">Two reasons not to take 94.6% at face value</h3>
+    <p><strong>The benchmark and the training data came out of the same generator.</strong> No
+    entity appears in both &mdash; that is enforced and verified &mdash; but the <em>shape</em> of a
+    correct answer is shared, and the grader was written against that shape. Some of the margin over
+    gpt-5 is the adapter having learned the house style. That is worth something in production and
+    nothing as a claim about understanding.</p>
+
+    <p><strong>So the honest cross-check is a measurement with no text in it at all.</strong> The
+    selection probe shows the model the same five excerpts and reads the logits for six tokens
+    &mdash; <span class="mono">1 2 3 4 5 N</span>. Nothing is generated, so format cannot help:</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Selection accuracy</th><th class="num">overall</th><th class="num">abstention</th><th class="num">chose N</th></tr></thead>
+        <tbody>
+          <tr><td class="rowname mono">Qwen3.5-9B</td><td class="num">80.1%</td><td class="num">100%</td><td class="num">89</td></tr>
+          <tr><td class="rowname mono">Qwen3.5-9B + RAFT LoRA</td><td class="num">78.5%</td><td class="num">100%</td><td class="num">63</td></tr>
+        </tbody>
+        <caption>51 items should be answered "N". The adapter is better calibrated about when to
+        refuse, and no better at choosing.</caption>
+      </table>
+    </div>
+
+    <p class="note"><strong>The adapter did not get smarter. It learned to behave.</strong> Forced
+    to choose, the <em>base</em> model already identifies "none of these" on 40 of 40 abstention
+    items &mdash; it knew the feat was absent all along and simply would not say so in prose. The
+    LoRA selects no better, and answers far better. That is precisely the division of labour this
+    project predicted for fine-tuning, arrived at from the opposite direction than expected: not
+    correcting a false prior, but converting knowledge the model already had into behaviour it would
+    actually perform.</p>
+
+    <p>Costs, stated plainly: <span class="mono">trap_5e</span> slipped 96.7% &rarr; 93.3%, and
+    applied-trap grounding &mdash; the share of rulings naming correct Pathfinder machinery &mdash;
+    fell 81% &rarr; 58% as answers became terser. The adapter is more accurate and less
+    forthcoming.</p>
 
   </section>
 
