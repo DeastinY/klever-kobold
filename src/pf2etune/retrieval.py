@@ -58,6 +58,7 @@ class Index:
 
     ids: list[str]
     meta: list[dict]
+    canonical: list[int] = field(default_factory=list, repr=False)
     embeddings: np.ndarray | None = None
     summary_embeddings: np.ndarray | None = None
     bm25: object | None = None
@@ -66,6 +67,18 @@ class Index:
 
     def __post_init__(self) -> None:
         self._by_id = {cid: i for i, cid in enumerate(self.ids)}
+        # Archives of Nethys carries genuine duplicates: an action and its reprint,
+        # a creature ability shared by several monsters. Left alone they split an
+        # entity's evidence across two rows during rank fusion, so a result that is
+        # ranked first by two views can lose to one that is ranked fifth by three.
+        # Map every row to a single canonical row per (name, category).
+        canonical: dict[tuple[str, str], int] = {}
+        self.canonical = list(range(len(self.ids)))
+        for i, meta in enumerate(self.meta):
+            key = ((meta.get("name") or "").lower(), meta.get("category") or "")
+            if not key[0]:
+                continue
+            self.canonical[i] = canonical.setdefault(key, i)
 
     def __len__(self) -> int:
         return len(self.ids)
@@ -118,17 +131,44 @@ class Index:
         return list(top[np.argsort(-scores[top])])
 
 
-def rrf(rankings: Iterable[Sequence[int]], k: int, smoothing: int = 60) -> list[int]:
-    """Reciprocal rank fusion.
+def rrf(rankings: Iterable[Sequence[int]], k: int, smoothing: int = 60,
+        weights: Sequence[float] | None = None, index: "Index | None" = None) -> list[int]:
+    """Reciprocal rank fusion, optionally weighted per ranking.
 
     Scores by rank position rather than by score value, so a BM25 score of 31.4
     and a cosine of 0.82 never have to be made commensurable.
+
+    Weights exist because the views are not equally trustworthy on every question
+    shape. For a situational question the hypothetical-summary views rank the
+    answer first and second while the three question-side views do not find it in
+    their top twenty at all -- unweighted fusion lets three noisy rankings outvote
+    two good ones.
     """
+    rankings = list(rankings)
+    if weights is None:
+        weights = [1.0] * len(rankings)
+    if index is not None:
+        # Collapse duplicates inside each ranking first, so an entity accumulates
+        # all of its evidence instead of splitting it across identical rows.
+        rankings = [dedupe(index, r) for r in rankings]
     fused: dict[int, float] = {}
-    for ranking in rankings:
+    for ranking, weight in zip(rankings, weights):
         for rank, idx in enumerate(ranking):
-            fused[idx] = fused.get(idx, 0.0) + 1.0 / (smoothing + rank + 1)
+            fused[idx] = fused.get(idx, 0.0) + weight / (smoothing + rank + 1)
     return [i for i, _ in sorted(fused.items(), key=lambda kv: -kv[1])[:k]]
+
+
+def dedupe(index: "Index", order: Sequence[int]) -> list[int]:
+    """Collapse an ordering to one row per entity, keeping the best-ranked."""
+    seen: set[int] = set()
+    out: list[int] = []
+    for i in order:
+        c = index.canonical[i] if index.canonical else i
+        if c in seen:
+            continue
+        seen.add(c)
+        out.append(c)
+    return out
 
 
 def follow_remaster(index: Index, order: Sequence[int]) -> list[int]:

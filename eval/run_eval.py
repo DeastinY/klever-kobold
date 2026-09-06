@@ -217,11 +217,15 @@ def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
 
 
 def attach_context(items: list[dict], retriever: str, mode: str, k: int,
-                   context_chars: int) -> None:
-    """Retrieve for every item and fold the excerpts into its prompt."""
+                   context_chars: int, rewriter: str | None = None) -> None:
+    """Retrieve for every item and fold the excerpts into its prompt.
+
+    Mirrors eval/retrieval_eval.py exactly, including the query-time category
+    narrowing, so the answers are graded on the same retrieval the recall numbers
+    describe.
+    """
     sys.path.insert(0, str(ROOT / "src"))
     sys.path.insert(0, str(ROOT / "eval"))
-    import numpy as np
     from pf2etune import retrieval as R
     import retrieval_eval
 
@@ -231,17 +235,44 @@ def attach_context(items: list[dict], retriever: str, mode: str, k: int,
         row = orjson.loads(line)
         bodies[row["id"]] = row["text"]
 
+    parts = mode.split("+")
+    base, hop = parts[0], "hop" in parts
+    use_hyde, use_cat = "hyde" in parts, "cat" in parts
+
+    rewrites = retrieval_eval.load_rewrites(rewriter) if (use_hyde or use_cat) else {}
+    if (use_hyde or use_cat) and not rewrites:
+        raise SystemExit(f"no cached rewrites for {rewriter}; run scripts/rewrite_queries.py")
+
     qvecs = retrieval_eval.encode_queries(retriever, [i["question"] for i in items])
-    hop = mode.endswith("+hop")
-    base = mode[:-4] if hop else mode
-    mask = index.allowed(exclude_legacy=not hop)
+    hyde_vecs = None
+    if use_hyde:
+        hyde_vecs = retrieval_eval.encode_queries(
+            retriever, [(rewrites.get(i["question"]) or {}).get("summary") or i["question"]
+                        for i in items])
+
+    base_mask = index.allowed(exclude_legacy=not hop)
     pool = k * 2 if hop else k
 
-    for item, qvec in zip(items, qvecs):
+    for n, (item, qvec) in enumerate(zip(items, qvecs)):
+        mask = base_mask
+        if use_cat:
+            cats = (rewrites.get(item["question"]) or {}).get("categories") or []
+            if cats:
+                narrowed = base_mask & index.allowed(exclude_legacy=not hop, categories=cats)
+                if narrowed.sum() >= k:
+                    mask = narrowed
         if base == "bm25":
             order = index.lexical(item["question"], mask, pool)
         elif base == "dense":
             order = index.dense(qvec, mask, pool)
+        elif base == "hybrid3":
+            rankings = [index.dense(qvec, mask, 50),
+                        index.dense(qvec, mask, 50, view="summary"),
+                        index.lexical(item["question"], mask, 50)]
+            if use_hyde and hyde_vecs is not None:
+                rankings.append(index.dense(hyde_vecs[n], mask, 50, view="summary"))
+                rankings.append(index.dense(hyde_vecs[n], mask, 50))
+            order = R.rrf(rankings, pool)
         else:
             order = R.rrf([index.dense(qvec, mask, 50),
                            index.lexical(item["question"], mask, 50)], pool)
@@ -252,7 +283,8 @@ def attach_context(items: list[dict], retriever: str, mode: str, k: int,
         item["retrieved"] = [h[0] for h in hits]
         item["prompt"] = (format_context(hits, bodies, context_chars)
                           + "\n\nQuestion: " + item["question"])
-    print(f"attached {k} excerpts per item via {retriever} / {mode}")
+    print(f"attached {k} excerpts per item via {retriever} / {mode}"
+          + (f" / rewriter {rewriter}" if rewrites else ""))
 
 
 def main() -> int:
@@ -283,8 +315,10 @@ def main() -> int:
                     help="keep rows already in --out that this run does not cover")
     ap.add_argument("--retrieve", type=int, default=0, metavar="K",
                     help="prepend the top K retrieved rules excerpts to each question")
-    ap.add_argument("--retriever", default="Kaylebor/pf2e-codex-embed-xs")
-    ap.add_argument("--retrieval-mode", default="hybrid+hop")
+    ap.add_argument("--retriever", default="Qwen/Qwen3-Embedding-0.6B")
+    ap.add_argument("--retrieval-mode", default="hybrid3+hyde+cat+hop")
+    ap.add_argument("--rewriter", default="Qwen/Qwen3.5-9B",
+                    help="model whose cached query rewrites to use")
     ap.add_argument("--context-chars", type=int, default=1600,
                     help="per-excerpt truncation")
     args = ap.parse_args()
@@ -298,7 +332,7 @@ def main() -> int:
     system = SYSTEM_RAG if args.retrieve else SYSTEM
     if args.retrieve:
         attach_context(items, args.retriever, args.retrieval_mode, args.retrieve,
-                       args.context_chars)
+                       args.context_chars, args.rewriter)
     else:
         for it in items:
             it["prompt"] = it["question"]
@@ -355,7 +389,8 @@ def main() -> int:
             "max_tokens": args.max_tokens, "reasoning_effort": args.reasoning_effort,
             "chat_kwargs": json.loads(args.chat_kwargs) if args.backend == "hf" else None,
             "retrieval": ({"k": args.retrieve, "retriever": args.retriever,
-                           "mode": args.retrieval_mode, "context_chars": args.context_chars}
+                           "mode": args.retrieval_mode, "rewriter": args.rewriter,
+                           "context_chars": args.context_chars}
                           if args.retrieve else None),
             "quantization": (None if args.backend == "api" else ("bf16" if args.no_4bit else "nf4-4bit")),
             "adapter": str(args.adapter) if args.adapter else None,

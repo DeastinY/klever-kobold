@@ -1,0 +1,240 @@
+"""The runtime: a Pathfinder 2e rules assistant that runs on a laptop.
+
+Everything heavy is delegated to Ollama over HTTP, so this package needs only
+numpy, httpx and orjson -- no torch, no transformers, no CUDA. On a 16 GB
+MacBook the resident cost is the two models Ollama holds (about 6.3 GB) plus
+roughly 250 MB of memory-mapped index.
+
+The pipeline is the one the benchmark measured, in order:
+
+1. **Rewrite.** The question is turned into a hypothetical one-line entry summary
+   and up to three entry kinds. Players describe situations; the index holds
+   entities, and this is what bridges them. Worth +27 points of recall@5.
+2. **Narrow.** Restrict to the suggested kinds when enough candidates survive.
+   Equipment and creatures are two thirds of the corpus and answer almost
+   nothing.
+3. **Retrieve.** Fuse four rankings by reciprocal rank: BM25, dense over the full
+   entry, dense over the one-line summary, and dense of the *hypothetical*
+   summary against the summary index.
+4. **Hop.** Any pre-Remaster entry that surfaces is replaced by the entry that
+   superseded it, so legacy rules are never served as current.
+5. **Answer.** The excerpts are given to the model as authoritative, with an
+   instruction to cite the source URL and to say plainly when the answer is not
+   among them.
+"""
+
+from __future__ import annotations
+
+import pathlib
+import re
+from dataclasses import dataclass
+from typing import Iterable
+
+import httpx
+import numpy as np
+import orjson
+
+from . import retrieval
+from .bm25 import BM25
+
+DEFAULT_INDEX = pathlib.Path(__file__).resolve().parents[2] / "dist" / "pf2e-index"
+DEFAULT_OLLAMA = "http://localhost:11434"
+
+CATEGORIES = ("action", "condition", "feat", "spell", "equipment", "weapon", "armor",
+              "creature", "hazard", "trait", "rules", "class-feature", "ritual",
+              "archetype", "background", "heritage", "deity", "shield")
+
+REWRITE_SYSTEM = (
+    "You help search a Pathfinder 2e rules database. Each entry is one game element with a "
+    "one-line summary.\n\n"
+    "Given a player's question, reply with exactly two lines and nothing else:\n"
+    "SUMMARY: the one-line summary you would expect on the database entry that answers this "
+    "question, written the way the rulebook writes summaries. Describe what it does. Do not "
+    "guess at a name.\n"
+    "KINDS: up to three entry kinds that could answer it, comma separated, from: "
+    + ", ".join(CATEGORIES) + "\n\n"
+    "Question: An ogre has grabbed my monk. What can she do about it on her turn?\n"
+    "SUMMARY: Attempt to escape from being grabbed, immobilized, or restrained.\n"
+    "KINDS: action, condition\n\n"
+    "Question: Is there a feat that makes falling less dangerous?\n"
+    "SUMMARY: Treat falls as shorter than they are.\n"
+    "KINDS: feat\n\n"
+    "Question: How much healing does a short rest give my party?\n"
+    "SUMMARY: Spend 10 minutes treating an injured creature to restore Hit Points.\n"
+    "KINDS: action, feat"
+)
+
+ANSWER_SYSTEM = (
+    "You are answering questions about the Pathfinder Second Edition tabletop roleplaying game. "
+    "Rules excerpts from the Archives of Nethys are provided below. Treat them as authoritative "
+    "and prefer them over your own recollection. Answer concisely and directly, and cite the "
+    "source URL of any excerpt you use. If the excerpts do not contain the answer, say so plainly "
+    "rather than guessing."
+)
+
+RE_CLEAN = re.compile(r"^[\s\-*\d.)]+|[\s;:]+$")
+
+# The TREC default of 60 flattens rank differences almost to nothing when fusing a
+# handful of 50-item rankings: rank 1 scores 0.0164 and rank 10 scores 0.0143.
+# Swept on the holdout; 5 was best, though the margin is inside the noise of a
+# 48-item sample.
+RRF_SMOOTHING = 5
+
+
+class OllamaError(RuntimeError):
+    """Raised with a message a user can act on, not a stack trace."""
+
+
+@dataclass
+class Hit:
+    chunk_id: str
+    name: str
+    category: str
+    level: object
+    url: str
+    text: str
+
+
+class Ollama:
+    def __init__(self, base_url: str = DEFAULT_OLLAMA, timeout: float = 180.0) -> None:
+        self.base_url = base_url.rstrip("/")
+        self._client = httpx.Client(timeout=timeout)
+
+    def _post(self, path: str, body: dict) -> dict:
+        try:
+            r = self._client.post(f"{self.base_url}{path}", json=body)
+        except httpx.ConnectError as exc:
+            raise OllamaError(
+                f"Cannot reach Ollama at {self.base_url}. Start it with `ollama serve`."
+            ) from exc
+        if r.status_code == 404:
+            raise OllamaError(
+                f"Ollama does not have the model {body.get('model')!r}. "
+                f"Pull it with `ollama pull {body.get('model')}`."
+            )
+        r.raise_for_status()
+        return orjson.loads(r.content)
+
+    def embed(self, texts: list[str], model: str) -> np.ndarray:
+        data = self._post("/api/embed", {"model": model, "input": texts})
+        vecs = np.asarray(data["embeddings"], dtype=np.float32)
+        norms = np.linalg.norm(vecs, axis=1, keepdims=True)
+        return vecs / np.where(norms == 0, 1, norms)
+
+    def chat(self, system: str, user: str, model: str, max_tokens: int = 700) -> str:
+        data = self._post("/api/chat", {
+            "model": model,
+            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            "stream": False,
+            "think": False,
+            "options": {"temperature": 0, "num_predict": max_tokens},
+        })
+        return (data.get("message") or {}).get("content", "").strip()
+
+
+class Assistant:
+    def __init__(self, index_dir: pathlib.Path = DEFAULT_INDEX,
+                 ollama_url: str = DEFAULT_OLLAMA) -> None:
+        index_dir = pathlib.Path(index_dir)
+        if not (index_dir / "manifest.json").exists():
+            raise OllamaError(
+                f"No index at {index_dir}. Build one with scripts/package_index.py, "
+                f"or point --index at an unpacked pf2e-index directory."
+            )
+        self.manifest = orjson.loads((index_dir / "manifest.json").read_bytes())
+        self.ollama = Ollama(ollama_url)
+
+        meta = [orjson.loads(l) for l in (index_dir / "meta.jsonl").open("rb")]
+        self.bodies = {}
+        for line in (index_dir / "bodies.jsonl").open("rb"):
+            row = orjson.loads(line)
+            self.bodies[row["id"]] = row["text"]
+
+        # mmap: the embeddings are read a few thousand rows at a time, so the OS
+        # page cache does a better job than loading 170 MB up front.
+        full = np.load(index_dir / "emb_full.npy", mmap_mode="r")
+        summary = np.load(index_dir / "emb_summary.npy", mmap_mode="r")
+        self.index = retrieval.Index(
+            ids=[m["id"] for m in meta], meta=meta,
+            embeddings=full, summary_embeddings=summary,
+            bm25=BM25.load(index_dir / "bm25.npz"),
+            model_name=self.manifest["embed_model"],
+        )
+        self._base_mask = self.index.allowed(exclude_legacy=False)
+
+    # --- pipeline ------------------------------------------------------------
+
+    def rewrite(self, question: str) -> dict:
+        try:
+            raw = self.ollama.chat(REWRITE_SYSTEM, f"Question: {question}",
+                                   self.manifest["ollama_llm"], max_tokens=90)
+        except OllamaError:
+            raise
+        except Exception:
+            return {"summary": "", "categories": []}
+        summary, kinds = "", []
+        for line in raw.splitlines():
+            line = line.strip()
+            if line.upper().startswith("SUMMARY:"):
+                summary = RE_CLEAN.sub("", line.split(":", 1)[1]).strip()
+            elif line.upper().startswith("KINDS:"):
+                for part in line.split(":", 1)[1].split(","):
+                    part = part.strip().lower().replace(" ", "-")
+                    if part in CATEGORIES and part not in kinds:
+                        kinds.append(part)
+        return {"summary": summary[:220], "categories": kinds[:3]}
+
+    def _embed_queries(self, texts: list[str]) -> np.ndarray:
+        prefix = self.manifest["query_prefix"]
+        return self.ollama.embed([prefix + t for t in texts], self.manifest["ollama_embed"])
+
+    def search(self, question: str, k: int = 5, plan: dict | None = None) -> list[Hit]:
+        plan = plan if plan is not None else self.rewrite(question)
+        queries = [question]
+        if plan.get("summary"):
+            queries.append(plan["summary"])
+        vecs = self._embed_queries(queries).astype(np.float32)
+        qvec, hvec = vecs[0], (vecs[1] if len(vecs) > 1 else None)
+
+        mask = self._base_mask
+        if plan.get("categories"):
+            narrowed = mask & self.index.allowed(exclude_legacy=False,
+                                                 categories=plan["categories"])
+            if narrowed.sum() >= k:
+                mask = narrowed
+
+        rankings = [self.index.dense(qvec, mask, 50),
+                    self.index.dense(qvec, mask, 50, view="summary"),
+                    self.index.lexical(question, mask, 50)]
+        if hvec is not None:
+            rankings.append(self.index.dense(hvec, mask, 50, view="summary"))
+            rankings.append(self.index.dense(hvec, mask, 50))
+        order = retrieval.rrf(rankings, k * 4, smoothing=RRF_SMOOTHING, index=self.index)
+        order = retrieval.follow_remaster(self.index, order)
+        order = retrieval.dedupe(self.index, order)[:k]
+
+        hits = []
+        for i in order:
+            m = self.index.meta[i]
+            hits.append(Hit(chunk_id=self.index.ids[i], name=m.get("name") or "",
+                            category=m.get("category") or "", level=m.get("level"),
+                            url=m.get("url") or "", text=self.bodies.get(self.index.ids[i], "")))
+        return hits
+
+    def context(self, hits: Iterable[Hit], max_chars: int = 1600) -> str:
+        blocks = []
+        for n, h in enumerate(hits, 1):
+            head = f"[{n}] {h.name} ({h.category.replace('-', ' ')}"
+            if h.level is not None:
+                head += f", level {h.level}"
+            head += f") — {h.url}"
+            blocks.append(head + "\n" + h.text[:max_chars].strip())
+        return "<rules_excerpts>\n" + "\n\n".join(blocks) + "\n</rules_excerpts>"
+
+    def ask(self, question: str, k: int = 5) -> dict:
+        plan = self.rewrite(question)
+        hits = self.search(question, k=k, plan=plan)
+        prompt = self.context(hits) + "\n\nQuestion: " + question
+        answer = self.ollama.chat(ANSWER_SYSTEM, prompt, self.manifest["ollama_llm"])
+        return {"question": question, "answer": answer, "plan": plan,
+                "sources": [{"name": h.name, "category": h.category, "url": h.url} for h in hits]}

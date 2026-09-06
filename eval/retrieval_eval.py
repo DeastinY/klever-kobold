@@ -80,7 +80,8 @@ def encode_queries(model_name: str, queries: list[str]) -> np.ndarray:
 
 def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None,
              mode: str, exclude_legacy: bool, hyde_vecs: np.ndarray | None = None,
-             rewrites: dict | None = None) -> dict:
+             rewrites: dict | None = None, hyde_weight: float = 1.0,
+             smoothing: int = 5) -> dict:
     # The hop mode searches legacy entries deliberately and rewrites the hits, so
     # it must not filter them out first.
     parts = mode.split("+")
@@ -103,6 +104,11 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
     started = time.time()
     for i, item in enumerate(items):
         gold = set(item["source_ids"]) | set(item.get("alt_source_ids") or [])
+        # Rankings are collapsed to one row per entity, so a gold chunk that is a
+        # duplicate row will never appear by id. Compare canonical positions: it is
+        # the entity that has to be retrieved, not one particular copy of it.
+        gold_canon = {index.canonical[p] for p in
+                      ({index.position(g) for g in gold} - {None})}
         positions = {index.position(g) for g in gold} - {None}
         if not positions or not any(base_mask[p] for p in positions):
             # Not in the index at all, or removed by the corpus-level legacy filter:
@@ -134,20 +140,24 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
             rankings = [index.dense(qvec, mask, 50),
                         index.dense(qvec, mask, 50, view="summary"),
                         index.lexical(item["question"], mask, 50)]
+            weights = [1.0, 1.0, 1.0]
             if use_hyde and hyde_vecs is not None:
                 # The generated summary is matched against the summary index: both
                 # sides of that comparison are one-line descriptions.
                 rankings.append(index.dense(hyde_vecs[i], mask, 50, view="summary"))
                 rankings.append(index.dense(hyde_vecs[i], mask, 50))
-            order = retrieval.rrf(rankings, pool)
+                weights += [hyde_weight, hyde_weight]
+            order = retrieval.rrf(rankings, pool, smoothing, weights=weights, index=index)
         else:
             order = retrieval.rrf([index.dense(qvec, mask, 50),
-                                   index.lexical(item["question"], mask, 50)], pool)
+                                   index.lexical(item["question"], mask, 50)], pool, index=index)
         if hop:
-            order = retrieval.follow_remaster(index, order)[:kmax]
+            order = retrieval.follow_remaster(index, order)
+        order = retrieval.dedupe(index, order)[:kmax]
         fam = per_family[item["family"]]
         fam["n"] += 1
-        found = next((r for r, idx in enumerate(order) if index.ids[idx] in gold), None)
+        found = next((r for r, idx in enumerate(order)
+                      if index.canonical[idx] in gold_canon), None)
         ranks.append(found + 1 if found is not None else 0)
         for k in KS:
             if found is not None and found < k:
@@ -158,6 +168,7 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
     mrr = sum(1 / r for r in ranks if r) / scored if scored else 0.0
     return {
         "mode": mode, "model": index.model_name, "scored": scored,
+        "hyde_weight": hyde_weight, "smoothing": smoothing,
         "unreachable": unreachable, "seconds": round(time.time() - started, 1),
         "recall": {str(k): hits[k] / scored if scored else 0.0 for k in KS},
         "mrr": mrr,
@@ -175,6 +186,10 @@ def main() -> int:
     ap.add_argument("--benchmark", type=pathlib.Path, default=ROOT / "eval" / "benchmark.jsonl")
     ap.add_argument("--out", type=pathlib.Path, default=ROOT / "eval" / "runs" / "retrieval.scores.json")
     ap.add_argument("--include-legacy", action="store_true")
+    ap.add_argument("--smoothing", nargs="*", type=int, default=[5],
+                    help="RRF constant; 60 is the TREC default and is far too flat here")
+    ap.add_argument("--hyde-weights", nargs="*", type=float, default=[1.0],
+                    help="sweep the weight given to the hypothetical-summary rankings")
     ap.add_argument("--rewriter", default="Qwen/Qwen3.8-27B",
                     help="which cached rewrite set to use for +hyde / +cat modes")
     args = ap.parse_args()
@@ -204,14 +219,17 @@ def main() -> int:
                 model, [(rewrites.get(i["question"]) or {}).get("summary") or i["question"]
                         for i in items])
         for mode in [m for m in args.modes if not m.startswith("bm25")]:
-            results.append(evaluate(index, items, qvecs, mode, not args.include_legacy,
-                                    hyde_vecs, rewrites))
+            for w in (args.hyde_weights if "hyde" in mode else [1.0]):
+                for sm in args.smoothing:
+                    results.append(evaluate(index, items, qvecs, mode, not args.include_legacy,
+                                            hyde_vecs, rewrites, w, sm))
 
-    print(f"\n{'retriever':44s} {'mode':7s} {'R@1':>6s} {'R@5':>6s} {'R@20':>6s} {'MRR':>6s}")
-    print(f"{'-' * 44} {'-' * 7} {'-' * 6} {'-' * 6} {'-' * 6} {'-' * 6}")
+    print(f"\n{'retriever':32s} {'mode':26s} {'R@1':>6s} {'R@5':>6s} {'R@20':>6s} {'MRR':>6s}")
+    print(f"{'-' * 32} {'-' * 26} {'-' * 6} {'-' * 6} {'-' * 6} {'-' * 6}")
     for r in results:
         name = r["model"] or "—"
-        print(f"{name:44s} {r['mode']:7s} {r['recall']['1']:6.1%} {r['recall']['5']:6.1%} "
+        tag = f"{r['mode']} k={r.get('smoothing', 60)}"
+        print(f"{name:32s} {tag:26s} {r['recall']['1']:6.1%} {r['recall']['5']:6.1%} "
               f"{r['recall']['20']:6.1%} {r['mrr']:6.3f}")
 
     best = max(results, key=lambda r: r["recall"]["5"])
