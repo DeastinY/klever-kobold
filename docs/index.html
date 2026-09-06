@@ -527,7 +527,7 @@
   <section>
     <div class="block-head">
       <h2>Results</h2>
-      <span class="tag" id="results-tag">3 runs scored</span>
+      <span class="tag" id="results-tag">4 runs scored</span>
     </div>
     <p>Closed-book means no retrieval: the model answers from weights alone. These numbers are the
     floor every later phase is measured against. Read them against the trivial baselines
@@ -544,11 +544,12 @@
           <tr><td class="rowname mono">gpt-5</td><td class="num"><strong>25%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">2%</td><td class="num">6%</td><td class="num">78%</td><td class="num">100%</td></tr>
           <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="num"><strong>22%</strong></td><td class="num">11%</td><td class="num">0%</td><td class="num">19%</td><td class="num">1%</td><td class="num">14%</td><td class="num">78%</td><td class="num">87%</td></tr>
           <tr><td class="rowname mono">gpt-4.1-mini</td><td class="num"><strong>21%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">0%</td><td class="num">12%</td><td class="num">5%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="num"><strong>16%</strong></td><td class="num">9%</td><td class="num">0%</td><td class="num">22%</td><td class="num">0%</td><td class="num">11%</td><td class="num">28%</td><td class="num">70%</td></tr>
         </tbody>
         <caption>Closed-book accuracy by family. Every grade is deterministic.</caption>
       </table>
     </div>
-    <ul><li><strong>gpt-5</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-5</strong> invented a level for 1 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.8-27B</strong> leaked D&amp;D 5e vocabulary into 4 of 30 trap questions.</li><li><strong>Qwen/Qwen3.8-27B</strong> invented a level for 3 of 40 feats that do not exist.</li><li><strong>gpt-4.1-mini</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-4.1-mini</strong> invented a level for 33 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
+    <ul><li><strong>gpt-5</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-5</strong> invented a level for 1 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.8-27B</strong> leaked D&amp;D 5e vocabulary into 4 of 30 trap questions.</li><li><strong>Qwen/Qwen3.8-27B</strong> invented a level for 3 of 40 feats that do not exist.</li><li><strong>gpt-4.1-mini</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-4.1-mini</strong> invented a level for 33 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.5-9B</strong> leaked D&amp;D 5e vocabulary into 9 of 30 trap questions.</li><li><strong>Qwen/Qwen3.5-9B</strong> invented a level for 21 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
     <!-- results:end -->
 
     <h3 class="finding">What phase 01 settled</h3>
@@ -588,16 +589,30 @@
     quiz family from 83.3% to 90.0% and leaves the applied family unchanged at 81.2%, with grounding
     slightly worse. Contamination is not an artifact of turning reasoning off.</p>
 
+    <p><strong>And it scales.</strong> Adding Qwen3.5-9B turns the finding into a gradient rather
+    than a single data point &mdash; contamination rises and grounding collapses as the model gets
+    smaller, monotonically, across every trap measure:</p>
+
+    <div class="bars" role="img" aria-label="Percentage of applied-trap rulings using correct Pathfinder machinery: gpt-5 78 percent, gpt-4.1-mini 43 percent, Qwen3.8-27B 36 percent, Qwen3.5-9B 9 percent">
+      <span class="k">gpt-5</span><span class="track"><span class="fill" style="width:78%"></span></span><span class="v">78%</span>
+      <span class="k">gpt-4.1-mini</span><span class="track"><span class="fill" style="width:43%"></span></span><span class="v">43%</span>
+      <span class="k">Qwen3.8-27B</span><span class="track"><span class="fill" style="width:36%"></span></span><span class="v">36%</span>
+      <span class="k">Qwen3.5-9B</span><span class="track"><span class="fill" style="width:9%"></span></span><span class="v">9%</span>
+    </div>
+    <p style="max-width:66ch"><span class="mono" style="font-size:0.78rem;color:var(--muted)">Share
+    of applied-trap rulings that name the correct Pathfinder machinery. 5e leaks run the other way:
+    0, 0, 5 and 9 of thirty quiz items.</span></p>
+
     <p><strong>So the premise survives where it matters.</strong> It is wrong about frontier models
-    and right about the model this project would actually fine-tune &mdash; which is the only one
-    whose weights are ours to change. The number to beat is now concrete: 83.3% and 81.2% clean,
-    36% grounded.</p>
+    and right about the models this project would actually fine-tune &mdash; the only ones whose
+    weights are ours to change. The number to beat is now concrete: for the 27B, 83.3% and 81.2%
+    clean at 36% grounded; for the 9B, 70.0% and 68.8% at 9% grounded.</p>
 
     <p><strong>And one finding nothing predicted.</strong> Abstention is a capability axis, not a
     knowledge one. Handed forty feats that do not exist, gpt-4.1-mini invented a level for
-    thirty-three of them. gpt-5 invented one, and Qwen3.8-27B three &mdash; the small frontier model
-    is the outlier, not the local one. Same missing knowledge, opposite behaviour, and precisely the
-    kind of thing a fine-tune teaches and retrieval cannot.</p>
+    thirty-three, Qwen3.5-9B for twenty-one, Qwen3.8-27B for three, and gpt-5 for one. It does not
+    track model size and it does not track knowledge &mdash; all four know equally little. It is
+    behaviour, which is exactly what a fine-tune teaches and retrieval cannot.</p>
   </section>
 
   <section>
@@ -613,6 +628,10 @@
     checkpoint is multimodal (<span class="mono">Qwen3_5ForConditionalGeneration</span>) and Qwen
     has shipped no <span class="mono">-Base</span> variant &mdash; fine for RAFT SFT off the
     instruct weights, an argument for the 9B if phase 04 continued pretraining happens.</p>
+    <p><code>Qwen/Qwen3.5-9B</code> answers the iteration-cost question: 486 items in
+    <strong>4m41s</strong> against the 27B's 11m45s, two and a half times faster, and it has twice
+    as much contamination to fix &mdash; which arguably makes it the better testbed for proving the
+    adapter does anything.</p>
     <p class="note"><strong>Ceiling check, done.</strong> gpt-5 closed-book scores 25.3% against the
     27B's 21.8%. The frontier advantage is real but small, and it is concentrated in abstention and
     calibration rather than knowledge &mdash; nobody knows this corpus. That is the case for

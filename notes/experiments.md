@@ -96,6 +96,41 @@ Trap families only, `enable_thinking=true, reasoning_effort=low`, 2000 max token
 Reasoning helps a little on the quiz family and not at all on adjudication. **Contamination is not
 an artifact of disabling thinking**, which was the obvious confound and is now ruled out.
 
+## Run 4 — `Qwen/Qwen3.5-9B`, closed-book
+
+2026-09-06 · 486 items · nf4 4-bit, `enable_thinking=false`, greedy, batch 24 · **4m41s** (2.5x
+faster than the 27B)
+
+| Family | Correct | Accuracy | Notes |
+| --- | ---: | ---: | --- |
+| `lookup_level` | 7/80 | 8.8% | |
+| `lookup_traits` | 0/80 | 0.0% | recall 14%, over-answered on 73 |
+| `lookup_rarity` | 18/80 | 22.5% | |
+| `prereq` | 0/80 | 0.0% | recall 3%, over-answered on 72 |
+| `remaster_rename` | 9/80 | 11.2% | |
+| `abstention` | 11/40 | 27.5% | fabricated 21 levels |
+| `trap_5e` | 21/30 | 70.0% | **9 leaks** |
+| `trap_5e_applied` | 11/16 | 68.8% | 5 leaks, PF2e machinery present **9%** |
+| **Overall** | **77/486** | **15.8%** | |
+
+## The gradient
+
+Contamination is not a yes/no property. It scales monotonically with capability across every trap
+measure:
+
+| Model | `trap_5e` clean | applied clean | applied grounding | fabricated levels |
+| --- | ---: | ---: | ---: | ---: |
+| gpt-5 | 100% | 93.8% | 78% | 1/40 |
+| gpt-4.1-mini | 100% | 75.0% | 43% | 33/40 |
+| Qwen3.8-27B | 83.3% | 81.2% | 36% | 3/40 |
+| Qwen3.5-9B | 70.0% | 68.8% | 9% | 21/40 |
+
+Grounding is the cleanest signal in the whole benchmark: 78 / 43 / 36 / 9. The 9B names the right
+Pathfinder machinery in *one ruling out of eleven*.
+
+Abstention is the one column that does not follow the gradient — it tracks neither size nor
+knowledge. All four models know equally little; only their willingness to say so differs.
+
 ## Reading
 
 **Contamination is an open-weight problem, and it depends on how you ask.** The v1 traps quiz the model — "does
@@ -163,14 +198,17 @@ silently scoring as a clean one. gpt-5 had 15 truncations at a 1500-token cap, f
 
 The LoRA has to move these, without regressing the recall families:
 
-| Metric | Qwen3.8-27B now | gpt-5 |
-| --- | ---: | ---: |
-| `trap_5e` clean | 83.3% | 100% |
-| `trap_5e_applied` clean | 81.2% | 93.8% |
-| applied grounding | 36% | 78% |
-| `abstention` | 77.5% | 77.5% |
+| Metric | Qwen3.8-27B | Qwen3.5-9B | gpt-5 |
+| --- | ---: | ---: | ---: |
+| `trap_5e` clean | 83.3% | 70.0% | 100% |
+| `trap_5e_applied` clean | 81.2% | 68.8% | 93.8% |
+| applied grounding | 36% | 9% | 78% |
+| `abstention` | 77.5% | 27.5% | 77.5% |
+
+The 9B is the better development target: 2.5x faster to evaluate, and with twice the contamination
+and a quarter the grounding it has far more headroom to demonstrate the adapter is doing anything.
+Prove it there, then port to the 27B.
 
 ## Pending
 
-- `Qwen/Qwen3.5-9B` closed-book — to price the iteration cost of the 27B. Weights downloaded.
-- Retrieval-augmented reruns of all three, which is the number that actually decides the project.
+- Retrieval-augmented reruns of all four, which is the number that actually decides the project.

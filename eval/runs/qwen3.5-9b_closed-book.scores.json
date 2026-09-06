@@ -1,0 +1,6438 @@
+{
+  "report": {
+    "items": 486,
+    "correct": 77,
+    "accuracy": 0.15843621399176955,
+    "families": {
+      "abstention": {
+        "n": 40,
+        "correct": 11,
+        "accuracy": 0.275,
+        "fabricated": 21
+      },
+      "lookup_level": {
+        "n": 80,
+        "correct": 7,
+        "accuracy": 0.0875
+      },
+      "lookup_rarity": {
+        "n": 80,
+        "correct": 18,
+        "accuracy": 0.225
+      },
+      "lookup_traits": {
+        "n": 80,
+        "correct": 0,
+        "accuracy": 0.0,
+        "mean_recall": 0.14020833333333332,
+        "over_answered": 73
+      },
+      "prereq": {
+        "n": 80,
+        "correct": 0,
+        "accuracy": 0.0,
+        "mean_recall": 0.03125,
+        "over_answered": 72
+      },
+      "remaster_rename": {
+        "n": 80,
+        "correct": 9,
+        "accuracy": 0.1125,
+        "used_legacy_name": 0
+      },
+      "trap_5e": {
+        "n": 30,
+        "correct": 21,
+        "accuracy": 0.7,
+        "contaminated": 9
+      },
+      "trap_5e_applied": {
+        "n": 16,
+        "correct": 11,
+        "accuracy": 0.6875,
+        "contaminated": 5,
+        "mean_grounding": 0.09375
+      }
+    },
+    "run": "qwen3.5-9b_closed-book",
+    "benchmark_items": 486,
+    "partial": false,
+    "trait_vocab": 569
+  },
+  "verdicts": [
+    {
+      "id": "lookup_level-0000",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0001",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0002",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0003",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0004",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0005",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0006",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0007",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0008",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0009",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0010",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0011",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0012",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0013",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0014",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0015",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0016",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_level-0017",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0018",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0019",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0020",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0021",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0022",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0023",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0024",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0025",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0026",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0027",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0028",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0029",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0030",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0031",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0032",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_level-0033",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0034",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0035",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0036",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0037",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0038",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0039",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0040",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0041",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0042",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0043",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0044",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0045",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_level-0046",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0047",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0048",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0049",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_level-0050",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0051",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0052",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0053",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0054",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0055",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0056",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0057",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0058",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0059",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_level-0060",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0061",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0062",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0063",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0064",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0065",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0066",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0067",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0068",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0069",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0070",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0071",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0072",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0073",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0074",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_level-0075",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0076",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0077",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0078",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_level-0079",
+      "family": "lookup_level",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_traits-0000",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Invested",
+        "Magical"
+      ],
+      "extra": [
+        "Darkness",
+        "Light"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0001",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Cursed",
+        "Invested",
+        "Magical",
+        "Rare"
+      ],
+      "extra": [
+        "Class",
+        "Common",
+        "Dragon",
+        "Dwarf",
+        "Elf",
+        "Half-Elf",
+        "Human",
+        "Rogue",
+        "Uncommon"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0002",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Rare",
+        "Undead",
+        "NE",
+        "Large"
+      ],
+      "extra": [
+        "Attack",
+        "Giant",
+        "Light",
+        "Reach"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0003",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.25,
+      "missing": [
+        "Occult",
+        "Uncommon",
+        "Gargantuan"
+      ],
+      "extra": [
+        "Class",
+        "Human"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0004",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.5,
+      "missing": [
+        "Uncommon"
+      ],
+      "extra": [
+        "Divine",
+        "Range"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0005",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Complex",
+        "Haunt"
+      ],
+      "extra": [
+        "Attack",
+        "Aura",
+        "Dangerous",
+        "Force",
+        "Mechanical",
+        "Psychic",
+        "Reflection",
+        "Unholy"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0006",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.3333333333333333,
+      "missing": [
+        "Gnome",
+        "Spriggan",
+        "CE",
+        "Small"
+      ],
+      "extra": [
+        "Agathion",
+        "Celestial",
+        "Common"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0007",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Archetype",
+        "Metamagic",
+        "Spellshape"
+      ],
+      "extra": [
+        "Attack",
+        "Class",
+        "General",
+        "Light",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0008",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Downtime",
+        "Leadership"
+      ],
+      "extra": [
+        "Healing",
+        "Social"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0009",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Archetype",
+        "Concentrate"
+      ],
+      "extra": [
+        "Class",
+        "Cleric"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0010",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.3333333333333333,
+      "missing": [
+        "Illusion",
+        "Magical"
+      ],
+      "extra": [
+        "Class",
+        "Common",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0011",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Abjuration",
+        "Archetype"
+      ],
+      "extra": [
+        "Arcane"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0012",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Magical",
+        "Mythic",
+        "Unique"
+      ],
+      "extra": [
+        "Attack",
+        "Companion",
+        "Legacy",
+        "Poison",
+        "Summon"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0013",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Undead",
+        "Unique",
+        "Medium"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0014",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.16666666666666666,
+      "missing": [
+        "Human",
+        "Humanoid",
+        "Mortic",
+        "Rare",
+        "NE"
+      ],
+      "extra": [
+        "Acid",
+        "Archetype",
+        "Class",
+        "Cold",
+        "Common",
+        "Death",
+        "Fire",
+        "Skill",
+        "Undead"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0015",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Complex",
+        "Environmental",
+        "Magical",
+        "Rare"
+      ],
+      "extra": [
+        "Acid",
+        "Air",
+        "Poison",
+        "Psychic"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0016",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.3333333333333333,
+      "missing": [
+        "Emotion",
+        "Mental"
+      ],
+      "extra": [
+        "Class",
+        "General"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0017",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Consumable",
+        "Magical"
+      ],
+      "extra": [
+        "Archetype",
+        "Class",
+        "Range",
+        "Rogue"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0018",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Pervasive Magic",
+        "Rare"
+      ],
+      "extra": [
+        "Attack",
+        "Cantrip",
+        "Time"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0019",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.5,
+      "missing": [
+        "Uncommon"
+      ],
+      "extra": [
+        "Class"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0020",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.25,
+      "missing": [
+        "Amphibious",
+        "Humanoid",
+        "Medium"
+      ],
+      "extra": [
+        "City",
+        "Common",
+        "Giant"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0021",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Archetype",
+        "Fortune",
+        "Occult"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0022",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.2,
+      "missing": [
+        "Gnome",
+        "Humanoid",
+        "CE",
+        "Small"
+      ],
+      "extra": [
+        "Archetype",
+        "Common"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0023",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.6666666666666666,
+      "missing": [
+        "Invested"
+      ],
+      "extra": [
+        "Cold"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0024",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.6666666666666666,
+      "missing": [
+        "Small"
+      ],
+      "extra": [
+        "Beast"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0025",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Arcane",
+        "Invested",
+        "Tattoo",
+        "Uncommon"
+      ],
+      "extra": [
+        "Legacy",
+        "Negative",
+        "Rare",
+        "Rune"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0026",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Air",
+        "Bottled Breath",
+        "Consumable",
+        "Electricity"
+      ],
+      "extra": [
+        "Fear",
+        "Light",
+        "Potion",
+        "Range",
+        "Transmutation"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0027",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Artifact",
+        "Conjuration",
+        "Occult",
+        "Unique"
+      ],
+      "extra": [
+        "Attack",
+        "Common",
+        "Light"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0028",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Archetype",
+        "Auditory",
+        "Mental",
+        "Skill"
+      ],
+      "extra": [
+        "Attack"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0029",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Aura",
+        "Concentrate",
+        "Manipulate",
+        "Mental"
+      ],
+      "extra": [
+        "Evocation",
+        "Necromancy"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0030",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.75,
+      "missing": [
+        "NE"
+      ],
+      "extra": [
+        "Common",
+        "Goblin",
+        "Skirmisher"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0031",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.3333333333333333,
+      "missing": [
+        "N",
+        "Small"
+      ],
+      "extra": [
+        "Attack",
+        "Class",
+        "Giant",
+        "Poison",
+        "Psychic",
+        "Reach",
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0032",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Beast",
+        "Unique",
+        "CE",
+        "Gargantuan"
+      ],
+      "extra": [
+        "Attack",
+        "Aura",
+        "Common",
+        "Evil",
+        "Fear",
+        "Good",
+        "Humanoid",
+        "Nightmare",
+        "Reach",
+        "Undead",
+        "Unholy"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0033",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Athamaru",
+        "Healing",
+        "Locathah"
+      ],
+      "extra": [
+        "Aquatic",
+        "General",
+        "Human",
+        "Water"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0034",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Concentrate",
+        "Incarnate",
+        "Manipulate",
+        "Uncommon"
+      ],
+      "extra": [
+        "Conjuration",
+        "Evocation",
+        "Force",
+        "Range",
+        "Reach",
+        "Swarm",
+        "Time",
+        "Visual"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0035",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.2,
+      "missing": [
+        "Humanoid",
+        "Unique",
+        "N",
+        "Medium"
+      ],
+      "extra": [
+        "Cleric"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0036",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Haunt",
+        "Rare"
+      ],
+      "extra": [
+        "Psychic"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0037",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Cursebound",
+        "Oracle",
+        "Spellshape",
+        "Metamagic"
+      ],
+      "extra": [
+        "Arcane",
+        "Class"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0038",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.3333333333333333,
+      "missing": [
+        "Invested",
+        "Uncommon"
+      ],
+      "extra": [
+        "Arcane",
+        "Class",
+        "Mechanical",
+        "Simple",
+        "Unique"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0039",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Archetype",
+        "Auditory",
+        "Linguistic",
+        "Magical"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0040",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Beast",
+        "Uncommon",
+        "Medium"
+      ],
+      "extra": [
+        "Animal",
+        "Common"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0041",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Concentrate",
+        "Conjuration",
+        "Exploration",
+        "Manipulate",
+        "Occult",
+        "Teleportation"
+      ],
+      "extra": [
+        "Attack",
+        "Harrow Court",
+        "Move"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0042",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Animal",
+        "N",
+        "Gargantuan"
+      ],
+      "extra": [
+        "Giant",
+        "Titan"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0043",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.5,
+      "missing": [
+        "Magical"
+      ],
+      "extra": [
+        "Common",
+        "Curse",
+        "Water"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0044",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.3333333333333333,
+      "missing": [
+        "Attack",
+        "Enchantment",
+        "Misfortune",
+        "Uncommon"
+      ],
+      "extra": [
+        "Sleep"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0045",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.25,
+      "missing": [
+        "Conjuration",
+        "Transmutation",
+        "Uncommon"
+      ],
+      "extra": [
+        "Attack",
+        "Capacity",
+        "Common",
+        "Companion",
+        "Intelligent",
+        "Morale",
+        "Rare",
+        "Unique"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0046",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Consumable",
+        "Magical",
+        "Talisman"
+      ],
+      "extra": [
+        "Oil",
+        "Potion"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0047",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "General",
+        "Skill"
+      ],
+      "extra": [
+        "Arcane",
+        "Class"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0048",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.25,
+      "missing": [
+        "Divination",
+        "Invested",
+        "Magical"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0049",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Cleric",
+        "Concentrate",
+        "Manipulate",
+        "Rare",
+        "Focus"
+      ],
+      "extra": [
+        "Fear"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0050",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Archetype",
+        "Polymorph",
+        "Primal",
+        "Transmutation"
+      ],
+      "extra": [
+        "Humanoid",
+        "Move",
+        "Open"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0051",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Abjuration",
+        "Magical",
+        "Uncommon"
+      ],
+      "extra": [
+        "Open"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0052",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.2,
+      "missing": [
+        "Earth",
+        "Humanoid",
+        "CE",
+        "Large"
+      ],
+      "extra": [
+        "Attack",
+        "Class",
+        "Fear",
+        "Grapple",
+        "Poison",
+        "Rogue"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0053",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Animal",
+        "Small"
+      ],
+      "extra": [
+        "Common",
+        "Construct",
+        "Golem",
+        "Metal",
+        "Ooze"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0054",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Dero",
+        "Humanoid",
+        "Shadow",
+        "Unique",
+        "Small"
+      ],
+      "extra": [
+        "Common",
+        "Skill",
+        "Swarm"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0055",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.2,
+      "missing": [
+        "Humanoid",
+        "Unique",
+        "LE",
+        "Medium"
+      ],
+      "extra": [
+        "Rogue"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0056",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.25,
+      "missing": [
+        "Divination",
+        "Invested",
+        "Magical"
+      ],
+      "extra": [
+        "Focus",
+        "Range",
+        "Trap"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0057",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Plant",
+        "Rare",
+        "N",
+        "Large"
+      ],
+      "extra": [
+        "Common",
+        "Humanoid",
+        "Orc"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0058",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Human",
+        "Humanoid",
+        "Unique",
+        "LG",
+        "Medium"
+      ],
+      "extra": [
+        "Aberration"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0059",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Fiend",
+        "Rare",
+        "Sahkil",
+        "Unholy",
+        "Medium"
+      ],
+      "extra": [
+        "Common"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0060",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Air",
+        "Aura",
+        "Consumable",
+        "Magical"
+      ],
+      "extra": [
+        "Companion",
+        "Range"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0061",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Invested",
+        "Magical",
+        "Transmutation",
+        "Uncommon"
+      ],
+      "extra": [
+        "Arcane",
+        "Capacity",
+        "Common",
+        "Scroll",
+        "Simple"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0062",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.25,
+      "missing": [
+        "Archetype",
+        "Multiclass",
+        "Uncommon"
+      ],
+      "extra": [
+        "Attack",
+        "Class",
+        "Gunslinger"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0063",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Precious",
+        "Rare"
+      ],
+      "extra": [
+        "Fire",
+        "Light"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0064",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Magical",
+        "Talisman",
+        "Transmutation",
+        "Uncommon"
+      ],
+      "extra": [
+        "Acid",
+        "Air",
+        "Cold",
+        "Earth",
+        "Fire",
+        "Poison",
+        "Shadow",
+        "Void",
+        "Water"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0065",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.25,
+      "missing": [
+        "Magical",
+        "Uncommon",
+        "Wood"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0066",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Artifact",
+        "Invested",
+        "Magical",
+        "Mythic",
+        "Unique"
+      ],
+      "extra": [
+        "City"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0067",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Precious",
+        "Rare"
+      ],
+      "extra": [
+        "Alchemical"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0068",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Complex",
+        "Magical",
+        "Trap",
+        "Unique"
+      ],
+      "extra": [
+        "Dwarf",
+        "Elf",
+        "Force",
+        "Psychic",
+        "Tiefling",
+        "Trial"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0069",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Archetype",
+        "Skill"
+      ],
+      "extra": [
+        "Attack"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0070",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Concentrate",
+        "Focus",
+        "Manipulate",
+        "Olfactory",
+        "Sorcerer",
+        "Uncommon"
+      ],
+      "extra": [
+        "Evocation",
+        "Hex",
+        "Water"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0071",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.3333333333333333,
+      "missing": [
+        "Grimoire",
+        "Magical"
+      ],
+      "extra": [
+        "Arcane",
+        "Secret"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0072",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 1.0,
+      "missing": [],
+      "extra": [
+        "Darkness",
+        "Evil",
+        "Human",
+        "Modification",
+        "Shade",
+        "Undead",
+        "Witch"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0073",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Ghoul",
+        "Undead",
+        "Unique",
+        "CE",
+        "Medium"
+      ],
+      "extra": [
+        "Attack",
+        "Famous",
+        "Giant"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0074",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Destiny",
+        "Mythic",
+        "Rare"
+      ],
+      "extra": [
+        "Dedication"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0075",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.5,
+      "missing": [
+        "Exploration"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0076",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.16666666666666666,
+      "missing": [
+        "Disarm",
+        "Finesse",
+        "Ghoran",
+        "Trip",
+        "Uncommon"
+      ],
+      "extra": [
+        "Grapple",
+        "Light",
+        "Simple",
+        "Thrown",
+        "Versatile"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0077",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.25,
+      "missing": [
+        "Emotion",
+        "Mental",
+        "Spellheart"
+      ],
+      "extra": [
+        "Common",
+        "Force",
+        "Open"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0078",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.3333333333333333,
+      "missing": [
+        "Alchemical",
+        "Elixir"
+      ],
+      "extra": [
+        "Acid",
+        "Oil",
+        "Rare"
+      ],
+      "correct": false
+    },
+    {
+      "id": "lookup_traits-0079",
+      "family": "lookup_traits",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.3333333333333333,
+      "missing": [
+        "Humanoid",
+        "CE",
+        "Large",
+        "Kholo"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0000",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0001",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0002",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0003",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0004",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0005",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0006",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0007",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0008",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0009",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0010",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0011",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0012",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0013",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0014",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0015",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0016",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0017",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0018",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0019",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0020",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0021",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0022",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0023",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0024",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0025",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0026",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0027",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0028",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0029",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0030",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0031",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0032",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0033",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0034",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0035",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0036",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0037",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0038",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0039",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0040",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0041",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0042",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0043",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0044",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0045",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0046",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0047",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0048",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0049",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0050",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0051",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0052",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0053",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0054",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0055",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0056",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0057",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0058",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0059",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0060",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0061",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0062",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0063",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0064",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0065",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0066",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0067",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0068",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0069",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0070",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0071",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0072",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0073",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0074",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0075",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0076",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0077",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "lookup_rarity-0078",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "lookup_rarity-0079",
+      "family": "lookup_rarity",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "prereq-0000",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Sleepwalker Dedication"
+      ],
+      "extra": [
+        "Archetype",
+        "Class",
+        "Dream"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0001",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Guerrilla Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Fear",
+        "General",
+        "Lineage",
+        "Time",
+        "Undead"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0002",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Trained in Intimidation"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "prereq-0003",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Thlipit Contestant Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Maneuver",
+        "Rogue"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0004",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Combat Assessment"
+      ],
+      "extra": [
+        "Class",
+        "Human",
+        "Investigator"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0005",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Ostilli Host Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Fighter",
+        "Mutant",
+        "Propulsive",
+        "Rogue"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0006",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Swordmaster Dedication",
+        "Expert in Crafting"
+      ],
+      "extra": [
+        "Class",
+        "Focus",
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0007",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Godling Dedication"
+      ],
+      "extra": [
+        "Champion",
+        "Fighter"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0008",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Prophesied Monarch Dedication"
+      ],
+      "extra": [
+        "Demon",
+        "Dragon",
+        "Legacy"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0009",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Double Prey",
+        "Warden's Boon"
+      ],
+      "extra": [
+        "Archetype",
+        "Class",
+        "Ranger"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0010",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Guerrilla Dedication",
+        "Poisoned Sticks and Stones"
+      ],
+      "extra": [
+        "Class",
+        "Fighter",
+        "Ranger"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0011",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Battle Medicine",
+        "Trained in Medicine"
+      ],
+      "extra": [
+        "Class",
+        "Dedication",
+        "General",
+        "Healing",
+        "Oath"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0012",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Halcyon Spellcasting Adept"
+      ],
+      "extra": [
+        "Human",
+        "Humanoid"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0013",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "precise strike"
+      ],
+      "extra": [
+        "Attack",
+        "Light",
+        "Move"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0014",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Trained in Crafting"
+      ],
+      "extra": [
+        "Alchemist",
+        "Class",
+        "Common",
+        "Dedication",
+        "Multiclass",
+        "Rogue",
+        "Witch"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0015",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Basic Wizard Spellcasting",
+        "Master in Arcana"
+      ],
+      "extra": [
+        "Class",
+        "Sorcerer",
+        "Wizard"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0016",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Deflect Projectile",
+        "Monastic Archer Stance"
+      ],
+      "extra": [
+        "Attack",
+        "Class",
+        "Fire"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0017",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Exorcist Dedication"
+      ],
+      "extra": [
+        "Archetype",
+        "Class",
+        "Cleric",
+        "Healing",
+        "Spirit"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0018",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Sister of the Golden Erinys Dedication"
+      ],
+      "extra": [
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0019",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Angelkin",
+        "Lawbringer",
+        "Musetouched",
+        "or or another lineage feat associated with celestials"
+      ],
+      "extra": [
+        "Celestial",
+        "Class",
+        "Common",
+        "Divine",
+        "General",
+        "Oracle",
+        "Skill",
+        "Witch"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0020",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Mummy Dedication"
+      ],
+      "extra": [
+        "Archetype",
+        "Class",
+        "Healing",
+        "Ranger"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0021",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Dragon's Flight"
+      ],
+      "extra": [
+        "Class",
+        "Move",
+        "Ranger",
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0022",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Fan Dancer Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Dragon",
+        "Multiclass"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0023",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Unexpected Sharpshooter Dedication",
+        "Trained in Deception"
+      ],
+      "extra": [
+        "Attack",
+        "Secret"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0024",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "tenets of good"
+      ],
+      "extra": [
+        "Class"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0025",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Sister of the Golden Erinys Dedication"
+      ],
+      "extra": [
+        "Stance"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0026",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Master in Intimidation"
+      ],
+      "extra": [
+        "Attack",
+        "Fear",
+        "Move"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0027",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Master in Religion",
+        "you follow a deity"
+      ],
+      "extra": [
+        "Attack",
+        "Cleric"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0028",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Masquerade of Seasons Stance"
+      ],
+      "extra": [
+        "Class"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0029",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Godling Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Cleric",
+        "Druid",
+        "Ranger",
+        "Wizard"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0030",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "tusks unarmed attack"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "prereq-0031",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Battle Harbinger Dedication"
+      ],
+      "extra": [
+        "Aura",
+        "Class",
+        "Vitality"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0032",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Basic Synergy"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "prereq-0033",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 1.0,
+      "missing": [],
+      "extra": [
+        "Barbarian",
+        "Class",
+        "Fighter"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0034",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "leaf order"
+      ],
+      "extra": [
+        "Class",
+        "Move",
+        "Ranger",
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0035",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Captain Dedication"
+      ],
+      "extra": [
+        "Archetype",
+        "Class",
+        "General"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0036",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Legendary in Nature",
+        "Master Monster Hunter"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "prereq-0037",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Kijimuna Gnome heritage or at least one primal innate spell from a gnome heritage or feat"
+      ],
+      "extra": [
+        "Human",
+        "Plant"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0038",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Tsukumogami Poppet heritage"
+      ],
+      "extra": [
+        "Class",
+        "Fighter",
+        "Ranger"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0039",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Chronoskimmer Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Common",
+        "Focused",
+        "Move",
+        "Skill",
+        "Time"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0040",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Beastmaster Dedication",
+        "animal companion with a jaws or fangs unarmed attack"
+      ],
+      "extra": [
+        "Class",
+        "Rogue"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0041",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Wyldsinger"
+      ],
+      "extra": [
+        "Archetype",
+        "Barbarian",
+        "Class",
+        "Guardian",
+        "Primal"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0042",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Lastwall Sentry Dedication"
+      ],
+      "extra": [
+        "Bulwark",
+        "Class",
+        "Cleric",
+        "Death",
+        "Necromancer",
+        "Necromancy"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0043",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Aldori Duelist Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Fighter"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0044",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Werecreature Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Psychic",
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0045",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Golden League Xun Dedication",
+        "Expert in Athletics"
+      ],
+      "extra": [
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0046",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Ostilli Host Dedication"
+      ],
+      "extra": [
+        "Acid",
+        "Alchemist",
+        "Archetype",
+        "Attack",
+        "Class",
+        "Common",
+        "Mutagen",
+        "Mutant",
+        "Splash"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0047",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Evanescent Wings"
+      ],
+      "extra": [
+        "Archetype",
+        "Class",
+        "Cleric",
+        "Druid",
+        "Monk"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0048",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "champion's reaction"
+      ],
+      "extra": [
+        "Attack"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0049",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Shifting Faces"
+      ],
+      "extra": [
+        "Kitsune"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0050",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "You are not sanctified with the holy or unholy trait"
+      ],
+      "extra": [
+        "Human"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0051",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Demolitionist Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Structure",
+        "Wizard"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0052",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Behold My Creation!"
+      ],
+      "extra": [
+        "Alchemical",
+        "Alchemist",
+        "Class",
+        "Transmutation"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0053",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Clawdancer Dedication"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "prereq-0054",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Eldritch Archer Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Time"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0055",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "powerful fist or expert in unarmed attacks",
+        "member of a House of Perfection"
+      ],
+      "extra": [
+        "Dedication"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0056",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Advanced Construct Companion"
+      ],
+      "extra": [
+        "Class",
+        "Companion",
+        "Construct"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0057",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "spirit instinct"
+      ],
+      "extra": [
+        "Class",
+        "Cleric",
+        "Oracle",
+        "Ranger",
+        "Spirit"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0058",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Bone Magic"
+      ],
+      "extra": [
+        "Animal",
+        "Archetype",
+        "Beast",
+        "Class",
+        "General",
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0059",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Trained in Stealth"
+      ],
+      "extra": [
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0060",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Arcana of Iron"
+      ],
+      "extra": [
+        "Air",
+        "Aquatic",
+        "Earth",
+        "Fire",
+        "Necromancy",
+        "Psychic",
+        "Secret",
+        "Void",
+        "Water"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0061",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Chrysanthemum Leshy heritage or Peachchild Leshy heritage"
+      ],
+      "extra": [
+        "Druid",
+        "Plant",
+        "Ranger"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0062",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Dragon Disciple Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Dragon"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0063",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.5,
+      "missing": [
+        "Scion of Domora Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Monk"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0064",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Trained in Deception"
+      ],
+      "extra": [
+        "Class",
+        "Maneuver",
+        "Monk",
+        "Stance"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0065",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 1.0,
+      "missing": [],
+      "extra": [
+        "Archetype",
+        "Attack",
+        "Class",
+        "Move",
+        "Sorcerer"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0066",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Uzunjati Storytelling",
+        "ability to cast _shield_"
+      ],
+      "extra": [
+        "Attack",
+        "Skill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0067",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Adapted Cantrip",
+        "can cast 3rd-level spells"
+      ],
+      "extra": [
+        "Class"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0068",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Trained in Hero-God Lore  or Trained in Legendary Beast Lore"
+      ],
+      "extra": [
+        "Class",
+        "Mythic",
+        "Ranger"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0069",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Quick Draw"
+      ],
+      "extra": [
+        "Attack",
+        "Skill",
+        "Subtle"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0070",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Ghost Dedication",
+        "Master in Acrobatics"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "prereq-0071",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Lastwall Sentry Dedication",
+        "you worship a good-aligned deity"
+      ],
+      "extra": [
+        "Legacy"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0072",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Expert in Stealth"
+      ],
+      "extra": [
+        "Class",
+        "Rogue"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0073",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Avenging Runelord Dedication",
+        "expert proficiency in a spear or polearm"
+      ],
+      "extra": [
+        "Alchemical",
+        "Class",
+        "Construct",
+        "Focus",
+        "Light",
+        "Mechanical",
+        "Training"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0074",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Butterfly Blade Dedication"
+      ],
+      "extra": [
+        "Attack",
+        "Class",
+        "Deadly",
+        "Fighter",
+        "Light",
+        "Maneuver"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0075",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Aldori Duelist Dedication"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "prereq-0076",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Ki Strike",
+        "you follow a deity"
+      ],
+      "extra": [
+        "Divine"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0077",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Lethoci heritage or Xyloshi heritage"
+      ],
+      "extra": [
+        "Class"
+      ],
+      "correct": false
+    },
+    {
+      "id": "prereq-0078",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Hallowed Necromancer Dedication",
+        "necromancer initial school spell or death initial domain spell"
+      ],
+      "extra": [],
+      "correct": false
+    },
+    {
+      "id": "prereq-0079",
+      "family": "prereq",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "recall": 0.0,
+      "missing": [
+        "Necrologist Dedication"
+      ],
+      "extra": [
+        "Class",
+        "Witch"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0000",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Staff of Necromancy"
+      ],
+      "correct": true
+    },
+    {
+      "id": "remaster_rename-0001",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Flaming Star (Greater)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0002",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Dragonhide"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0003",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Tanglefoot Bag"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0004",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Wand of Mercy (8th-Level Spell)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0005",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Healer's Tools"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0006",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Basic Chair"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0007",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Key Ability"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0008",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Invisibility"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0009",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Bestial Mutagen"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0010",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Wand of Hybrid Form (6th-Level Spell)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0011",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Chapter 1: Gamemastery Basics"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0012",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Silvertongue Mutagen"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0013",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Perfected Form"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0014",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Multiclass Archetypes"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0015",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Darkwood"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0016",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Skillful Tail (Ganzi)"
+      ],
+      "correct": true
+    },
+    {
+      "id": "remaster_rename-0017",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "No! No! I Created You! "
+      ],
+      "correct": true
+    },
+    {
+      "id": "remaster_rename-0018",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Basic Prosthesis"
+      ],
+      "correct": true
+    },
+    {
+      "id": "remaster_rename-0019",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Alchemist's Tools"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0020",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Pit Fiend"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0021",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Potion of Resistance"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0022",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Endless Grimoire (Greater)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0023",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Coward's Roots"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0024",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Lodging"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0025",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Mentalist's Staff"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0026",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Mithral Weapon"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0027",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Grim Sandglass (Major)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0028",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Cognitive Mutagen"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0029",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Activating Items"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0030",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Crystalline Dust"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0031",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Secret Chest"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0032",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Arrow Snatching "
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0033",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Devotees"
+      ],
+      "correct": true
+    },
+    {
+      "id": "remaster_rename-0034",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Wand of Mental Purification (9th-Level Spell)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0035",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Gloves of Storing"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0036",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Shrinking Potion"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0037",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Raja Rakshasa"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0038",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "In This Book"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0039",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Half-Orc"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0040",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Magic Armor"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0041",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Spellcasting"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0042",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Spellcasting"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0043",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Silvertongue Mutagen"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0044",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Tanglefoot Bag"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0045",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Wand of the Spider"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0046",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Silvertongue Mutagen"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0047",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Breastplate of Command"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0048",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Flesh Golem"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0049",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Handwraps of Mighty Blows"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0050",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Elite Adjustment"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0051",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Alchemical Items"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0052",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Ouroboros Flail (Major)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0053",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Bestial Mutagen"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0054",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Stampede Medallion (Greater)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0055",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Feather Token (Chest)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0056",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Splash of Art"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0057",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Locathah Hunter"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0058",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Unhampered Passage"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0059",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Negative"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0060",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Silvertongue Mutagen"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0061",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Oil of Unlife"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0062",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Azure Worm"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0063",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Resilient"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0064",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Commune with Nature"
+      ],
+      "correct": true
+    },
+    {
+      "id": "remaster_rename-0065",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Wand of Widening"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0066",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Areas"
+      ],
+      "correct": true
+    },
+    {
+      "id": "remaster_rename-0067",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Hellknight Order Cross-Training"
+      ],
+      "correct": true
+    },
+    {
+      "id": "remaster_rename-0068",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "More on Searching"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0069",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Wand of Overflowing Life"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0070",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Bralani Breath"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0071",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Cloudkill"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0072",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Antiplague"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0073",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Silver Shield"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0074",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Ghost Charge"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0075",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Disjunction"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0076",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Stalk Goggles (Major)"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0077",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Held or Worn"
+      ],
+      "correct": true
+    },
+    {
+      "id": "remaster_rename-0078",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Building a Library"
+      ],
+      "correct": false
+    },
+    {
+      "id": "remaster_rename-0079",
+      "family": "remaster_rename",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Wand of Manifold Missiles"
+      ],
+      "correct": false
+    },
+    {
+      "id": "abstention-0000",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0001",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0002",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0003",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0004",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0005",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0006",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0007",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0008",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0009",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0010",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0011",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0012",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0013",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0014",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0015",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0016",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0017",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0018",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0019",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0020",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0021",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0022",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0023",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0024",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0025",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0026",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0027",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0028",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0029",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0030",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0031",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0032",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0033",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0034",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0035",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0036",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0037",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "abstention-0038",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": false
+    },
+    {
+      "id": "abstention-0039",
+      "family": "abstention",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "fabricated": true
+    },
+    {
+      "id": "trap_5e-0000",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "bonus action"
+      ],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0001",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0002",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0003",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0004",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0005",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0006",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [
+        "no penalty"
+      ],
+      "forbidden_mentioned": [
+        "no penalty"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false
+    },
+    {
+      "id": "trap_5e-0007",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0008",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0009",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [
+        "short rest",
+        "hit die"
+      ],
+      "forbidden_mentioned": [
+        "short rest",
+        "hit die"
+      ],
+      "forbidden_echoed_from_question": [
+        "hit dice"
+      ],
+      "correct": false,
+      "clean": false
+    },
+    {
+      "id": "trap_5e-0010",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [
+        "lose concentration"
+      ],
+      "forbidden_mentioned": [
+        "lose concentration"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false
+    },
+    {
+      "id": "trap_5e-0011",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [
+        "six"
+      ],
+      "forbidden_mentioned": [
+        "six"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false
+    },
+    {
+      "id": "trap_5e-0012",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "Insight skill"
+      ],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0013",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [
+        "abjuration, conjuration"
+      ],
+      "forbidden_mentioned": [
+        "abjuration, conjuration"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false
+    },
+    {
+      "id": "trap_5e-0014",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0015",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [
+        "lawful good",
+        "chaotic neutral"
+      ],
+      "forbidden_mentioned": [
+        "lawful good",
+        "chaotic neutral"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false
+    },
+    {
+      "id": "trap_5e-0016",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0017",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "inspiration"
+      ],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0018",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0019",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [
+        "spell slot"
+      ],
+      "forbidden_mentioned": [
+        "spell slot"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false
+    },
+    {
+      "id": "trap_5e-0020",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0021",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0022",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0023",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0024",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0025",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0026",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0027",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "trap_5e-0028",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [
+        "pounds"
+      ],
+      "forbidden_mentioned": [
+        "pounds"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false
+    },
+    {
+      "id": "trap_5e-0029",
+      "family": "trap_5e",
+      "empty": false,
+      "forbidden_hits": [
+        "warlock"
+      ],
+      "forbidden_mentioned": [
+        "warlock"
+      ],
+      "forbidden_echoed_from_question": [
+        "short rest"
+      ],
+      "correct": false,
+      "clean": false
+    },
+    {
+      "id": "trap_5e_applied-0000",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [
+        "extra attack"
+      ],
+      "forbidden_mentioned": [
+        "extra attack"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false,
+      "grounding": 0.5,
+      "missing": [
+        "multiple attack penalty"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0001",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "sustain"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0002",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "off-guard",
+        "flank"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0003",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "dying",
+        "recovery check",
+        "wounded"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0004",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [
+        "short rest"
+      ],
+      "forbidden_mentioned": [
+        "short rest"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false,
+      "grounding": 0.0,
+      "missing": [
+        "treat wounds",
+        "medicine"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0005",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "raise a shield",
+        "action"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0006",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [
+        "8 +"
+      ],
+      "forbidden_mentioned": [
+        "8 +"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false,
+      "grounding": 0.0,
+      "missing": [
+        "10 +"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0007",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [
+        "hit die"
+      ],
+      "forbidden_mentioned": [
+        "hit die"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false,
+      "grounding": 0.5,
+      "missing": [
+        "10"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0008",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "bulk"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0009",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "invest"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0010",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [
+        "3rd-level spells"
+      ],
+      "forbidden_mentioned": [
+        "3rd-level spells"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false,
+      "grounding": 0.0,
+      "missing": [
+        "rank"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0011",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "off-guard",
+        "-2"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0012",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "identify magic"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0013",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "critical success"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0014",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.5,
+      "missing": [
+        "seek"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0015",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "multiple attack penalty"
+      ]
+    }
+  ]
+}
