@@ -173,6 +173,13 @@ def grade(item: dict, response: str, vocab: set[str] | None = None) -> dict:
     elif kind == "free":
         out["correct"] = not forbidden
         out["clean"] = not forbidden
+        # Staying clean is a negative check, and silence passes it. Where the item
+        # names the Pathfinder machinery the ruling needs, measure that too.
+        wanted = item.get("must_contain") or []
+        if wanted:
+            present = [w for w in wanted if contains(hay, w)]
+            out["grounding"] = len(present) / len(wanted)
+            out["missing"] = [w for w in wanted if w not in present]
 
     else:  # pragma: no cover
         raise ValueError(f"unknown answer_type {kind!r}")
@@ -207,8 +214,10 @@ def summarise(verdicts: list[dict]) -> dict:
         empty = sum(1 for v in rows if v.get("empty"))
         if empty:
             entry["empty"] = empty
-        if fam == "trap_5e":
+        if fam.startswith("trap_5e"):
             entry["contaminated"] = sum(1 for v in rows if v["forbidden_hits"])
+        if any("grounding" in v for v in rows):
+            entry["mean_grounding"] = sum(v.get("grounding", 0.0) for v in rows) / n
         if fam == "remaster_rename":
             entry["used_legacy_name"] = sum(1 for v in rows if v["forbidden_hits"])
         by_family[fam] = entry
@@ -261,6 +270,8 @@ def main() -> int:
             notes.append(f"fabricated a level {e['fabricated']}x")
         if "contaminated" in e:
             notes.append(f"5e vocabulary in {e['contaminated']}/{e['n']}")
+        if "mean_grounding" in e:
+            notes.append(f"pf2e machinery {e['mean_grounding']:.0%}")
         if e.get("empty"):
             notes.append(f"{e['empty']} empty")
         if "used_legacy_name" in e:

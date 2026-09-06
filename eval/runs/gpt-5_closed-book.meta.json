@@ -3,13 +3,13 @@
   "model": "gpt-5",
   "backend": "api",
   "base_url": "https://api.openai.com/v1",
-  "items": 470,
-  "seconds": 50.2,
-  "max_tokens": 6000,
+  "items": 486,
+  "seconds": 43.7,
+  "max_tokens": 2500,
   "reasoning_effort": "low",
   "usage": {
-    "prompt_tokens": 34751,
-    "completion_tokens": 348512
+    "prompt_tokens": 36074,
+    "completion_tokens": 365608
   },
   "empty_responses": 0
 }

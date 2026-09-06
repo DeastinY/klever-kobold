@@ -3,13 +3,13 @@
   "model": "gpt-4.1-mini",
   "backend": "api",
   "base_url": "https://api.openai.com/v1",
-  "items": 470,
-  "seconds": 47.8,
-  "max_tokens": 400,
+  "items": 486,
+  "seconds": 4.5,
+  "max_tokens": 600,
   "reasoning_effort": null,
   "usage": {
-    "prompt_tokens": 35221,
-    "completion_tokens": 16432
+    "prompt_tokens": 36560,
+    "completion_tokens": 18452
   },
   "empty_responses": 0
 }

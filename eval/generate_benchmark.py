@@ -20,8 +20,14 @@ failure mode:
 ``trap_5e``
     Hand-authored (``seeds/5e_traps.jsonl``).  Questions where the D&D 5e answer
     is confidently wrong for PF2e.  ``must_not_contain`` turns each into an
-    automatic scorer for 5e contamination -- the single biggest failure mode of
-    a general model on this domain.
+    automatic scorer for 5e contamination.
+``trap_5e_applied``
+    Hand-authored (``seeds/5e_traps_applied.jsonl``).  The v1 traps ask leading
+    questions -- "does Pathfinder use advantage?" telegraphs that the answer is
+    no, and both frontier models scored 30/30.  These instead ask the model to
+    *adjudicate a situation*, and check whether 5e machinery shows up in the
+    ruling.  ``must_contain`` additionally measures whether the right Pathfinder
+    machinery appears, reported separately from contamination.
 """
 
 from __future__ import annotations
@@ -169,14 +175,15 @@ def gen_abstention(pool: list[dict], rng: random.Random, n: int) -> list[dict]:
     return out
 
 
-def gen_traps(path: pathlib.Path) -> list[dict]:
+def gen_traps(path: pathlib.Path, family: str = "trap_5e") -> list[dict]:
     out = []
     for i, line in enumerate(path.open("rb")):
         seed = orjson.loads(line)
         out.append(_item(
-            "trap_5e", i,
+            family, i,
             question=seed["question"], answer=seed["answer"], answer_type="free",
             acceptable=[], must_not_contain=seed.get("must_not_contain", []),
+            must_contain=seed.get("must_contain", []),
             topic=seed.get("topic"), wrong_5e_answer=seed.get("wrong_5e_answer"),
             source_ids=[], source_urls=[],
         ))
@@ -210,6 +217,7 @@ def main() -> int:
         + gen_remaster_rename(rows, rng, n)
         + gen_abstention(pool, rng, n // 2)
         + gen_traps(ROOT / "eval" / "seeds" / "5e_traps.jsonl")
+        + gen_traps(ROOT / "eval" / "seeds" / "5e_traps_applied.jsonl", "trap_5e_applied")
     )
 
     with args.out.open("wb") as fh:

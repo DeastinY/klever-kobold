@@ -148,6 +148,8 @@ def main() -> int:
     ap.add_argument("--no-4bit", action="store_true", help="hf backend: load in bf16 instead")
     ap.add_argument("--retry-empty", action="store_true",
                     help="re-run only the items whose response is empty in --out, and merge")
+    ap.add_argument("--merge", action="store_true",
+                    help="keep rows already in --out that this run does not cover")
     args = ap.parse_args()
 
     items = [orjson.loads(l) for l in args.benchmark.open("rb")]
@@ -161,6 +163,10 @@ def main() -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     kept: list[dict] = []
+    if args.merge and not args.retry_empty and out_path.exists():
+        covered = {i["id"] for i in items}
+        kept = [r for r in (orjson.loads(l) for l in out_path.open("rb")) if r["id"] not in covered]
+        print(f"merging {len(items)} new into {len(kept)} existing")
     if args.retry_empty:
         if not out_path.exists():
             print(f"--retry-empty needs an existing {out_path}", file=sys.stderr)

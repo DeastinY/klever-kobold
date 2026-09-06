@@ -1,8 +1,8 @@
 {
   "report": {
-    "items": 470,
-    "correct": 108,
-    "accuracy": 0.2297872340425532,
+    "items": 486,
+    "correct": 123,
+    "accuracy": 0.25308641975308643,
     "families": {
       "abstention": {
         "n": 40,
@@ -45,6 +45,13 @@
         "correct": 30,
         "accuracy": 1.0,
         "contaminated": 0
+      },
+      "trap_5e_applied": {
+        "n": 16,
+        "correct": 15,
+        "accuracy": 0.9375,
+        "contaminated": 1,
+        "mean_grounding": 0.78125
       }
     },
     "run": "gpt-5_closed-book",
@@ -5702,6 +5709,215 @@
       ],
       "correct": true,
       "clean": true
+    },
+    {
+      "id": "trap_5e_applied-0000",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.5,
+      "missing": [
+        "-5"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0001",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [
+        "concentration check"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0002",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.5,
+      "missing": [
+        "off-guard"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0003",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0004",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0005",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0006",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0007",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "10",
+        "constitution"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0008",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0009",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0010",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [
+        "third-level spell slots"
+      ],
+      "forbidden_mentioned": [
+        "third-level spell slots"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false,
+      "grounding": 0.0,
+      "missing": [
+        "rank"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0011",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.5,
+      "missing": [
+        "off-guard"
+      ]
+    },
+    {
+      "id": "trap_5e_applied-0012",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0013",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0014",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "trap_5e_applied-0015",
+      "family": "trap_5e_applied",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
     }
   ]
 }

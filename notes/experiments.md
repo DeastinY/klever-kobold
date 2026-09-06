@@ -17,6 +17,7 @@ What a model that knows nothing about Pathfinder scores (`eval/baselines.py`):
 | `remaster_rename` | 80 | most common answer | 2.5% |
 | `abstention` | 40 | refuse everything | 100% |
 | `trap_5e` | 30 | say nothing | 100% |
+| `trap_5e_applied` | 16 | say nothing | 100% |
 
 `lookup_rarity` at 70% is the important one. Neither frontier model beat it.
 
@@ -35,7 +36,8 @@ What a model that knows nothing about Pathfinder scores (`eval/baselines.py`):
 | `remaster_rename` | 10/80 | 12.5% | |
 | `abstention` | 2/40 | 5.0% | **invented a level for 33 of 40 non-existent feats** |
 | `trap_5e` | 30/30 | 100% | no 5e vocabulary at all |
-| **Overall** | **92/470** | **19.6%** | |
+| `trap_5e_applied` | 12/16 | 75.0% | **4 genuine leaks**, PF2e machinery present 43% |
+| **Overall** | **104/486** | **21.4%** | |
 
 ## Run 2 — `gpt-5`, closed-book
 
@@ -51,18 +53,34 @@ What a model that knows nothing about Pathfinder scores (`eval/baselines.py`):
 | `remaster_rename` | 5/80 | 6.2% | |
 | `abstention` | 31/40 | 77.5% | invented a level once |
 | `trap_5e` | 30/30 | 100% | no 5e vocabulary at all |
-| **Overall** | **108/470** | **23.0%** | |
+| `trap_5e_applied` | 15/16 | 93.8% | 1 leak, PF2e machinery present 78% |
+| **Overall** | **123/486** | **25.3%** | |
 
 ## Reading
 
-**The contamination premise failed for frontier models.** 60/60 trap questions clean across both
-runs. They know the three-action economy, that a natural 20 raises the degree of success rather than
-auto-critting, that alignment is gone. This was the stated phase-01 exit criterion and it fired
-against the project's own framing. The premise now rests entirely on the open-weight run.
+**The contamination result depends entirely on how you ask.** The v1 traps quiz the model — "does
+Pathfinder use advantage?" — and both models scored 30/30. The question telegraphs that the answer is
+no. So a second family (`trap_5e_applied`, 16 items) was written that asks the model to *adjudicate a
+situation* and checks whether 5e machinery turns up in the ruling. The separation was immediate:
+75% clean for gpt-4.1-mini against 93.8% for gpt-5, and 43% vs 78% on whether the correct Pathfinder
+machinery appeared at all.
 
-Two caveats before writing it off: the system prompt names the game, which primes correctly — a
-fairer test asks "how many attacks can a 5th-level fighter make?" without naming the system. And 30
-hand-authored items is a small family. Both are v2 work on the benchmark, not excuses.
+All five leaks are genuine, not metric artifacts:
+
+| Model | Topic | Leak |
+| --- | --- | --- |
+| gpt-4.1-mini | sustained spells | "they must attempt a **Concentration check** to maintain the spell" — no such mechanic in PF2e |
+| gpt-4.1-mini | between-encounter healing | invented a "10-minute **short rest**" |
+| gpt-4.1-mini | spell ranks | "1st-level spells / 2nd-level spells / 3rd-level spells" — Remaster uses ranks |
+| gpt-4.1-mini | critical saves | **"They take half damage"** on a natural 20 Reflex save — misses that a nat 20 raises the degree to critical success, which means *no* damage |
+| gpt-5 | spell ranks | "2 third-level spell slots" — terminology only |
+
+The fourth is the important one. That is not a vocabulary slip, it is a wrong ruling produced by the
+5e prior, on a situation that comes up constantly at a table.
+
+**So the premise narrows rather than fails.** Contamination is not something a frontier model shows
+when quizzed. It surfaces when the model has to rule on a situation — which is the only thing anyone
+would use this for. Whether an open-weight base model is worse is what the Qwen run has to answer.
 
 **Closed-book lookup is hopeless at any scale.** 1–17% across the recall families, and *below the
 trivial baseline* on rarity for both models. Retrieval is not an optimisation here.
@@ -87,6 +105,13 @@ Also fixed: matching is now plural-tolerant ("there are no bonus actions" must c
 and an empty response can never score — under a negative check like `trap_5e`, a truncated run was
 silently scoring as a clean one. gpt-5 had 15 truncations at a 1500-token cap, five of them in
 `trap_5e`; they were re-run at 6k.
+
+## Benchmark changes
+
+- **v1 → v2**: added `trap_5e_applied` (16 items). The 470 v1 items are unchanged and keep their
+  ids, so per-family numbers stay comparable across versions; only the overall denominator moved
+  (470 → 486). Both frontier runs were re-run on the new family and merged rather than re-scored
+  from stale responses.
 
 ## Pending
 

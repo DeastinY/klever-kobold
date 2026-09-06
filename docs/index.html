@@ -427,9 +427,9 @@
 
     <p><strong>Retrieval fixes facts. Fine-tuning fixes priors.</strong> So: retrieval carries the load, and a small LoRA does the things retrieval cannot &mdash; enforce Remaster vocabulary, and teach grounded citation and abstention.</p>
 
-    <p class="note">Measured since this was written: the first half holds emphatically, the second
-    half does not hold for frontier models. Two API models leaked no 5e vocabulary at all, so
-    "kill the 5e prior" has been struck from the list above pending the open-weight run. See
+    <p class="note">Measured since this was written: the first half holds emphatically. The second
+    half survives, but only under a harder test &mdash; frontier models pass every <em>quiz</em>
+    about 5e differences and still import 5e mechanics when asked to <em>adjudicate</em>. See
     <a href="#results-tag">Results</a>.</p>
 
     <p>The literature agrees, and points at the hybrid rather than either pole. <a href="https://arxiv.org/abs/2403.10131">RAFT</a> trains on retrieved context including distractors, with answers that quote the source verbatim &mdash; a near-perfect fit, since "cite the entry you used" is the target behaviour. <a href="https://arxiv.org/pdf/2409.07431">EntiGraph</a> synthetic pretraining recovers over 80% of RAG's gain parametrically and stacks with it; <a href="https://arxiv.org/pdf/2603.23562">Synthetic Mixed Training</a> measures +2.6% over RAG alone but <strong>+9.1% combined</strong>. And on small corpora specifically, <a href="https://arxiv.org/pdf/2508.06178">plain continued pretraining barely moves the needle</a> &mdash; diverse synthetic rephrasing is what lands.</p>
@@ -484,7 +484,7 @@
   <section>
     <div class="block-head">
       <h2>Benchmark</h2>
-      <span class="tag">470 items &middot; 7 families</span>
+      <span class="tag">486 items &middot; 8 families</span>
     </div>
     <p>No public Pathfinder benchmark exists, so this one is generated from the corpus with every answer derived from a structured field rather than a model's opinion. It is the most reusable thing the project will produce, and it has to come first &mdash; otherwise there is no way to tell whether the fine-tune helped.</p>
 
@@ -500,7 +500,8 @@
           <tr><td class="rowname mono">prereq</td><td class="num">80</td><td>Multi-hop feat prerequisites</td></tr>
           <tr><td class="rowname mono">remaster_rename</td><td class="num">80</td><td>Legacy-name staleness</td></tr>
           <tr><td class="rowname mono">abstention</td><td class="num">40</td><td>Inventing feats that do not exist</td></tr>
-          <tr><td class="rowname mono">trap_5e</td><td class="num">30</td><td>D&amp;D 5e contamination &mdash; hand-authored</td></tr>
+          <tr><td class="rowname mono">trap_5e</td><td class="num">30</td><td>D&amp;D 5e contamination, quizzed &mdash; hand-authored</td></tr>
+          <tr><td class="rowname mono">trap_5e_applied</td><td class="num">16</td><td>D&amp;D 5e contamination, adjudicated &mdash; hand-authored</td></tr>
         </tbody>
       </table>
       <caption>400 of the 470 items carry the id of their gold source chunk, so retrieval recall is measurable without annotating anything.</caption>
@@ -541,8 +542,8 @@
           <tr><th>Model</th><th class="num">overall</th><th class="num">level</th><th class="num">traits</th><th class="num">rarity</th><th class="num">prereq</th><th class="num">remaster</th><th class="num">abstain</th><th class="num">5e trap</th></tr>
         </thead>
         <tbody>
-          <tr><td class="rowname mono">gpt-5</td><td class="num"><strong>23%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">2%</td><td class="num">6%</td><td class="num">78%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="num"><strong>20%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">0%</td><td class="num">12%</td><td class="num">5%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">gpt-5</td><td class="num"><strong>25%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">2%</td><td class="num">6%</td><td class="num">78%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="num"><strong>21%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">0%</td><td class="num">12%</td><td class="num">5%</td><td class="num">100%</td></tr>
         </tbody>
         <caption>Closed-book accuracy by family. Every grade is deterministic.</caption>
       </table>
@@ -550,20 +551,38 @@
     <ul><li><strong>gpt-5</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-5</strong> invented a level for 1 of 40 feats that do not exist.</li><li><strong>gpt-4.1-mini</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-4.1-mini</strong> invented a level for 33 of 40 feats that do not exist.</li></ul>
     <!-- results:end -->
 
-    <h3 class="finding">What the first two runs settled</h3>
-    <p><strong>The contamination half of the thesis did not survive contact with the benchmark</strong>
-    &mdash; not for frontier instruction-tuned models, anyway. Both models answered all thirty trap
-    questions without a single 5e leak. They know Pathfinder has three actions and no bonus actions,
-    that a natural 20 raises the degree of success rather than auto-critting, and that alignment was
-    removed in the Remaster. That was the stated exit criterion for phase&nbsp;01, and it fired
-    against the premise. Whether it holds for an open-weight base model is now the open question, and
-    the only thing the Qwen run has to answer.</p>
-    <p>Two caveats keep this from being the last word. The prompt names the game, which primes
-    correctly; a fairer contamination test asks "how many attacks can a 5th-level fighter make?"
-    without naming the system. And thirty hand-authored items is a small family.</p>
-    <p><strong>What survived overwhelmingly is the other half.</strong> Closed-book lookup is
-    hopeless at any scale: 17.5% on feat levels, 1.2% on complete trait lists, 2.5% on
-    prerequisites. Retrieval is not an optimisation here, it is the entire load-bearing structure.</p>
+    <h3 class="finding">What the first runs settled</h3>
+    <p><strong>Closed-book lookup is hopeless at any scale.</strong> 17.5% on feat levels, 1.2% on
+    complete trait lists, 2.5% on prerequisites &mdash; and <em>below the trivial baseline</em> on
+    rarity, where answering "uncommon" to all eighty would have scored 70% against gpt-5's 31%.
+    Retrieval is not an optimisation here, it is the entire load-bearing structure.</p>
+
+    <p><strong>The contamination question turned on how it was asked.</strong> The first trap family
+    quizzes: "does Pathfinder use advantage?" Both models scored 30/30 &mdash; the question
+    telegraphs that the answer is no, and a frontier model does not fall for it. So a second family
+    was written that asks the model to <em>adjudicate a situation</em> instead, and checks whether
+    5e machinery turns up in the ruling. The separation appeared immediately.</p>
+
+    <div class="samples">
+      <div class="sample">
+        <div class="fam">trap_5e_applied &middot; gpt-4.1-mini, verbatim</div>
+        <div class="q">A wizard has a spell running that lasts 1 minute. An enemy hits them for 12 damage. What does the wizard roll to keep the spell going?</div>
+        <div class="a">"&hellip; they must attempt a <strong>Concentration check</strong> to maintain the spell."</div>
+        <div class="meta">Pathfinder 2e has no concentration check. The mechanic is imported wholesale.</div>
+      </div>
+    </div>
+
+    <p>The same model invented a "short rest", described spells by level rather than rank, and got
+    the natural-20 saving throw wrong &mdash; it said half damage, missing that a natural 20 raises
+    the degree of success to a critical, which on a Reflex save against a fireball means no damage at
+    all. That is not a vocabulary slip; it is a rules error produced by the 5e prior. gpt-5 leaked
+    once out of sixteen, and only on Remaster terminology.</p>
+
+    <p class="note"><strong>So the premise narrows rather than fails.</strong> Contamination is not
+    something a frontier model displays when quizzed &mdash; it surfaces when the model has to
+    <em>rule on a situation</em>, which is the only thing anyone would actually use this for.
+    Whether an open-weight base model does worse is what the Qwen run has to answer.</p>
+
     <p><strong>And one finding neither half predicted.</strong> Abstention is a capability axis, not
     a knowledge one. Handed forty feats that do not exist, gpt-4.1-mini invented a level for
     thirty-three of them. gpt-5 invented one. Same missing knowledge, opposite behaviour &mdash;
