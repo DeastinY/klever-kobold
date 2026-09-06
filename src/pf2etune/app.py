@@ -151,10 +151,20 @@ class Assistant:
         self.ollama = Ollama(ollama_url)
 
         meta = [orjson.loads(l) for l in (index_dir / "meta.jsonl").open("rb")]
-        self.bodies = {}
-        for line in (index_dir / "bodies.jsonl").open("rb"):
-            row = orjson.loads(line)
-            self.bodies[row["id"]] = row["text"]
+
+        # Entry bodies are 48 MB of JSON that becomes ~500 MB of Python strings if
+        # parsed eagerly, for the sake of the eight entries an answer actually
+        # quotes. Index byte offsets instead and read those eight on demand.
+        self._bodies_path = index_dir / "bodies.jsonl"
+        self._body_offsets: dict[str, tuple[int, int]] = {}
+        with self._bodies_path.open("rb") as fh:
+            offset = 0
+            for line in fh:
+                # The id is the first field, so it can be found without parsing.
+                start = line.index(b'"id":"') + 6
+                chunk_id = line[start:line.index(b'"', start)].decode()
+                self._body_offsets[chunk_id] = (offset, len(line))
+                offset += len(line)
 
         # mmap: the embeddings are read a few thousand rows at a time, so the OS
         # page cache does a better job than loading 170 MB up front.
@@ -167,6 +177,15 @@ class Assistant:
             model_name=self.manifest["embed_model"],
         )
         self._base_mask = self.index.allowed(exclude_legacy=False)
+
+    def body(self, chunk_id: str) -> str:
+        span = self._body_offsets.get(chunk_id)
+        if span is None:
+            return ""
+        offset, length = span
+        with self._bodies_path.open("rb") as fh:
+            fh.seek(offset)
+            return orjson.loads(fh.read(length)).get("text", "")
 
     # --- pipeline ------------------------------------------------------------
 
@@ -224,7 +243,7 @@ class Assistant:
             m = self.index.meta[i]
             hits.append(Hit(chunk_id=self.index.ids[i], name=m.get("name") or "",
                             category=m.get("category") or "", level=m.get("level"),
-                            url=m.get("url") or "", text=self.bodies.get(self.index.ids[i], "")))
+                            url=m.get("url") or "", text=self.body(self.index.ids[i])))
         return hits
 
     def context(self, hits: Iterable[Hit], max_chars: int = 1600) -> str:

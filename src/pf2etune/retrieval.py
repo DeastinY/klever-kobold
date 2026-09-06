@@ -107,11 +107,20 @@ class Index:
     # --- retrieval -----------------------------------------------------------
 
     def dense(self, query_vec: np.ndarray, mask: np.ndarray, k: int,
-              view: str = "full") -> list[int]:
+              view: str = "full", block: int = 8192) -> list[int]:
         matrix = self.summary_embeddings if view == "summary" else self.embeddings
         if matrix is None:
             return []
-        scores = matrix @ query_vec
+        # Score in blocks. The stored matrix is float16 and memory-mapped; a single
+        # `matrix @ query` upcasts all 41,743 rows to float32 at once, which is a
+        # 170 MB transient per view and was most of this process's peak memory.
+        # Blocking bounds it to a few tens of megabytes at no measurable cost in
+        # time, which matters on a 16 GB laptop.
+        scores = np.empty(matrix.shape[0], dtype=np.float32)
+        for start in range(0, matrix.shape[0], block):
+            stop = min(start + block, matrix.shape[0])
+            np.dot(np.asarray(matrix[start:stop], dtype=np.float32), query_vec,
+                   out=scores[start:stop])
         scores = np.where(mask, scores, -np.inf)
         k = min(k, int(mask.sum()))
         if k <= 0:

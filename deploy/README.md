@@ -9,12 +9,18 @@ Ollama does the model work; nothing here needs torch, transformers, or a GPU.
 | --- | ---: |
 | `qwen3.5:9b` (Q4, held by Ollama) | 5.7 GB |
 | `qwen3-embedding:0.6b` | 0.6 GB |
-| index (memory-mapped, mostly page cache) | 0.25 GB |
-| Python runtime | 0.06 GB |
-| **total** | **~6.6 GB** |
+| Python process, peak (measured) | 0.4 GB |
+| **total** | **~6.7 GB** |
 
 Leaves comfortable room for macOS and a browser. Ollama unloads models after five
 minutes idle, so the steady-state cost is lower still.
+
+The Python side is measured, not estimated: 395 MB peak resident, of which about
+110 MB is entry metadata and 50 MB the BM25 index. Embeddings are memory-mapped
+and scored in blocks, so the 170 MB float32 upcast a naive matrix multiply would
+allocate never happens; entry text is read from disk by byte offset for the eight
+entries an answer actually quotes. Index loads in 0.25 s, a search takes 0.45 s,
+a full answer about 1.6 s.
 
 ## Install
 
@@ -94,12 +100,23 @@ carries this system and a stronger reader does better with the same excerpts.
 
 ## What to expect
 
-On hand-written questions phrased the way players actually ask, retrieval finds
-the right entry 72.9% of the time in the top 5, and end-to-end answers score
-around 82%. Questions that name a feat or spell outright do far better than
-situational ones. Every answer cites its Archives of Nethys URL; when the
-excerpts do not contain the answer the model is instructed to say so, and mostly
-does.
+Measured on 109 hand-written questions phrased the way players actually ask —
+describing a feat rather than naming it, asking what to do in a situation, using
+pre-Remaster vocabulary, asking about things that do not exist:
+
+| | |
+| --- | ---: |
+| **overall** | **85.3%** |
+| situational ("an ogre grabbed my monk") | 100% |
+| comparative ("Shove or Trip?") | 100% |
+| pre-Remaster vocabulary | 85.7% |
+| false premise ("how does attunement work?") | 73.7% |
+| descriptive ("a feat that makes falling less dangerous") | 72.7% |
+| retrieval recall@5 | 76.4% |
+
+The weak spot is questions about things that do not exist: it still invents an
+answer roughly one time in five. Every answer cites its Archives of Nethys URL,
+so a wrong one is usually obvious from a wrong-looking citation.
 
 ## If something breaks
 
