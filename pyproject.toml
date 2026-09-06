@@ -19,7 +19,8 @@ local = [
     "transformers>=4.57",
     "accelerate>=1.0",
     "bitsandbytes>=0.45",
-    "huggingface_hub[hf_transfer]>=0.26",
+    "huggingface_hub>=0.26",
+    "hf_transfer>=0.1",
 ]
 retrieval = [
     "sentence-transformers>=3.0",

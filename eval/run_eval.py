@@ -21,8 +21,10 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import json
 import os
 import pathlib
+import re
 import sys
 import time
 
@@ -87,10 +89,52 @@ def run_api(items: list[dict], model: str, base_url: str, api_key: str, workers:
 
 # --- local transformers backend --------------------------------------------
 
-def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
-           load_4bit: bool) -> list[dict]:
+def _load_hf(model_id: str, quant):
+    """Load a checkpoint whatever head class it declares.
+
+    Qwen3.8-27B ships as ``Qwen3_5ForConditionalGeneration`` -- a multimodal
+    checkpoint with a vision tower bolted to a text decoder -- so
+    ``AutoModelForCausalLM`` does not map it. Try the image-text head first and
+    fall back, rather than assuming a plain causal LM.
+    """
     import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+    from transformers import AutoConfig, AutoModel
+
+    errors = []
+    try:
+        from transformers import AutoModelForImageTextToText
+        candidates = [AutoModelForImageTextToText]
+    except ImportError:  # pragma: no cover - older transformers
+        candidates = []
+    from transformers import AutoModelForCausalLM
+    candidates += [AutoModelForCausalLM, AutoModel]
+
+    for cls in candidates:
+        try:
+            model = cls.from_pretrained(
+                model_id, quantization_config=quant, dtype=torch.bfloat16, device_map="auto",
+            )
+            print(f"  loaded via {cls.__name__} as {type(model).__name__}")
+            return model
+        except (ValueError, KeyError, TypeError) as exc:
+            errors.append(f"{cls.__name__}: {exc}")
+    raise RuntimeError("could not load model:\n  " + "\n  ".join(errors))
+
+
+RE_THINK = re.compile(r"^.*?</think>\s*", re.S)
+
+
+def strip_thinking(text: str) -> str:
+    """Drop a reasoning block so scoring sees the answer, not the deliberation."""
+    if "</think>" in text:
+        return RE_THINK.sub("", text, count=1).strip()
+    return text.strip()
+
+
+def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
+           load_4bit: bool, chat_kwargs: dict) -> list[dict]:
+    import torch
+    from transformers import AutoTokenizer, BitsAndBytesConfig
 
     quant = None
     if load_4bit:
@@ -104,10 +148,9 @@ def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
     tok = AutoTokenizer.from_pretrained(model_id, padding_side="left")
     if tok.pad_token is None:
         tok.pad_token = tok.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id, quantization_config=quant, dtype=torch.bfloat16, device_map="auto",
-    )
+    model = _load_hf(model_id, quant)
     model.eval()
+    device = next(model.parameters()).device
 
     out: list[dict] = []
     for start in range(0, len(items), batch_size):
@@ -115,17 +158,21 @@ def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
         prompts = [
             tok.apply_chat_template(
                 [{"role": "system", "content": SYSTEM}, {"role": "user", "content": it["question"]}],
-                tokenize=False, add_generation_prompt=True,
+                tokenize=False, add_generation_prompt=True, **chat_kwargs,
             )
             for it in batch
         ]
-        enc = tok(prompts, return_tensors="pt", padding=True).to(model.device)
+        enc = tok(prompts, return_tensors="pt", padding=True).to(device)
         with torch.inference_mode():
+            # Greedy: the benchmark has to be reproducible, and the checkpoint's
+            # generation_config defaults to sampling.
             gen = model.generate(**enc, max_new_tokens=max_tokens, do_sample=False,
+                                 temperature=None, top_p=None, top_k=None,
                                  pad_token_id=tok.pad_token_id)
         for it, seq in zip(batch, gen):
             text = tok.decode(seq[enc["input_ids"].shape[1]:], skip_special_tokens=True)
-            out.append({"id": it["id"], "family": it["family"], "response": text.strip(), "usage": {}})
+            out.append({"id": it["id"], "family": it["family"],
+                        "response": strip_thinking(text), "usage": {}})
         print(f"  {min(start + batch_size, len(items))}/{len(items)}", flush=True)
     return out
 
@@ -146,6 +193,10 @@ def main() -> int:
     ap.add_argument("--reasoning-effort", help="e.g. low; omit for non-reasoning models")
     ap.add_argument("--batch-size", type=int, default=8, help="hf backend only")
     ap.add_argument("--no-4bit", action="store_true", help="hf backend: load in bf16 instead")
+    ap.add_argument("--chat-kwargs", default="{}",
+                    help='hf backend: JSON passed to apply_chat_template, e.g. '
+                         "'{\"enable_thinking\": false}'. Qwen3.x defaults to thinking at "
+                         "xhigh effort, which is not what a plain baseline should measure.")
     ap.add_argument("--retry-empty", action="store_true",
                     help="re-run only the items whose response is empty in --out, and merge")
     ap.add_argument("--merge", action="store_true",
@@ -190,7 +241,8 @@ def main() -> int:
         rows = run_api(items, args.model, args.base_url, key, args.workers,
                        args.max_tokens, args.reasoning_effort)
     else:
-        rows = run_hf(items, args.model, args.max_tokens, args.batch_size, not args.no_4bit)
+        rows = run_hf(items, args.model, args.max_tokens, args.batch_size, not args.no_4bit,
+                      json.loads(args.chat_kwargs))
 
     rows = kept + rows
     rows.sort(key=lambda r: r["id"])
@@ -207,6 +259,8 @@ def main() -> int:
             "base_url": args.base_url if args.backend == "api" else None,
             "items": len(rows), "seconds": round(time.time() - started, 1),
             "max_tokens": args.max_tokens, "reasoning_effort": args.reasoning_effort,
+            "chat_kwargs": json.loads(args.chat_kwargs) if args.backend == "hf" else None,
+            "quantization": (None if args.backend == "api" else ("bf16" if args.no_4bit else "nf4-4bit")),
             "usage": usage, "empty_responses": sum(1 for r in rows if not r["response"].strip())}
     out_path.with_suffix(".meta.json").write_bytes(orjson.dumps(meta, option=orjson.OPT_INDENT_2))
 
