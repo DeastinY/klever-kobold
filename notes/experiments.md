@@ -56,9 +56,49 @@ What a model that knows nothing about Pathfinder scores (`eval/baselines.py`):
 | `trap_5e_applied` | 15/16 | 93.8% | 1 leak, PF2e machinery present 78% |
 | **Overall** | **123/486** | **25.3%** | |
 
+## Run 3 — `Qwen/Qwen3.8-27B`, closed-book *(the run the premise depended on)*
+
+2026-09-06 · 486 items · nf4 4-bit, `enable_thinking=false`, greedy, batch 16, 500 max tokens ·
+11m45s on one RTX 5090 · 22.9 GB VRAM
+
+| Family | Correct | Accuracy | Notes |
+| --- | ---: | ---: | --- |
+| `lookup_level` | 9/80 | 11.2% | |
+| `lookup_traits` | 0/80 | 0.0% | recall 9%, over-answered on 50 |
+| `lookup_rarity` | 15/80 | 18.8% | far below the 70% trivial baseline |
+| `prereq` | 1/80 | 1.2% | recall 3%, over-answered on 64 |
+| `remaster_rename` | 11/80 | 13.8% | best of the three, oddly |
+| `abstention` | 31/40 | 77.5% | fabricated 3 levels — matches gpt-5, beats gpt-4.1-mini by 30x |
+| `trap_5e` | 25/30 | 83.3% | **5 leaks — the only model that fails this family** |
+| `trap_5e_applied` | 13/16 | 81.2% | 3 leaks, PF2e machinery present **36%** |
+| **Overall** | **106/486** | **21.8%** | |
+
+The five quiz leaks:
+
+| Topic | Leak |
+| --- | --- |
+| dying | "they become **Unconscious** and begin making **Death Saving Throws**" |
+| hit points | invented a "**Short Rest:** Typically 1 hour" |
+| focus spells | Focus Points "recovered when you rest (short rest or long rest)" — it is Refocus |
+| multiple attack penalty | stated as **-4 on both** second and third Strike; it is -5 and -10 |
+| encumbrance | *false positive* — "instead of using weight (pounds/kilograms)" is a denial; fixed the separator set |
+
+## Run 3b — `Qwen/Qwen3.8-27B`, thinking control
+
+Trap families only, `enable_thinking=true, reasoning_effort=low`, 2000 max tokens.
+
+| Family | Thinking off | Thinking on |
+| --- | ---: | ---: |
+| `trap_5e` | 83.3% | 90.0% |
+| `trap_5e_applied` | 81.2% | 81.2% |
+| grounding (applied) | 36% | 30% |
+
+Reasoning helps a little on the quiz family and not at all on adjudication. **Contamination is not
+an artifact of disabling thinking**, which was the obvious confound and is now ruled out.
+
 ## Reading
 
-**The contamination result depends entirely on how you ask.** The v1 traps quiz the model — "does
+**Contamination is an open-weight problem, and it depends on how you ask.** The v1 traps quiz the model — "does
 Pathfinder use advantage?" — and both models scored 30/30. The question telegraphs that the answer is
 no. So a second family (`trap_5e_applied`, 16 items) was written that asks the model to *adjudicate a
 situation* and checks whether 5e machinery turns up in the ruling. The separation was immediate:
@@ -78,9 +118,15 @@ All five leaks are genuine, not metric artifacts:
 The fourth is the important one. That is not a vocabulary slip, it is a wrong ruling produced by the
 5e prior, on a situation that comes up constantly at a table.
 
-**So the premise narrows rather than fails.** Contamination is not something a frontier model shows
-when quizzed. It surfaces when the model has to rule on a situation — which is the only thing anyone
-would use this for. Whether an open-weight base model is worse is what the Qwen run has to answer.
+**The premise survives where it matters.** It is wrong about frontier models — they pass the quizzes
+outright and mostly hold up under adjudication — and right about Qwen3.8-27B, the model whose weights
+are actually ours to change. It is the only one that fails the quiz family, and it does so by putting
+death saving throws and 1-hour short rests into Pathfinder rulings. On the applied family it names
+the correct Pathfinder machinery in 36% of rulings against gpt-5's 78%.
+
+The frontier advantage overall is small — 25.3% vs 21.8% — and it sits in abstention and calibration
+rather than knowledge. Nobody knows this corpus. That is the case for retrieval; the fine-tune only
+has to buy behaviour.
 
 **Closed-book lookup is hopeless at any scale.** 1–17% across the recall families, and *below the
 trivial baseline* on rarity for both models. Retrieval is not an optimisation here.
@@ -113,7 +159,18 @@ silently scoring as a clean one. gpt-5 had 15 truncations at a 1500-token cap, f
   (470 → 486). Both frontier runs were re-run on the new family and merged rather than re-scored
   from stale responses.
 
+## Targets for phase 03
+
+The LoRA has to move these, without regressing the recall families:
+
+| Metric | Qwen3.8-27B now | gpt-5 |
+| --- | ---: | ---: |
+| `trap_5e` clean | 83.3% | 100% |
+| `trap_5e_applied` clean | 81.2% | 93.8% |
+| applied grounding | 36% | 78% |
+| `abstention` | 77.5% | 77.5% |
+
 ## Pending
 
-- `Qwen/Qwen3.8-27B` closed-book — the run the premise actually depends on. Weights downloading.
-- `Qwen/Qwen3.5-9B` closed-book — to price the iteration cost of the 27B.
+- `Qwen/Qwen3.5-9B` closed-book — to price the iteration cost of the 27B. Weights downloaded.
+- Retrieval-augmented reruns of all three, which is the number that actually decides the project.

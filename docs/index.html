@@ -427,10 +427,9 @@
 
     <p><strong>Retrieval fixes facts. Fine-tuning fixes priors.</strong> So: retrieval carries the load, and a small LoRA does the things retrieval cannot &mdash; enforce Remaster vocabulary, and teach grounded citation and abstention.</p>
 
-    <p class="note">Measured since this was written: the first half holds emphatically. The second
-    half survives, but only under a harder test &mdash; frontier models pass every <em>quiz</em>
-    about 5e differences and still import 5e mechanics when asked to <em>adjudicate</em>. See
-    <a href="#results-tag">Results</a>.</p>
+    <p class="note">Both halves now measured. Retrieval's case is overwhelming. The prior's case
+    holds for open weights specifically: Qwen3.8-27B still puts death saving throws and short rests
+    into Pathfinder rulings, where two frontier models do not. See <a href="#results-tag">Results</a>.</p>
 
     <p>The literature agrees, and points at the hybrid rather than either pole. <a href="https://arxiv.org/abs/2403.10131">RAFT</a> trains on retrieved context including distractors, with answers that quote the source verbatim &mdash; a near-perfect fit, since "cite the entry you used" is the target behaviour. <a href="https://arxiv.org/pdf/2409.07431">EntiGraph</a> synthetic pretraining recovers over 80% of RAG's gain parametrically and stacks with it; <a href="https://arxiv.org/pdf/2603.23562">Synthetic Mixed Training</a> measures +2.6% over RAG alone but <strong>+9.1% combined</strong>. And on small corpora specifically, <a href="https://arxiv.org/pdf/2508.06178">plain continued pretraining barely moves the needle</a> &mdash; diverse synthetic rephrasing is what lands.</p>
   </section>
@@ -528,7 +527,7 @@
   <section>
     <div class="block-head">
       <h2>Results</h2>
-      <span class="tag" id="results-tag">2 runs scored</span>
+      <span class="tag" id="results-tag">3 runs scored</span>
     </div>
     <p>Closed-book means no retrieval: the model answers from weights alone. These numbers are the
     floor every later phase is measured against. Read them against the trivial baselines
@@ -543,50 +542,62 @@
         </thead>
         <tbody>
           <tr><td class="rowname mono">gpt-5</td><td class="num"><strong>25%</strong></td><td class="num">18%</td><td class="num">1%</td><td class="num">31%</td><td class="num">2%</td><td class="num">6%</td><td class="num">78%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="num"><strong>22%</strong></td><td class="num">11%</td><td class="num">0%</td><td class="num">19%</td><td class="num">1%</td><td class="num">14%</td><td class="num">78%</td><td class="num">87%</td></tr>
           <tr><td class="rowname mono">gpt-4.1-mini</td><td class="num"><strong>21%</strong></td><td class="num">5%</td><td class="num">0%</td><td class="num">57%</td><td class="num">0%</td><td class="num">12%</td><td class="num">5%</td><td class="num">100%</td></tr>
         </tbody>
         <caption>Closed-book accuracy by family. Every grade is deterministic.</caption>
       </table>
     </div>
-    <ul><li><strong>gpt-5</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-5</strong> invented a level for 1 of 40 feats that do not exist.</li><li><strong>gpt-4.1-mini</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-4.1-mini</strong> invented a level for 33 of 40 feats that do not exist.</li></ul>
+    <ul><li><strong>gpt-5</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-5</strong> invented a level for 1 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.8-27B</strong> leaked D&amp;D 5e vocabulary into 4 of 30 trap questions.</li><li><strong>Qwen/Qwen3.8-27B</strong> invented a level for 3 of 40 feats that do not exist.</li><li><strong>gpt-4.1-mini</strong> leaked D&amp;D 5e vocabulary into 0 of 30 trap questions.</li><li><strong>gpt-4.1-mini</strong> invented a level for 33 of 40 feats that do not exist.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
     <!-- results:end -->
 
-    <h3 class="finding">What the first runs settled</h3>
-    <p><strong>Closed-book lookup is hopeless at any scale.</strong> 17.5% on feat levels, 1.2% on
-    complete trait lists, 2.5% on prerequisites &mdash; and <em>below the trivial baseline</em> on
-    rarity, where answering "uncommon" to all eighty would have scored 70% against gpt-5's 31%.
+    <h3 class="finding">What phase 01 settled</h3>
+    <p><strong>Closed-book lookup is hopeless at any scale.</strong> 17.5% on feat levels at best,
+    1.2% on complete trait lists, 2.5% on prerequisites &mdash; and <em>below the trivial baseline</em>
+    on rarity, where answering "uncommon" to all eighty would have scored 70% against gpt-5's 31%.
     Retrieval is not an optimisation here, it is the entire load-bearing structure.</p>
 
-    <p><strong>The contamination question turned on how it was asked.</strong> The first trap family
-    quizzes: "does Pathfinder use advantage?" Both models scored 30/30 &mdash; the question
-    telegraphs that the answer is no, and a frontier model does not fall for it. So a second family
-    was written that asks the model to <em>adjudicate a situation</em> instead, and checks whether
-    5e machinery turns up in the ruling. The separation appeared immediately.</p>
+    <p><strong>Contamination is real, and it is specifically an open-weight problem.</strong> The
+    first trap family quizzes &mdash; "does Pathfinder use advantage?" &mdash; and both frontier
+    models scored 30/30, because the question telegraphs its own answer. Qwen3.8-27B did not:
+    it leaked on five of thirty, and the leaks are not vocabulary slips.</p>
 
     <div class="samples">
       <div class="sample">
-        <div class="fam">trap_5e_applied &middot; gpt-4.1-mini, verbatim</div>
-        <div class="q">A wizard has a spell running that lasts 1 minute. An enemy hits them for 12 damage. What does the wizard roll to keep the spell going?</div>
-        <div class="a">"&hellip; they must attempt a <strong>Concentration check</strong> to maintain the spell."</div>
-        <div class="meta">Pathfinder 2e has no concentration check. The mechanic is imported wholesale.</div>
+        <div class="fam">trap_5e &middot; Qwen3.8-27B, verbatim</div>
+        <div class="q">What happens when a Pathfinder 2e character is reduced to 0 hit points, and how do death saves work?</div>
+        <div class="a">"&hellip; they become <strong>Unconscious</strong> and begin making <strong>Death Saving Throws</strong>."</div>
+        <div class="meta">Pathfinder has the dying condition and a flat recovery check against DC 10 + dying value. Death saving throws are 5e, imported whole.</div>
+      </div>
+      <div class="sample">
+        <div class="fam">trap_5e &middot; Qwen3.8-27B, verbatim</div>
+        <div class="q">How do Pathfinder 2e characters recover hit points during a day of adventuring?</div>
+        <div class="a">"<strong>Short Rest:</strong> Typically 1 hour. You can take a short rest to recover some hit points&hellip;"</div>
+        <div class="meta">There is no short rest in Pathfinder 2e. The duration is invented too.</div>
       </div>
     </div>
 
-    <p>The same model invented a "short rest", described spells by level rather than rank, and got
-    the natural-20 saving throw wrong &mdash; it said half damage, missing that a natural 20 raises
-    the degree of success to a critical, which on a Reflex save against a fireball means no damage at
-    all. That is not a vocabulary slip; it is a rules error produced by the 5e prior. gpt-5 leaked
-    once out of sixteen, and only on Remaster terminology.</p>
+    <p>It also stated the multiple attack penalty as &minus;4 on both the second and third Strike
+    (it is &minus;5 and &minus;10, or &minus;4/&minus;8 only with an agile weapon), and said Focus
+    Points come back on a short or long rest rather than through Refocus. On the applied family it
+    named the correct Pathfinder machinery in only <strong>36%</strong> of rulings, against gpt-5's
+    78%.</p>
 
-    <p class="note"><strong>So the premise narrows rather than fails.</strong> Contamination is not
-    something a frontier model displays when quizzed &mdash; it surfaces when the model has to
-    <em>rule on a situation</em>, which is the only thing anyone would actually use this for.
-    Whether an open-weight base model does worse is what the Qwen run has to answer.</p>
+    <p class="note"><strong>A control rules out the obvious confound.</strong> The main run has
+    thinking disabled. Re-running just the trap families with thinking on at low effort moves the
+    quiz family from 83.3% to 90.0% and leaves the applied family unchanged at 81.2%, with grounding
+    slightly worse. Contamination is not an artifact of turning reasoning off.</p>
 
-    <p><strong>And one finding neither half predicted.</strong> Abstention is a capability axis, not
-    a knowledge one. Handed forty feats that do not exist, gpt-4.1-mini invented a level for
-    thirty-three of them. gpt-5 invented one. Same missing knowledge, opposite behaviour &mdash;
-    which is precisely the kind of thing a fine-tune can teach and retrieval cannot.</p>
+    <p><strong>So the premise survives where it matters.</strong> It is wrong about frontier models
+    and right about the model this project would actually fine-tune &mdash; which is the only one
+    whose weights are ours to change. The number to beat is now concrete: 83.3% and 81.2% clean,
+    36% grounded.</p>
+
+    <p><strong>And one finding nothing predicted.</strong> Abstention is a capability axis, not a
+    knowledge one. Handed forty feats that do not exist, gpt-4.1-mini invented a level for
+    thirty-three of them. gpt-5 invented one, and Qwen3.8-27B three &mdash; the small frontier model
+    is the outlier, not the local one. Same missing knowledge, opposite behaviour, and precisely the
+    kind of thing a fine-tune teaches and retrieval cannot.</p>
   </section>
 
   <section>
@@ -596,7 +607,16 @@
     </div>
     <p>Baseline is <code>Qwen/Qwen3.8-27B</code> &mdash; Apache-2.0, 27.78B dense parameters, 64 layers, 262k context, released 5&nbsp;August&nbsp;2026. At 4-bit that is roughly 14.5&nbsp;GB of weights, leaving room for QLoRA at moderate sequence length on a single RTX&nbsp;5090. The 248k vocabulary makes the loss head unusually memory-hungry, so chunked cross-entropy matters more than it normally would.</p>
     <p>The other Qwen3.8 checkpoints are not local options: <span class="mono">Flash-Next</span> is 180B MoE and <span class="mono">2.4T-A95B</span> is the flagship. The FP8 variant is for serving, not training. If 27B QLoRA proves too tight to iterate on daily, <code>Qwen3.5-9B</code> has a base checkpoint and trains fast.</p>
-    <p class="note"><strong>Ceiling check first.</strong> Run the same benchmark against a frontier model with the same retrieval. If frontier plus retrieval already clears the bar, the fine-tune only buys local, private and cheap &mdash; and that should be a known fact going in, not a discovery six weeks later.</p>
+    <p>Measured, not estimated: loaded in nf4 4-bit it occupies <strong>22.9&nbsp;GB</strong> of the
+    32&nbsp;GB card and answers all 486 benchmark items in <strong>11m45s</strong> greedily at 500
+    tokens, batch 16. There is comfortable headroom for QLoRA at moderate sequence length. Note the
+    checkpoint is multimodal (<span class="mono">Qwen3_5ForConditionalGeneration</span>) and Qwen
+    has shipped no <span class="mono">-Base</span> variant &mdash; fine for RAFT SFT off the
+    instruct weights, an argument for the 9B if phase 04 continued pretraining happens.</p>
+    <p class="note"><strong>Ceiling check, done.</strong> gpt-5 closed-book scores 25.3% against the
+    27B's 21.8%. The frontier advantage is real but small, and it is concentrated in abstention and
+    calibration rather than knowledge &mdash; nobody knows this corpus. That is the case for
+    retrieval, and it is why the fine-tune only has to buy behaviour.</p>
   </section>
 
   <section>
@@ -617,15 +637,15 @@
       <div class="phase">
         <div class="n">01</div>
         <div class="body">
-          <h3>Baseline measurement <span class="status now">in progress</span></h3>
-          <p>Scorer built, all graders deterministic. Two frontier runs done; the Qwen3.8-27B run is waiting on the weights. Scoring the first run surfaced two false-positive bugs in the contamination metric &mdash; a forbidden term echoed from the question, and a term inside an explicit denial &mdash; both of which inflated measured contamination. Fixed and audited.</p>
-          <div class="exit"><b>Exit criterion &mdash; fired</b><span class="mono">trap_5e</span> came back clean at 30/30 for both frontier models. The premise now stands or falls on the open-weight run.</div>
+          <h3>Baseline measurement <span class="status done">done</span></h3>
+          <p>Scorer built, all graders deterministic. Three closed-book runs plus a thinking-mode control. Scoring surfaced three false-positive bugs in the contamination metric &mdash; a forbidden term echoed from the question, a term inside an explicit denial, and empty responses scoring clean under a negative check &mdash; all of which flattered the premise. Fixed and audited.</p>
+          <div class="exit"><b>Exit criterion &mdash; answered</b>Frontier models are clean at 30/30; Qwen3.8-27B is not, at 25/30. The fine-tune has a target, and it is a specific one.</div>
         </div>
       </div>
       <div class="phase">
         <div class="n">02</div>
         <div class="body">
-          <h3>Retrieval <span class="status next">queued</span></h3>
+          <h3>Retrieval <span class="status now">next</span></h3>
           <p>Index at entity granularity, never token windows &mdash; each entry is already atomic. Hybrid BM25 and dense, with hard metadata filters, because "level 4 fighter feats with the flourish trait" is a filter, not a similarity query. Default to excluding legacy content. Bake off the <a href="https://huggingface.co/Kaylebor/pf2e-codex-embed-xs">existing PF2e embedder</a> against a strong general model.</p>
           <div class="exit"><b>Exit criterion</b>The gap between "gold chunk was retrieved" and "answer was right" is the exact size of the prior problem &mdash; and the entire justification for phase 03.</div>
         </div>

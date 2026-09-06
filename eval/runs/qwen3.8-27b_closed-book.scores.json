@@ -1,60 +1,60 @@
 {
   "report": {
     "items": 486,
-    "correct": 123,
-    "accuracy": 0.25308641975308643,
+    "correct": 106,
+    "accuracy": 0.21810699588477367,
     "families": {
       "abstention": {
         "n": 40,
         "correct": 31,
         "accuracy": 0.775,
-        "fabricated": 1
+        "fabricated": 3
       },
       "lookup_level": {
         "n": 80,
-        "correct": 14,
-        "accuracy": 0.175
+        "correct": 9,
+        "accuracy": 0.1125
       },
       "lookup_rarity": {
         "n": 80,
-        "correct": 25,
-        "accuracy": 0.3125
+        "correct": 15,
+        "accuracy": 0.1875
       },
       "lookup_traits": {
         "n": 80,
-        "correct": 1,
-        "accuracy": 0.0125,
-        "mean_recall": 0.155,
-        "over_answered": 20
+        "correct": 0,
+        "accuracy": 0.0,
+        "mean_recall": 0.09229166666666666,
+        "over_answered": 50
       },
       "prereq": {
         "n": 80,
-        "correct": 2,
-        "accuracy": 0.025,
-        "mean_recall": 0.1,
-        "over_answered": 57
+        "correct": 1,
+        "accuracy": 0.0125,
+        "mean_recall": 0.03125,
+        "over_answered": 64
       },
       "remaster_rename": {
         "n": 80,
-        "correct": 5,
-        "accuracy": 0.0625,
+        "correct": 11,
+        "accuracy": 0.1375,
         "used_legacy_name": 0
       },
       "trap_5e": {
         "n": 30,
-        "correct": 30,
-        "accuracy": 1.0,
-        "contaminated": 0
+        "correct": 26,
+        "accuracy": 0.8666666666666667,
+        "contaminated": 4
       },
       "trap_5e_applied": {
         "n": 16,
-        "correct": 15,
-        "accuracy": 0.9375,
-        "contaminated": 1,
-        "mean_grounding": 0.78125
+        "correct": 13,
+        "accuracy": 0.8125,
+        "contaminated": 3,
+        "mean_grounding": 0.3645833333333333
       }
     },
-    "run": "gpt-5_closed-book",
+    "run": "qwen3.8-27b_closed-book",
     "benchmark_items": 486,
     "partial": false,
     "trait_vocab": 569
@@ -103,7 +103,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0005",
@@ -121,7 +121,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0007",
@@ -139,7 +139,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0009",
@@ -202,7 +202,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0016",
@@ -211,7 +211,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0017",
@@ -265,7 +265,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0023",
@@ -328,7 +328,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0030",
@@ -355,7 +355,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0033",
@@ -373,7 +373,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0035",
@@ -382,7 +382,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0036",
@@ -391,7 +391,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0037",
@@ -490,7 +490,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0048",
@@ -517,7 +517,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0051",
@@ -544,7 +544,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0054",
@@ -580,7 +580,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0058",
@@ -598,7 +598,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0060",
@@ -625,7 +625,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0063",
@@ -679,7 +679,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_level-0069",
@@ -688,7 +688,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_level-0070",
@@ -842,7 +842,10 @@
         "Uncommon",
         "Gargantuan"
       ],
-      "extra": [],
+      "extra": [
+        "Elemental",
+        "Legacy"
+      ],
       "correct": false
     },
     {
@@ -852,10 +855,14 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 1.0,
-      "missing": [],
+      "recall": 0.0,
+      "missing": [
+        "Healing",
+        "Uncommon"
+      ],
       "extra": [
-        "Necromancy"
+        "Necromancy",
+        "Transmutation"
       ],
       "correct": false
     },
@@ -871,7 +878,10 @@
         "Complex",
         "Haunt"
       ],
-      "extra": [],
+      "extra": [
+        "Darkness",
+        "Reflection"
+      ],
       "correct": false
     },
     {
@@ -906,7 +916,11 @@
         "Metamagic",
         "Spellshape"
       ],
-      "extra": [],
+      "extra": [
+        "Class",
+        "Occult",
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -921,7 +935,12 @@
         "Downtime",
         "Leadership"
       ],
-      "extra": [],
+      "extra": [
+        "Common",
+        "General",
+        "Skill",
+        "Social"
+      ],
       "correct": false
     },
     {
@@ -951,7 +970,9 @@
         "Illusion",
         "Magical"
       ],
-      "extra": [],
+      "extra": [
+        "Common"
+      ],
       "correct": false
     },
     {
@@ -966,9 +987,7 @@
         "Abjuration",
         "Archetype"
       ],
-      "extra": [
-        "Common"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -984,7 +1003,9 @@
         "Mythic",
         "Unique"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1036,7 +1057,9 @@
         "Magical",
         "Rare"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1051,7 +1074,10 @@
         "Emotion",
         "Mental"
       ],
-      "extra": [],
+      "extra": [
+        "Class",
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1061,12 +1087,15 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.5,
       "missing": [
-        "Consumable",
-        "Magical"
+        "Consumable"
       ],
-      "extra": [],
+      "extra": [
+        "Common",
+        "Deadly",
+        "Finesse"
+      ],
       "correct": false
     },
     {
@@ -1082,7 +1111,9 @@
         "Rare"
       ],
       "extra": [
-        "Archetype"
+        "Class",
+        "Focus",
+        "General"
       ],
       "correct": false
     },
@@ -1093,13 +1124,12 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
+      "recall": 0.0,
       "missing": [
+        "Monk",
         "Uncommon"
       ],
-      "extra": [
-        "Focus"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -1131,7 +1161,9 @@
         "Fortune",
         "Occult"
       ],
-      "extra": [],
+      "extra": [
+        "Focus"
+      ],
       "correct": false
     },
     {
@@ -1148,7 +1180,12 @@
         "CE",
         "Small"
       ],
-      "extra": [],
+      "extra": [
+        "Common",
+        "Plant",
+        "Training",
+        "Undead"
+      ],
       "correct": false
     },
     {
@@ -1174,10 +1211,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.3333333333333333,
       "missing": [
         "Elemental",
-        "Fire",
         "Small"
       ],
       "extra": [],
@@ -1198,8 +1234,10 @@
         "Uncommon"
       ],
       "extra": [
-        "Common",
-        "Rune"
+        "Golem",
+        "Magical",
+        "Rune",
+        "Training"
       ],
       "correct": false
     },
@@ -1244,14 +1282,16 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.25,
       "missing": [
-        "Archetype",
         "Auditory",
         "Mental",
         "Skill"
       ],
-      "extra": [],
+      "extra": [
+        "Bulwark",
+        "Guardian"
+      ],
       "correct": false
     },
     {
@@ -1268,7 +1308,10 @@
         "Manipulate",
         "Mental"
       ],
-      "extra": [],
+      "extra": [
+        "Curse",
+        "Hex"
+      ],
       "correct": false
     },
     {
@@ -1278,11 +1321,15 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.75,
+      "recall": 0.25,
       "missing": [
-        "NE"
+        "Humanoid",
+        "NE",
+        "Small"
       ],
-      "extra": [],
+      "extra": [
+        "Skirmisher"
+      ],
       "correct": false
     },
     {
@@ -1292,13 +1339,12 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.6666666666666666,
+      "recall": 0.3333333333333333,
       "missing": [
-        "N"
+        "N",
+        "Small"
       ],
-      "extra": [
-        "Mindless"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -1333,7 +1379,9 @@
         "Healing",
         "Locathah"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1351,9 +1399,8 @@
         "Uncommon"
       ],
       "extra": [
-        "Polymorph",
-        "Swarm",
-        "Transmutation"
+        "Cantrip",
+        "Swarm"
       ],
       "correct": false
     },
@@ -1364,14 +1411,15 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.6,
+      "recall": 0.0,
       "missing": [
+        "Dwarf",
+        "Humanoid",
+        "Unique",
         "N",
         "Medium"
       ],
-      "extra": [
-        "Common"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -1396,12 +1444,17 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
+      "recall": 0.0,
       "missing": [
         "Cursebound",
-        "Spellshape"
+        "Oracle",
+        "Spellshape",
+        "Metamagic"
       ],
-      "extra": [],
+      "extra": [
+        "Class",
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1416,9 +1469,7 @@
         "Invested",
         "Uncommon"
       ],
-      "extra": [
-        "Champion"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -1435,7 +1486,9 @@
         "Linguistic",
         "Magical"
       ],
-      "extra": [],
+      "extra": [
+        "Class"
+      ],
       "correct": false
     },
     {
@@ -1451,7 +1504,9 @@
         "Uncommon",
         "Medium"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1471,7 +1526,11 @@
         "Teleportation"
       ],
       "extra": [
-        "Harrow Court"
+        "Artifact",
+        "Astral",
+        "Curse",
+        "Harrow Court",
+        "Skill"
       ],
       "correct": false
     },
@@ -1482,11 +1541,16 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.6666666666666666,
+      "recall": 0.0,
       "missing": [
-        "N"
+        "Animal",
+        "N",
+        "Gargantuan"
       ],
-      "extra": [],
+      "extra": [
+        "Giant",
+        "Titan"
+      ],
       "correct": false
     },
     {
@@ -1500,7 +1564,9 @@
       "missing": [
         "Magical"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1561,10 +1627,15 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 1.0,
-      "missing": [],
-      "extra": [],
-      "correct": true
+      "recall": 0.0,
+      "missing": [
+        "General",
+        "Skill"
+      ],
+      "extra": [
+        "Training"
+      ],
+      "correct": false
     },
     {
       "id": "lookup_traits-0048",
@@ -1580,7 +1651,9 @@
         "Magical",
         "Uncommon"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1598,7 +1671,10 @@
         "Rare",
         "Focus"
       ],
-      "extra": [],
+      "extra": [
+        "Healing",
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1615,7 +1691,13 @@
         "Primal",
         "Transmutation"
       ],
-      "extra": [],
+      "extra": [
+        "Class",
+        "Kobold",
+        "Press",
+        "Witch",
+        "Wizard"
+      ],
       "correct": false
     },
     {
@@ -1662,7 +1744,9 @@
         "Animal",
         "Small"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1672,14 +1756,18 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.2,
+      "recall": 0.0,
       "missing": [
+        "Dero",
         "Humanoid",
         "Shadow",
         "Unique",
         "Small"
       ],
-      "extra": [],
+      "extra": [
+        "Archetype",
+        "Wizard"
+      ],
       "correct": false
     },
     {
@@ -1698,7 +1786,7 @@
         "Medium"
       ],
       "extra": [
-        "Common"
+        "Training"
       ],
       "correct": false
     },
@@ -1717,7 +1805,7 @@
         "Uncommon"
       ],
       "extra": [
-        "Aeon"
+        "Training"
       ],
       "correct": false
     },
@@ -1753,7 +1841,10 @@
         "LG",
         "Medium"
       ],
-      "extra": [],
+      "extra": [
+        "Kobold",
+        "Press"
+      ],
       "correct": false
     },
     {
@@ -1771,7 +1862,9 @@
         "Unholy",
         "Medium"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1781,14 +1874,15 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.25,
       "missing": [
         "Air",
         "Aura",
-        "Consumable",
-        "Magical"
+        "Consumable"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1798,10 +1892,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.25,
       "missing": [
         "Invested",
-        "Magical",
         "Transmutation",
         "Uncommon"
       ],
@@ -1818,11 +1911,17 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.75,
+      "recall": 0.5,
       "missing": [
-        "Multiclass"
+        "Multiclass",
+        "Uncommon"
       ],
-      "extra": [],
+      "extra": [
+        "Cantrip",
+        "General",
+        "Gunslinger",
+        "Skill"
+      ],
       "correct": false
     },
     {
@@ -1854,7 +1953,11 @@
         "Transmutation",
         "Uncommon"
       ],
-      "extra": [],
+      "extra": [
+        "Rune",
+        "Teleportation",
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1864,12 +1967,17 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
+      "recall": 0.25,
       "missing": [
+        "Magical",
         "Uncommon",
         "Wood"
       ],
-      "extra": [],
+      "extra": [
+        "Evocation",
+        "General",
+        "Necromancy"
+      ],
       "correct": false
     },
     {
@@ -1879,15 +1987,16 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.2,
       "missing": [
-        "Artifact",
         "Invested",
         "Magical",
         "Mythic",
         "Unique"
       ],
-      "extra": [],
+      "extra": [
+        "Training"
+      ],
       "correct": false
     },
     {
@@ -1903,7 +2012,7 @@
         "Rare"
       ],
       "extra": [
-        "Cold"
+        "Common"
       ],
       "correct": false
     },
@@ -1939,7 +2048,7 @@
         "Skill"
       ],
       "extra": [
-        "Reload"
+        "Training"
       ],
       "correct": false
     },
@@ -1959,7 +2068,9 @@
         "Sorcerer",
         "Uncommon"
       ],
-      "extra": [],
+      "extra": [
+        "Sleep"
+      ],
       "correct": false
     },
     {
@@ -1975,7 +2086,9 @@
         "Magical",
         "Rare"
       ],
-      "extra": [],
+      "extra": [
+        "Arcane"
+      ],
       "correct": false
     },
     {
@@ -1985,8 +2098,9 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.6666666666666666,
+      "recall": 0.3333333333333333,
       "missing": [
+        "Humanoid",
         "Medium"
       ],
       "extra": [],
@@ -2017,14 +2131,18 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.3333333333333333,
+      "recall": 0.0,
       "missing": [
         "Destiny",
-        "Mythic"
+        "Mythic",
+        "Rare"
       ],
       "extra": [
         "Archetype",
-        "Dedication"
+        "Dedication",
+        "Divine",
+        "Fey",
+        "Undead"
       ],
       "correct": false
     },
@@ -2049,14 +2167,16 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.6666666666666666,
+      "recall": 0.0,
       "missing": [
+        "Disarm",
+        "Finesse",
         "Ghoran",
+        "Reach",
+        "Trip",
         "Uncommon"
       ],
-      "extra": [
-        "Nonlethal"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -2083,9 +2203,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.3333333333333333,
       "missing": [
-        "Alchemical",
         "Consumable",
         "Elixir"
       ],
@@ -2108,7 +2227,10 @@
         "Large",
         "Kholo"
       ],
-      "extra": [],
+      "extra": [
+        "Animal",
+        "Fey"
+      ],
       "correct": false
     },
     {
@@ -2145,7 +2267,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0004",
@@ -2163,7 +2285,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0006",
@@ -2199,7 +2321,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0010",
@@ -2226,7 +2348,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0013",
@@ -2235,7 +2357,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0014",
@@ -2253,7 +2375,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0016",
@@ -2262,7 +2384,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0017",
@@ -2271,7 +2393,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0018",
@@ -2298,7 +2420,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0021",
@@ -2307,7 +2429,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0022",
@@ -2334,7 +2456,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0025",
@@ -2379,7 +2501,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0030",
@@ -2388,7 +2510,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0031",
@@ -2424,7 +2546,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0035",
@@ -2487,7 +2609,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0042",
@@ -2514,7 +2636,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0045",
@@ -2532,7 +2654,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0047",
@@ -2541,7 +2663,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0048",
@@ -2568,7 +2690,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0051",
@@ -2613,7 +2735,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0056",
@@ -2631,7 +2753,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0058",
@@ -2649,7 +2771,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0060",
@@ -2667,7 +2789,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0062",
@@ -2685,7 +2807,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0064",
@@ -2721,7 +2843,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0068",
@@ -2739,7 +2861,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false
+      "correct": true
     },
     {
       "id": "lookup_rarity-0070",
@@ -2757,7 +2879,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0072",
@@ -2793,7 +2915,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "lookup_rarity-0076",
@@ -2845,7 +2967,10 @@
       "extra": [
         "Archetype",
         "Class",
-        "Skill"
+        "Dream",
+        "General",
+        "Oracle",
+        "Witch"
       ],
       "correct": false
     },
@@ -2860,7 +2985,11 @@
       "missing": [
         "Guerrilla Dedication"
       ],
-      "extra": [],
+      "extra": [
+        "Class",
+        "Common",
+        "Witch"
+      ],
       "correct": false
     },
     {
@@ -2874,7 +3003,12 @@
       "missing": [
         "Trained in Intimidation"
       ],
-      "extra": [],
+      "extra": [
+        "Class",
+        "Common",
+        "Occult",
+        "Psychic"
+      ],
       "correct": false
     },
     {
@@ -2904,7 +3038,12 @@
       "missing": [
         "Combat Assessment"
       ],
-      "extra": [],
+      "extra": [
+        "Archetype",
+        "Class",
+        "Common",
+        "Skill"
+      ],
       "correct": false
     },
     {
@@ -2919,7 +3058,6 @@
         "Ostilli Host Dedication"
       ],
       "extra": [
-        "Archetype",
         "Propulsive"
       ],
       "correct": false
@@ -2937,9 +3075,7 @@
         "Expert in Crafting"
       ],
       "extra": [
-        "Alchemical",
-        "Common",
-        "Magical"
+        "Training"
       ],
       "correct": false
     },
@@ -2955,8 +3091,8 @@
         "Godling Dedication"
       ],
       "extra": [
-        "Archetype",
-        "Champion"
+        "Champion",
+        "Training"
       ],
       "correct": false
     },
@@ -2989,8 +3125,11 @@
         "Warden's Boon"
       ],
       "extra": [
+        "Animal",
+        "Archetype",
         "Class",
-        "Ranger"
+        "Common",
+        "Focus"
       ],
       "correct": false
     },
@@ -3006,7 +3145,11 @@
         "Guerrilla Dedication",
         "Poisoned Sticks and Stones"
       ],
-      "extra": [],
+      "extra": [
+        "Class",
+        "Deadly",
+        "Fighter"
+      ],
       "correct": false
     },
     {
@@ -3016,11 +3159,15 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
+      "recall": 0.0,
       "missing": [
-        "Battle Medicine"
+        "Battle Medicine",
+        "Trained in Medicine"
       ],
-      "extra": [],
+      "extra": [
+        "Dedication",
+        "Skill"
+      ],
       "correct": false
     },
     {
@@ -3049,12 +3196,9 @@
         "precise strike"
       ],
       "extra": [
+        "Aasimar",
         "Archetype",
-        "Class",
-        "Finisher",
-        "Focused",
-        "Swashbuckler",
-        "Thrown"
+        "General"
       ],
       "correct": false
     },
@@ -3065,10 +3209,15 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 1.0,
-      "missing": [],
+      "recall": 0.0,
+      "missing": [
+        "Trained in Crafting"
+      ],
       "extra": [
-        "Alchemical"
+        "Alchemist",
+        "Class",
+        "Dedication",
+        "Poison"
       ],
       "correct": false
     },
@@ -3079,12 +3228,16 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
+      "recall": 0.0,
       "missing": [
+        "Basic Wizard Spellcasting",
         "Master in Arcana"
       ],
       "extra": [
         "Arcane",
+        "Class",
+        "Focus",
+        "General",
         "Wizard"
       ],
       "correct": false
@@ -3103,7 +3256,7 @@
       ],
       "extra": [
         "Fire",
-        "Gunslinger"
+        "Rogue"
       ],
       "correct": false
     },
@@ -3119,6 +3272,7 @@
         "Exorcist Dedication"
       ],
       "extra": [
+        "Archetype",
         "Spirit"
       ],
       "correct": false
@@ -3135,10 +3289,7 @@
         "Sister of the Golden Erinys Dedication"
       ],
       "extra": [
-        "Archetype",
-        "Class",
-        "Investigator",
-        "Thaumaturge"
+        "Common"
       ],
       "correct": false
     },
@@ -3157,8 +3308,7 @@
         "or or another lineage feat associated with celestials"
       ],
       "extra": [
-        "Aasimar",
-        "Versatile"
+        "Celestial"
       ],
       "correct": false
     },
@@ -3174,7 +3324,8 @@
         "Mummy Dedication"
       ],
       "extra": [
-        "Archetype"
+        "Class",
+        "Undead"
       ],
       "correct": false
     },
@@ -3190,7 +3341,10 @@
         "Dragon's Flight"
       ],
       "extra": [
-        "Strix"
+        "Archetype",
+        "Class",
+        "General",
+        "Guardian"
       ],
       "correct": false
     },
@@ -3206,8 +3360,6 @@
         "Fan Dancer Dedication"
       ],
       "extra": [
-        "Archetype",
-        "Class",
         "Dragon"
       ],
       "correct": false
@@ -3224,9 +3376,7 @@
         "Unexpected Sharpshooter Dedication",
         "Trained in Deception"
       ],
-      "extra": [
-        "Class"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -3240,9 +3390,7 @@
       "missing": [
         "tenets of good"
       ],
-      "extra": [
-        "Champion"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -3257,7 +3405,10 @@
         "Sister of the Golden Erinys Dedication"
       ],
       "extra": [
-        "Stance"
+        "Archetype",
+        "Class",
+        "Stance",
+        "Training"
       ],
       "correct": false
     },
@@ -3268,10 +3419,12 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 1.0,
-      "missing": [],
+      "recall": 0.0,
+      "missing": [
+        "Master in Intimidation"
+      ],
       "extra": [],
-      "correct": true
+      "correct": false
     },
     {
       "id": "prereq-0027",
@@ -3285,7 +3438,10 @@
         "Master in Religion",
         "you follow a deity"
       ],
-      "extra": [],
+      "extra": [
+        "Class",
+        "Cleric"
+      ],
       "correct": false
     },
     {
@@ -3300,7 +3456,7 @@
         "Masquerade of Seasons Stance"
       ],
       "extra": [
-        "Fighter",
+        "Archetype",
         "Swashbuckler"
       ],
       "correct": false
@@ -3316,7 +3472,11 @@
       "missing": [
         "Godling Dedication"
       ],
-      "extra": [],
+      "extra": [
+        "Archetype",
+        "Class",
+        "General"
+      ],
       "correct": false
     },
     {
@@ -3331,7 +3491,7 @@
         "tusks unarmed attack"
       ],
       "extra": [
-        "Azarketi"
+        "Demon"
       ],
       "correct": false
     },
@@ -3347,10 +3507,9 @@
         "Battle Harbinger Dedication"
       ],
       "extra": [
-        "Archetype",
         "Aura",
-        "Champion",
-        "Class"
+        "Common",
+        "Divine"
       ],
       "correct": false
     },
@@ -3361,12 +3520,11 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 1.0,
-      "missing": [],
-      "extra": [
-        "Dedication",
-        "Thaumaturge"
+      "recall": 0.0,
+      "missing": [
+        "Basic Synergy"
       ],
+      "extra": [],
       "correct": false
     },
     {
@@ -3394,8 +3552,9 @@
       ],
       "extra": [
         "Class",
-        "Ranger",
-        "Skill"
+        "Elf",
+        "Gnome",
+        "Ranger"
       ],
       "correct": false
     },
@@ -3411,7 +3570,10 @@
         "Captain Dedication"
       ],
       "extra": [
-        "Skill"
+        "Class",
+        "Common",
+        "Light",
+        "Oracle"
       ],
       "correct": false
     },
@@ -3428,7 +3590,8 @@
         "Master Monster Hunter"
       ],
       "extra": [
-        "Ranger"
+        "Archetype",
+        "General"
       ],
       "correct": false
     },
@@ -3458,7 +3621,9 @@
         "Tsukumogami Poppet heritage"
       ],
       "extra": [
-        "Automaton"
+        "Focus",
+        "General",
+        "Maneuver"
       ],
       "correct": false
     },
@@ -3473,10 +3638,7 @@
       "missing": [
         "Chronoskimmer Dedication"
       ],
-      "extra": [
-        "Archetype",
-        "Time"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -3492,7 +3654,11 @@
         "animal companion with a jaws or fangs unarmed attack"
       ],
       "extra": [
-        "Class"
+        "Archetype",
+        "Class",
+        "Common",
+        "Dragon",
+        "Merfolk"
       ],
       "correct": false
     },
@@ -3508,6 +3674,7 @@
         "Wyldsinger"
       ],
       "extra": [
+        "Archetype",
         "Guardian",
         "Primal"
       ],
@@ -3525,8 +3692,9 @@
         "Lastwall Sentry Dedication"
       ],
       "extra": [
-        "Archetype",
-        "Class"
+        "Bulwark",
+        "Class",
+        "Undead"
       ],
       "correct": false
     },
@@ -3541,9 +3709,7 @@
       "missing": [
         "Aldori Duelist Dedication"
       ],
-      "extra": [
-        "Common"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -3557,7 +3723,10 @@
       "missing": [
         "Werecreature Dedication"
       ],
-      "extra": [],
+      "extra": [
+        "Occult",
+        "Void"
+      ],
       "correct": false
     },
     {
@@ -3572,7 +3741,10 @@
         "Golden League Xun Dedication",
         "Expert in Athletics"
       ],
-      "extra": [],
+      "extra": [
+        "Climbing",
+        "Skill"
+      ],
       "correct": false
     },
     {
@@ -3586,11 +3758,7 @@
       "missing": [
         "Ostilli Host Dedication"
       ],
-      "extra": [
-        "Archetype",
-        "Grippli",
-        "Mutant"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -3605,7 +3773,9 @@
         "Evanescent Wings"
       ],
       "extra": [
-        "Sprite"
+        "Aasimar",
+        "Archetype",
+        "Dragon"
       ],
       "correct": false
     },
@@ -3620,7 +3790,9 @@
       "missing": [
         "champion's reaction"
       ],
-      "extra": [],
+      "extra": [
+        "Class"
+      ],
       "correct": false
     },
     {
@@ -3635,7 +3807,11 @@
         "Shifting Faces"
       ],
       "extra": [
-        "Kitsune"
+        "General",
+        "Human",
+        "Kitsune",
+        "Shapechanger",
+        "Unique"
       ],
       "correct": false
     },
@@ -3651,7 +3827,8 @@
         "You are not sanctified with the holy or unholy trait"
       ],
       "extra": [
-        "Unique"
+        "Archetype",
+        "General"
       ],
       "correct": false
     },
@@ -3666,7 +3843,10 @@
       "missing": [
         "Demolitionist Dedication"
       ],
-      "extra": [],
+      "extra": [
+        "Common",
+        "Environmental"
+      ],
       "correct": false
     },
     {
@@ -3680,9 +3860,7 @@
       "missing": [
         "Behold My Creation!"
       ],
-      "extra": [
-        "Class"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -3697,7 +3875,7 @@
         "Clawdancer Dedication"
       ],
       "extra": [
-        "Dedication"
+        "Common"
       ],
       "correct": false
     },
@@ -3714,10 +3892,12 @@
       ],
       "extra": [
         "Archetype",
+        "Beast",
+        "Class",
         "Common",
-        "Dedication",
-        "Magical",
-        "Spellshot"
+        "General",
+        "Ranger",
+        "Simple"
       ],
       "correct": false
     },
@@ -3728,11 +3908,14 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
+      "recall": 0.0,
       "missing": [
-        "powerful fist or expert in unarmed attacks"
+        "powerful fist or expert in unarmed attacks",
+        "member of a House of Perfection"
       ],
-      "extra": [],
+      "extra": [
+        "Dedication"
+      ],
       "correct": false
     },
     {
@@ -3742,11 +3925,20 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 1.0,
-      "missing": [],
+      "recall": 0.0,
+      "missing": [
+        "Advanced Construct Companion"
+      ],
       "extra": [
+        "Class",
         "Companion",
-        "Construct"
+        "Construct",
+        "Druid",
+        "General",
+        "Golem",
+        "Summon",
+        "Summoner",
+        "Varies"
       ],
       "correct": false
     },
@@ -3761,7 +3953,11 @@
       "missing": [
         "spirit instinct"
       ],
-      "extra": [],
+      "extra": [
+        "Archetype",
+        "Curse",
+        "Spirit"
+      ],
       "correct": false
     },
     {
@@ -3775,7 +3971,11 @@
       "missing": [
         "Bone Magic"
       ],
-      "extra": [],
+      "extra": [
+        "Archetype",
+        "Companion",
+        "Dinosaur"
+      ],
       "correct": false
     },
     {
@@ -3790,8 +3990,7 @@
         "Trained in Stealth"
       ],
       "extra": [
-        "Archetype",
-        "Skill"
+        "Archetype"
       ],
       "correct": false
     },
@@ -3807,6 +4006,7 @@
         "Arcana of Iron"
       ],
       "extra": [
+        "Archetype",
         "Secret"
       ],
       "correct": false
@@ -3855,7 +4055,12 @@
         "Scion of Domora Dedication",
         "Spiritual Strike"
       ],
-      "extra": [],
+      "extra": [
+        "Barbarian",
+        "Cleric",
+        "Fighter",
+        "Focus"
+      ],
       "correct": false
     },
     {
@@ -3870,6 +4075,8 @@
         "Trained in Deception"
       ],
       "extra": [
+        "Archetype",
+        "Dragon",
         "Stance"
       ],
       "correct": false
@@ -3884,6 +4091,8 @@
       "recall": 1.0,
       "missing": [],
       "extra": [
+        "Archetype",
+        "General",
         "Magus"
       ],
       "correct": false
@@ -3900,10 +4109,7 @@
         "Uzunjati Storytelling",
         "ability to cast _shield_"
       ],
-      "extra": [
-        "Halfling",
-        "Skill"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -3913,14 +4119,15 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.5,
+      "recall": 0.0,
       "missing": [
+        "Adapted Cantrip",
         "can cast 3rd-level spells"
       ],
       "extra": [
-        "Cantrip",
-        "Human",
-        "Versatile"
+        "Archetype",
+        "Common",
+        "Training"
       ],
       "correct": false
     },
@@ -3936,7 +4143,9 @@
         "Trained in Hero-God Lore  or Trained in Legendary Beast Lore"
       ],
       "extra": [
-        "Ranger"
+        "Archetype",
+        "General",
+        "Mythic"
       ],
       "correct": false
     },
@@ -3952,6 +4161,7 @@
         "Quick Draw"
       ],
       "extra": [
+        "Rogue",
         "Subtle"
       ],
       "correct": false
@@ -3969,8 +4179,8 @@
         "Master in Acrobatics"
       ],
       "extra": [
-        "Archetype",
-        "Class"
+        "Class",
+        "Rogue"
       ],
       "correct": false
     },
@@ -3986,9 +4196,7 @@
         "Lastwall Sentry Dedication",
         "you worship a good-aligned deity"
       ],
-      "extra": [
-        "Champion"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -4002,7 +4210,10 @@
       "missing": [
         "Expert in Stealth"
       ],
-      "extra": [],
+      "extra": [
+        "Attack",
+        "Common"
+      ],
       "correct": false
     },
     {
@@ -4017,10 +4228,7 @@
         "Avenging Runelord Dedication",
         "expert proficiency in a spear or polearm"
       ],
-      "extra": [
-        "Automaton",
-        "Gadget"
-      ],
+      "extra": [],
       "correct": false
     },
     {
@@ -4051,9 +4259,7 @@
         "Aldori Duelist Dedication"
       ],
       "extra": [
-        "Archetype",
-        "Fighter",
-        "Parry"
+        "Rogue"
       ],
       "correct": false
     },
@@ -4064,12 +4270,13 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "recall": 0.0,
+      "recall": 0.5,
       "missing": [
-        "Ki Strike",
         "you follow a deity"
       ],
-      "extra": [],
+      "extra": [
+        "Monk"
+      ],
       "correct": false
     },
     {
@@ -4084,10 +4291,8 @@
         "Lethoci heritage or Xyloshi heritage"
       ],
       "extra": [
-        "Animal",
-        "Barbarian",
         "Class",
-        "General"
+        "Ranger"
       ],
       "correct": false
     },
@@ -4129,7 +4334,7 @@
       "forbidden_echoed_from_question": [
         "Staff of Necromancy"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0001",
@@ -4140,7 +4345,7 @@
       "forbidden_echoed_from_question": [
         "Flaming Star (Greater)"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0002",
@@ -4206,7 +4411,7 @@
       "forbidden_echoed_from_question": [
         "Key Ability"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0008",
@@ -4316,7 +4521,7 @@
       "forbidden_echoed_from_question": [
         "No! No! I Created You! "
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0018",
@@ -4327,7 +4532,7 @@
       "forbidden_echoed_from_question": [
         "Basic Prosthesis"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0019",
@@ -4492,7 +4697,7 @@
       "forbidden_echoed_from_question": [
         "Devotees"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0034",
@@ -4778,7 +4983,7 @@
       "forbidden_echoed_from_question": [
         "Negative"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0060",
@@ -4855,7 +5060,7 @@
       "forbidden_echoed_from_question": [
         "Areas"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0067",
@@ -4866,7 +5071,7 @@
       "forbidden_echoed_from_question": [
         "Hellknight Order Cross-Training"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0068",
@@ -4910,7 +5115,7 @@
       "forbidden_echoed_from_question": [
         "Cloudkill"
       ],
-      "correct": true
+      "correct": false
     },
     {
       "id": "remaster_rename-0072",
@@ -4965,7 +5170,7 @@
       "forbidden_echoed_from_question": [
         "Stalk Goggles (Major)"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0077",
@@ -4976,7 +5181,7 @@
       "forbidden_echoed_from_question": [
         "Held or Worn"
       ],
-      "correct": false
+      "correct": true
     },
     {
       "id": "remaster_rename-0078",
@@ -5037,8 +5242,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0004",
@@ -5067,7 +5272,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -5077,7 +5282,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -5097,7 +5302,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true,
+      "correct": false,
       "fabricated": false
     },
     {
@@ -5117,7 +5322,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -5137,7 +5342,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true,
+      "correct": false,
       "fabricated": false
     },
     {
@@ -5147,7 +5352,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true,
+      "correct": false,
       "fabricated": false
     },
     {
@@ -5157,8 +5362,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "fabricated": false
+      "correct": false,
+      "fabricated": true
     },
     {
       "id": "abstention-0016",
@@ -5177,7 +5382,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -5187,7 +5392,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -5227,8 +5432,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "fabricated": false
+      "correct": false,
+      "fabricated": true
     },
     {
       "id": "abstention-0023",
@@ -5237,7 +5442,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true,
+      "correct": false,
       "fabricated": false
     },
     {
@@ -5248,7 +5453,7 @@
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
       "correct": false,
-      "fabricated": false
+      "fabricated": true
     },
     {
       "id": "abstention-0025",
@@ -5267,7 +5472,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -5287,7 +5492,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true,
+      "correct": false,
       "fabricated": false
     },
     {
@@ -5357,7 +5562,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": true,
+      "correct": false,
       "fabricated": false
     },
     {
@@ -5377,7 +5582,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -5466,11 +5671,15 @@
       "id": "trap_5e-0006",
       "family": "trap_5e",
       "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_hits": [
+        "no penalty"
+      ],
+      "forbidden_mentioned": [
+        "no penalty"
+      ],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "clean": true
+      "correct": false,
+      "clean": false
     },
     {
       "id": "trap_5e-0007",
@@ -5486,23 +5695,31 @@
       "id": "trap_5e-0008",
       "family": "trap_5e",
       "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_hits": [
+        "death saving throw"
+      ],
+      "forbidden_mentioned": [
+        "death saving throw"
+      ],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "clean": true
+      "correct": false,
+      "clean": false
     },
     {
       "id": "trap_5e-0009",
       "family": "trap_5e",
       "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_hits": [
+        "short rest"
+      ],
+      "forbidden_mentioned": [
+        "short rest"
+      ],
       "forbidden_echoed_from_question": [
         "hit dice"
       ],
-      "correct": true,
-      "clean": true
+      "correct": false,
+      "clean": false
     },
     {
       "id": "trap_5e-0010",
@@ -5602,13 +5819,16 @@
       "id": "trap_5e-0019",
       "family": "trap_5e",
       "empty": false,
-      "forbidden_hits": [],
+      "forbidden_hits": [
+        "short rest"
+      ],
       "forbidden_mentioned": [
-        "spell slot"
+        "spell slot",
+        "short rest"
       ],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "clean": true
+      "correct": false,
+      "clean": false
     },
     {
       "id": "trap_5e-0020",
@@ -5645,7 +5865,9 @@
       "family": "trap_5e",
       "empty": false,
       "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_mentioned": [
+        "disadvantage"
+      ],
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true
@@ -5695,7 +5917,9 @@
       "family": "trap_5e",
       "empty": false,
       "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_mentioned": [
+        "pounds"
+      ],
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true
@@ -5716,13 +5940,18 @@
       "id": "trap_5e_applied-0000",
       "family": "trap_5e_applied",
       "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_hits": [
+        "extra attack"
+      ],
+      "forbidden_mentioned": [
+        "extra attack"
+      ],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "clean": true,
-      "grounding": 0.5,
+      "correct": false,
+      "clean": false,
+      "grounding": 0.0,
       "missing": [
+        "multiple attack penalty",
         "-5"
       ]
     },
@@ -5731,14 +5960,14 @@
       "family": "trap_5e_applied",
       "empty": false,
       "forbidden_hits": [],
-      "forbidden_mentioned": [
-        "concentration check"
-      ],
+      "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.0,
+      "missing": [
+        "sustain"
+      ]
     },
     {
       "id": "trap_5e_applied-0002",
@@ -5749,9 +5978,10 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 0.5,
+      "grounding": 0.0,
       "missing": [
-        "off-guard"
+        "off-guard",
+        "flank"
       ]
     },
     {
@@ -5763,20 +5993,30 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.3333333333333333,
+      "missing": [
+        "recovery check",
+        "wounded"
+      ]
     },
     {
       "id": "trap_5e_applied-0004",
       "family": "trap_5e_applied",
       "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_hits": [
+        "short rest"
+      ],
+      "forbidden_mentioned": [
+        "short rest"
+      ],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "correct": false,
+      "clean": false,
+      "grounding": 0.0,
+      "missing": [
+        "treat wounds",
+        "medicine"
+      ]
     },
     {
       "id": "trap_5e_applied-0005",
@@ -5787,8 +6027,11 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.0,
+      "missing": [
+        "raise a shield",
+        "action"
+      ]
     },
     {
       "id": "trap_5e_applied-0006",
@@ -5811,11 +6054,8 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 0.0,
-      "missing": [
-        "10",
-        "constitution"
-      ]
+      "grounding": 1.0,
+      "missing": []
     },
     {
       "id": "trap_5e_applied-0008",
@@ -5838,22 +6078,20 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.0,
+      "missing": [
+        "invest"
+      ]
     },
     {
       "id": "trap_5e_applied-0010",
       "family": "trap_5e_applied",
       "empty": false,
-      "forbidden_hits": [
-        "third-level spell slots"
-      ],
-      "forbidden_mentioned": [
-        "third-level spell slots"
-      ],
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "clean": false,
+      "correct": true,
+      "clean": true,
       "grounding": 0.0,
       "missing": [
         "rank"
@@ -5868,9 +6106,10 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 0.5,
+      "grounding": 0.0,
       "missing": [
-        "off-guard"
+        "off-guard",
+        "-2"
       ]
     },
     {
@@ -5889,11 +6128,15 @@
       "id": "trap_5e_applied-0013",
       "family": "trap_5e_applied",
       "empty": false,
-      "forbidden_hits": [],
-      "forbidden_mentioned": [],
+      "forbidden_hits": [
+        "half damage"
+      ],
+      "forbidden_mentioned": [
+        "half damage"
+      ],
       "forbidden_echoed_from_question": [],
-      "correct": true,
-      "clean": true,
+      "correct": false,
+      "clean": false,
       "grounding": 1.0,
       "missing": []
     },
@@ -5906,8 +6149,10 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.5,
+      "missing": [
+        "seek"
+      ]
     },
     {
       "id": "trap_5e_applied-0015",
@@ -5918,8 +6163,10 @@
       "forbidden_echoed_from_question": [],
       "correct": true,
       "clean": true,
-      "grounding": 1.0,
-      "missing": []
+      "grounding": 0.0,
+      "missing": [
+        "multiple attack penalty"
+      ]
     }
   ]
 }

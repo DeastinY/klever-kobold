@@ -1,0 +1,20 @@
+{
+  "label": "qwen3.8-27b_thinking-traps",
+  "model": "Qwen/Qwen3.8-27B",
+  "backend": "hf",
+  "base_url": null,
+  "items": 46,
+  "seconds": 476.3,
+  "max_tokens": 2000,
+  "reasoning_effort": null,
+  "chat_kwargs": {
+    "enable_thinking": true,
+    "reasoning_effort": "low"
+  },
+  "quantization": "nf4-4bit",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0
+  },
+  "empty_responses": 0
+}

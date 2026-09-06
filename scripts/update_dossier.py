@@ -41,7 +41,7 @@ def load_runs() -> list[dict]:
         meta_path = path.with_name(path.name.replace(".scores.json", ".meta.json"))
         meta = orjson.loads(meta_path.read_bytes()) if meta_path.exists() else {}
         runs.append({"report": report, "meta": meta, "label": report.get("run", path.stem)})
-    runs.sort(key=lambda r: -r["report"]["accuracy"])
+    runs.sort(key=lambda r: (r["report"].get("partial", False), -r["report"]["accuracy"]))
     return runs
 
 
@@ -55,9 +55,12 @@ def render_results(runs: list[dict]) -> str:
                 '<code>eval/score.py</code>, and <code>scripts/update_dossier.py</code> will fill '
                 'this in.</p>')
 
+    full = [r for r in runs if not r["report"].get("partial")]
+    partial = [r for r in runs if r["report"].get("partial")]
+
     head = "".join(f'<th class="num">{SHORT[f]}</th>' for f in FAMILY_ORDER)
     rows = []
-    for run in runs:
+    for run in full:
         fams = run["report"]["families"]
         model = html.escape(run["meta"].get("model", run["label"]))
         cells = "".join(
@@ -70,7 +73,7 @@ def render_results(runs: list[dict]) -> str:
         )
 
     notes = []
-    for run in runs:
+    for run in full:
         fams = run["report"]["families"]
         model = html.escape(run["meta"].get("model", run["label"]))
         trap = fams.get("trap_5e")
@@ -91,6 +94,14 @@ def render_results(runs: list[dict]) -> str:
                 f'<li><strong>{model}</strong> answered with the pre-Remaster name '
                 f'{rn["used_legacy_name"]} times out of {rn["n"]}.</li>'
             )
+
+    for run in partial:
+        fams = run["report"]["families"]
+        model = html.escape(run["meta"].get("model", run["label"]))
+        kw = run["meta"].get("chat_kwargs") or {}
+        detail = ", ".join(f"{k}={v}" for k, v in kw.items()) or "control"
+        scored = ", ".join(f"{SHORT[f]} {pct(fams[f]['accuracy'])}" for f in FAMILY_ORDER if f in fams)
+        notes.append(f"<li><strong>{model}</strong> control run ({detail}): {scored}.</li>")
 
     note_block = f"<ul>{''.join(notes)}</ul>" if notes else ""
     return f"""<div class="scroller">
@@ -125,14 +136,16 @@ def main() -> int:
     text = args.dossier.read_text()
     text = replace_block(text, "results", render_results(runs))
 
-    tag = f"{len(runs)} run{'s' if len(runs) != 1 else ''} scored" if runs else "no runs scored yet"
+    n_full = sum(1 for r in runs if not r["report"].get("partial"))
+    tag = f"{n_full} run{'s' if n_full != 1 else ''} scored" if runs else "no runs scored yet"
     text = re.sub(r'(<span class="tag" id="results-tag">)[^<]*(</span>)',
                   lambda m: m.group(1) + tag + m.group(2), text)
 
     args.dossier.write_text(text)
     print(f"updated {args.dossier}: {tag}")
     for run in runs:
-        print(f"  {run['meta'].get('model', run['label']):28s} {run['report']['accuracy']:.1%}")
+        kind = "control" if run["report"].get("partial") else "        "
+        print(f"  {kind} {run['meta'].get('model', run['label']):26s} {run['report']['accuracy']:.1%}")
     return 0
 
 

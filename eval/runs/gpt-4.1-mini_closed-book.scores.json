@@ -55,6 +55,8 @@
       }
     },
     "run": "gpt-4.1-mini_closed-book",
+    "benchmark_items": 486,
+    "partial": false,
     "trait_vocab": 569
   },
   "verdicts": [

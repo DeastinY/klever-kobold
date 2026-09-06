@@ -99,9 +99,11 @@ def contains(haystack: str, needle: str) -> bool:
 
 def denied(haystack: str, term: str) -> bool:
     """True when ``term`` is governed by a negation or contrast cue, not asserted."""
-    # Separators are limited to spaces, commas and hyphens so the cue cannot reach
-    # across a clause break: "do not move; a bonus action lets you dash" is a leak.
-    gap = r"(?:[ ,\-]+[\w'’]+){0,4}[ ,\-]+"
+    # Separators cover spaces, commas, hyphens, slashes and brackets, but not
+    # sentence or clause terminators, so the cue cannot reach across a break:
+    # "do not move; a bonus action lets you dash" stays a leak, while
+    # "instead of using weight (pounds/kilograms)" is correctly read as a denial.
+    gap = r"(?:[ ,\-/()]+[\w'’]+){0,4}[ ,\-/()]+"
     pattern = rf"(?:{RE_NEGATION}){gap}{re.escape(norm(term).strip())}(?:e?s)?(?![\w-])"
     return re.search(pattern, haystack) is not None
 
@@ -253,6 +255,10 @@ def main() -> int:
     verdicts = [grade(items[i], responses[i], vocab) for i in items if i in responses]
     report = summarise(verdicts)
     report["run"] = args.responses.stem
+    report["benchmark_items"] = len(items)
+    # A control run deliberately covers only some families; the dossier lists
+    # those separately rather than showing a misleading overall figure.
+    report["partial"] = len(verdicts) < len(items)
     if vocab:
         report["trait_vocab"] = len(vocab)
 
