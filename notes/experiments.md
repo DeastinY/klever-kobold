@@ -386,3 +386,67 @@ and the template computes real ordinals. Five exact-match cases added to `eval/t
 - Phase 3: RAFT training data generation and the first LoRA.
 - `remaster_rename` retrieval is the one place more indexing work still pays: 65% R@5 caps every
   model at ~50%.
+
+---
+
+# Phase 4 — the hand-written holdout
+
+87.7% of the generated benchmark's retrieval questions name their target verbatim, and BM25 alone
+scored 88.5% R@5 on it. That is a keyed lookup, not a question. `eval/seeds/natural_holdout.jsonl`
+is 57 questions written by hand in player language, over entities from the same pool the LoRA's
+training data excluded — so a drop isolates *phrasing*. Only 25% name their target.
+
+## Retrieval collapses
+
+| Retriever | generated R@5 | hand-written R@5 |
+| --- | ---: | ---: |
+| bm25 only | 88.5% | **20.0%** |
+| hybrid+hop, `pf2e-codex-embed-xs` (22M) | 97.1% | 39.6% |
+| hybrid+hop, `Qwen3-Embedding-0.6B` | 97.9% | **45.8%** |
+
+Per family (best retriever): comparative 83.3%, legacy 71.4%, descriptive 55.6%, false-premise 25%,
+**situational 7.7%**. "An ogre has grabbed my monk, what can she do?" does not retrieve `Escape`.
+
+This also reverses the phase-2 embedder conclusion. The 0.6B model was worth 0.8 points on generated
+questions and is worth **6.2** here. When names stop matching, semantics start earning their keep.
+
+## The adapter does not transfer
+
+| Family | base | + RAFT LoRA |
+| --- | ---: | ---: |
+| `nl_comparative` | 100% | 100% |
+| `nl_situational` | 100% | 92.9% |
+| `nl_legacy` | 87.5% | 50.0% |
+| `nl_false_premise` | 72.7% | **81.8%** |
+| `nl_descriptive` | 61.1% | 55.6% |
+| **Overall** | **80.7%** | **73.7%** |
+
+**+10.1 on the generated benchmark, −7.0 here.**
+
+### The defence, tested and rejected
+
+It could be argued the adapter is refusing more honestly when retrieval fails. Splitting by whether
+the gold chunk was actually retrieved:
+
+| | gold retrieved | gold not retrieved | refused when missed |
+| --- | ---: | ---: | ---: |
+| base | **21/22 (95%)** | 19/26 (73%) | 8/26 |
+| + RAFT LoRA | 18/22 (82%) | 17/26 (65%) | 4/26 |
+
+Worse in both halves, and refusing *less* often on failed retrievals. It is overfitting to a question
+shape, not increased honesty.
+
+### What did generalise
+
+Refusal on genuinely non-existent entities: 72.7% → 81.8%, fabricated levels 2 → 0. The behaviour the
+adapter was built for transferred. General answering did not.
+
+## Honest state of the project
+
+- Well-formed lookup questions: **84.5%** for 9B + retrieval, beating gpt-5's 83.7%.
+- Questions phrased the way people ask them: **80.7%**, base model, no adapter.
+- Bounded by a retriever that finds the right page **45.8%** of the time.
+
+The next work is query understanding, not more training. Concretely: query rewriting or
+decomposition before retrieval, a description→entity path that does not depend on name overlap, and
+for situational questions a route into the rules/action corpus rather than the entity corpus.

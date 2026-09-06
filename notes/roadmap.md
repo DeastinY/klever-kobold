@@ -98,7 +98,21 @@ marginally better with retrieval anyway.
 
 ---
 
-## Phase 4 — Lore continued pretraining (optional, gated on Phase 3) ← decision point
+## Phase 4 — Query understanding ← next
+
+The hand-written holdout (`eval/holdout.jsonl`) showed retrieval R@5 falling from 97.1% to 45.8%
+when questions are phrased the way players phrase them, and BM25 from 88.5% to 20.0%. That is now
+the binding constraint on everything.
+
+- **Query rewriting / decomposition** before retrieval: turn "an ogre has grabbed my monk, what can
+  she do?" into lookups for the grabbed condition and the Escape action.
+- **A description→entity path** that does not rely on name overlap. The 403k-edge link graph and the
+  `summary` field are both unused by the current retriever.
+- **Route situational questions into the rules and action corpora**, not the entity corpus; 7.7% R@5
+  on that family is the worst number in the project.
+- Re-run the holdout after each change. It is 57 items and takes two minutes.
+
+## Phase 5 — Lore continued pretraining (optional, probably skip)
 
 Only worth doing if Phase 3 shows the model can hold PF2e framing. Lore is where parametric
 knowledge is actually appropriate — narrative, forgiving, few exact numbers.

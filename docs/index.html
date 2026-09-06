@@ -623,7 +623,7 @@
   <section>
     <div class="block-head">
       <h2>Results</h2>
-      <span class="tag" id="results-tag">10 runs scored</span>
+      <span class="tag" id="results-tag">12 runs scored</span>
     </div>
     <p>Closed-book means no retrieval: the model answers from weights alone. These numbers are the
     floor every later phase is measured against. Read them against the trivial baselines
@@ -642,6 +642,8 @@
           <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>84%</strong></td><td class="num">90%</td><td class="num">86%</td><td class="num">96%</td><td class="num">91%</td><td class="num">77%</td><td class="num">18%</td><td class="num">97%</td></tr>
           <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>83%</strong></td><td class="num">99%</td><td class="num">88%</td><td class="num">95%</td><td class="num">91%</td><td class="num">72%</td><td class="num">0%</td><td class="num">97%</td></tr>
           <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>82%</strong></td><td class="num">95%</td><td class="num">88%</td><td class="num">96%</td><td class="num">92%</td><td class="num">62%</td><td class="num">8%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>81%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>74%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
           <tr><td class="rowname mono">gpt-6-astra</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>32%</strong></td><td class="num">16%</td><td class="num">6%</td><td class="num">28%</td><td class="num">16%</td><td class="num">45%</td><td class="num">60%</td><td class="num">97%</td></tr>
           <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>28%</strong></td><td class="num">19%</td><td class="num">1%</td><td class="num">31%</td><td class="num">8%</td><td class="num">9%</td><td class="num">78%</td><td class="num">97%</td></tr>
           <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>23%</strong></td><td class="num">12%</td><td class="num">0%</td><td class="num">19%</td><td class="num">2%</td><td class="num">19%</td><td class="num">78%</td><td class="num">87%</td></tr>
@@ -651,7 +653,7 @@
         <caption>Closed-book accuracy by family. Every grade is deterministic.</caption>
       </table>
     </div>
-    <ul><li><strong>Qwen/Qwen3.5-9B</strong>: 18% &rarr; 85% with retrieval, 4.8&times;.</li><li><strong>gpt-5</strong>: 28% &rarr; 84% with retrieval, 3.0&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong>: 23% &rarr; 83% with retrieval, 3.5&times;.</li><li><strong>gpt-4.1-mini</strong>: 23% &rarr; 82% with retrieval, 3.5&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
+    <ul><li><strong>Qwen/Qwen3.5-9B</strong>: 18% &rarr; 74% with retrieval, 4.2&times;.</li><li><strong>gpt-5</strong>: 28% &rarr; 84% with retrieval, 3.0&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong>: 23% &rarr; 83% with retrieval, 3.5&times;.</li><li><strong>gpt-4.1-mini</strong>: 23% &rarr; 82% with retrieval, 3.5&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
     <!-- results:end -->
 
     <h3 class="finding">Phase 01 &mdash; closed book</h3>
@@ -777,8 +779,68 @@
 
     <p>Costs, stated plainly: <span class="mono">trap_5e</span> slipped 96.7% &rarr; 93.3%, and
     applied-trap grounding &mdash; the share of rulings naming correct Pathfinder machinery &mdash;
-    fell 81% &rarr; 58% as answers became terser. The adapter is more accurate and less
-    forthcoming.</p>
+    fell 81% &rarr; 58% as answers became terser.</p>
+
+    <h3 class="finding">Phase 04 &mdash; the holdout that undid it</h3>
+    <p>87.7% of the generated benchmark's retrieval questions name their target verbatim, and BM25
+    alone scored 88.5% R@5 on it. That is a keyed lookup wearing a question's clothes, and every
+    number above rested on it. So: 57 questions written by hand in player language &mdash; describing
+    a feat instead of naming it, asking what to do in a situation, comparing two options, asking with
+    pre-Remaster vocabulary, asking about things that were never written. Same corpus, same
+    exclusions, different words. Only 25% name their target.</p>
+
+    <p><strong>Retrieval collapses.</strong> R@5 falls from 97.1% to <strong>45.8%</strong>, and BM25
+    alone from 88.5% to <strong>20.0%</strong> &mdash; confirming that lexical matching had been
+    doing nearly all the work. Situational questions ("an ogre has grabbed my monk, what can she
+    do?") retrieve at <strong>7.7%</strong>.</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Retrieval R@5</th><th class="num">generated</th><th class="num">hand-written</th></tr></thead>
+        <tbody>
+          <tr><td class="rowname mono">bm25 only</td><td class="num">88.5%</td><td class="num">20.0%</td></tr>
+          <tr><td class="rowname mono">hybrid + hop, 22M embedder</td><td class="num">97.1%</td><td class="num">39.6%</td></tr>
+          <tr><td class="rowname mono">hybrid + hop, Qwen3-Embedding-0.6B</td><td class="num">97.9%</td><td class="num">45.8%</td></tr>
+        </tbody>
+        <caption>The bigger embedder was a rounding error on generated questions and is now worth six
+        points. When names stop matching, semantics start earning their keep.</caption>
+      </table>
+    </div>
+
+    <p><strong>And the adapter does not survive the move.</strong> On the generated benchmark it was
+    +10.1. On hand-written questions it is <strong>&minus;7.0</strong>: 80.7% for the base model,
+    73.7% with the LoRA.</p>
+
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Hand-written holdout</th><th class="num">base</th><th class="num">+ RAFT LoRA</th></tr></thead>
+        <tbody>
+          <tr><td class="rowname mono">nl_comparative</td><td class="num">100%</td><td class="num">100%</td></tr>
+          <tr><td class="rowname mono">nl_situational</td><td class="num">100%</td><td class="num">92.9%</td></tr>
+          <tr><td class="rowname mono">nl_legacy</td><td class="num">87.5%</td><td class="num">50.0%</td></tr>
+          <tr><td class="rowname mono">nl_false_premise</td><td class="num">72.7%</td><td class="num"><strong>81.8%</strong></td></tr>
+          <tr><td class="rowname mono">nl_descriptive</td><td class="num">61.1%</td><td class="num">55.6%</td></tr>
+          <tr><td class="rowname mono"><strong>overall</strong></td><td class="num"><strong>80.7%</strong></td><td class="num">73.7%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note"><strong>The obvious defence does not hold.</strong> One could argue the adapter
+    is simply refusing more honestly when retrieval fails. It is not. Split by whether the gold chunk
+    was actually retrieved, it is worse in <em>both</em> halves: <strong>82% against the base's 95%
+    when the answer was in the context</strong>, and 65% against 73% when it was not. It also refuses
+    <em>less</em> often on failed retrievals, not more. This is overfitting to a question shape, not
+    increased honesty.</p>
+
+    <p>One thing did generalise, and it is the thing the adapter was built for. On questions about
+    entities that do not exist, it went 72.7% &rarr; 81.8% and fabricated levels went 2 &rarr; 0.
+    Refusal transferred; answering did not.</p>
+
+    <p class="note"><strong>So the honest state of the project is this.</strong> Retrieval plus a
+    9B model answers well-formed lookup questions at 84.5% and beats gpt-5 doing the same. Neither
+    of those numbers survives contact with how people actually ask. The real system today is
+    <strong>80.7%</strong> on hand-written questions, bounded by a retriever that finds the right
+    page 45.8% of the time &mdash; and the next work is query understanding, not more training.</p>
 
   </section>
 
