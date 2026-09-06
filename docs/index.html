@@ -1,0 +1,621 @@
+<title>Pathfinder 2e Tuning Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --ground:      #f4f2f1;
+    --surface:     #ffffff;
+    --surface-alt: #ebe7e5;
+    --ink:         #191517;
+    --ink-soft:    #4a4341;
+    --muted:       #756c69;
+    --rule:        #d9d1ce;
+    --rule-strong: #b9aeaa;
+    --accent:      #8a1b2e;
+    --accent-soft: #f0e2e3;
+    --good:        #2f6b4f;
+    --warn:        #8a5a12;
+    --on-accent:   #ffffff;
+
+    --measure: 66ch;
+    --step--1: 0.815rem;
+    --step-0:  1rem;
+    --step-1:  1.22rem;
+    --step-2:  1.55rem;
+    --step-3:  2.05rem;
+    --step-4:  2.9rem;
+
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+    --slab: "Zilla Slab", "Iowan Old Style", Georgia, serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground:      #131011;
+      --surface:     #1b1718;
+      --surface-alt: #242020;
+      --ink:         #ece7e5;
+      --ink-soft:    #c6bebb;
+      --muted:       #968c89;
+      --rule:        #332d2e;
+      --rule-strong: #4b4243;
+      --accent:      #dd6d7d;
+      --accent-soft: #33201f;
+      --good:        #6fb28c;
+      --warn:        #d3a04a;
+      --on-accent:   #17090c;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground:      #131011;
+    --surface:     #1b1718;
+    --surface-alt: #242020;
+    --ink:         #ece7e5;
+    --ink-soft:    #c6bebb;
+    --muted:       #968c89;
+    --rule:        #332d2e;
+    --rule-strong: #4b4243;
+    --accent:      #dd6d7d;
+    --accent-soft: #33201f;
+    --good:        #6fb28c;
+    --warn:        #d3a04a;
+    --on-accent:   #17090c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 54rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1.1rem, 4vw, 2.5rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  /* --- stat-block idiom -------------------------------------------------
+     Every Archives of Nethys entry opens the same way: name on the left,
+     level tag hard right, a row of trait pills, then a rule. The page borrows
+     that structure for its own sections. */
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 0.35rem;
+  }
+  .block-head h2 {
+    font-family: var(--slab);
+    font-size: var(--step-2);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .block-head .tag {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+  section > p, section > ul, section > ol { max-width: var(--measure); margin: 0; }
+  ul, ol { padding-left: 1.15rem; display: flex; flex-direction: column; gap: 0.4rem; }
+  li::marker { color: var(--rule-strong); }
+  p { margin: 0; }
+  p + p { margin-top: 0.55rem; }
+  strong { font-weight: 600; }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px;
+  }
+
+  code, .mono { font-family: var(--mono); font-size: 0.9em; }
+  code {
+    background: var(--surface-alt);
+    padding: 0.08em 0.34em;
+    border-radius: 2px;
+  }
+
+  /* --- masthead --------------------------------------------------------- */
+
+  .masthead { display: flex; flex-direction: column; gap: 0.9rem; }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: var(--muted);
+  }
+  .masthead h1 {
+    font-family: var(--slab);
+    font-size: var(--step-4);
+    font-weight: 700;
+    line-height: 1.06;
+    letter-spacing: -0.022em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .deck {
+    font-size: var(--step-1);
+    color: var(--ink-soft);
+    max-width: 46ch;
+  }
+  .traits { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .trait {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--on-accent);
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 0.2rem 0.55rem;
+  }
+  .masthead hr {
+    border: 0;
+    border-top: 1px solid var(--rule-strong);
+    width: 100%;
+    margin: 0.25rem 0 0;
+  }
+
+  /* --- the thesis pair --------------------------------------------------- */
+
+  .thesis { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  @media (min-width: 40rem) { .thesis { grid-template-columns: 1fr 1fr; } }
+  .thesis > div { background: var(--surface); padding: 1.15rem 1.25rem; display: flex; flex-direction: column; gap: 0.5rem; }
+  .thesis h3 {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-weight: 500;
+    color: var(--muted);
+    margin: 0;
+  }
+  .thesis .verdict { font-family: var(--slab); font-size: var(--step-1); font-weight: 600; color: var(--accent); }
+  .thesis p { color: var(--ink-soft); font-size: 0.94rem; }
+
+  /* --- tables ------------------------------------------------------------ */
+
+  .scroller { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 0.94rem; min-width: 30rem; }
+  caption {
+    caption-side: bottom;
+    text-align: left;
+    font-size: var(--step--1);
+    color: var(--muted);
+    padding-top: 0.6rem;
+  }
+  th, td { text-align: left; padding: 0.5rem 0.85rem 0.5rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    color: var(--muted);
+    border-bottom: 1px solid var(--rule-strong);
+    white-space: nowrap;
+  }
+  td.num, th.num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; padding-right: 0; }
+  tbody tr:last-child td { border-bottom: 1px solid var(--rule-strong); }
+  .rowname { font-weight: 500; }
+
+  /* --- bar readouts ------------------------------------------------------ */
+
+  .bars { display: grid; grid-template-columns: minmax(6.5rem, auto) 1fr minmax(3.5rem, auto); gap: 0.3rem 0.75rem; align-items: center; }
+  .bars .k { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-soft); }
+  .bars .v { font-family: var(--mono); font-size: 0.78rem; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .bars .track { background: var(--surface-alt); height: 0.72rem; }
+  .bars .fill { background: var(--accent); height: 100%; }
+  .bars .fill.alt { background: var(--rule-strong); }
+
+  .split { display: flex; height: 1.6rem; border: 1px solid var(--rule-strong); }
+  .split span { display: block; height: 100%; }
+  .split .s1 { background: var(--accent); }
+  .split .s2 { background: var(--rule-strong); }
+  .split .s3 { background: var(--surface-alt); }
+  .legend { display: flex; flex-wrap: wrap; gap: 1.1rem; font-family: var(--mono); font-size: 0.76rem; color: var(--muted); }
+  .legend b { font-weight: 500; color: var(--ink-soft); }
+  .swatch { display: inline-block; width: 0.7rem; height: 0.7rem; margin-right: 0.4rem; vertical-align: -1px; border: 1px solid var(--rule-strong); }
+
+  /* --- sample cards ------------------------------------------------------ */
+
+  .sample {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    padding: 0.95rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+  .sample .fam {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--accent);
+  }
+  .sample .q { font-family: var(--slab); font-size: var(--step-1); font-weight: 500; }
+  .sample .a { color: var(--ink-soft); font-size: 0.94rem; }
+  .sample .meta { font-family: var(--mono); font-size: 0.76rem; color: var(--muted); }
+  .sample .meta .bad { color: var(--accent); }
+  .samples { display: flex; flex-direction: column; gap: 0.9rem; }
+
+  /* --- phases ------------------------------------------------------------ */
+
+  .phases { display: flex; flex-direction: column; gap: 0; }
+  .phase {
+    display: grid;
+    grid-template-columns: 3.1rem 1fr;
+    gap: 0 1.1rem;
+    padding: 1.15rem 0;
+    border-top: 1px solid var(--rule);
+  }
+  .phase:first-child { border-top: 1px solid var(--rule-strong); }
+  .phase:last-child { border-bottom: 1px solid var(--rule-strong); }
+  .phase .n {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    padding-top: 0.28rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .phase .body { display: flex; flex-direction: column; gap: 0.5rem; }
+  .phase h3 {
+    font-family: var(--slab);
+    font-size: var(--step-1);
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+  .status {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    padding: 0.12rem 0.42rem;
+    border: 1px solid currentColor;
+  }
+  .status.done { color: var(--good); }
+  .status.now  { color: var(--accent); }
+  .status.next { color: var(--muted); }
+  .status.maybe { color: var(--warn); }
+  .phase p { font-size: 0.94rem; color: var(--ink-soft); max-width: var(--measure); }
+  .exit {
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    border-left: 2px solid var(--rule-strong);
+    padding-left: 0.75rem;
+    max-width: var(--measure);
+  }
+  .exit b {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--muted);
+    font-weight: 500;
+    display: block;
+  }
+
+  /* --- misc -------------------------------------------------------------- */
+
+  .note {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    padding: 0.9rem 1.1rem;
+    font-size: 0.94rem;
+    max-width: var(--measure);
+  }
+  pre {
+    background: var(--surface-alt);
+    padding: 0.9rem 1.1rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.65;
+    margin: 0;
+  }
+  footer {
+    border-top: 1px solid var(--rule-strong);
+    padding-top: 1.1rem;
+    font-size: 0.86rem;
+    color: var(--muted);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  footer .srcs { display: flex; flex-wrap: wrap; gap: 0.35rem 1rem; font-family: var(--mono); font-size: 0.76rem; }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">Research dossier &middot; 6 September 2026</div>
+    <h1>Teaching a model Pathfinder&nbsp;2e</h1>
+    <p class="deck">A survey of what exists, what the data allows, and why the benchmark has to be built before the model.</p>
+    <div class="traits">
+      <span class="trait">Retrieval-first</span>
+      <span class="trait">Qwen3.8-27B</span>
+      <span class="trait">QLoRA</span>
+      <span class="trait">RTX 5090 &middot; 32GB</span>
+      <span class="trait">ORC / CUP</span>
+    </div>
+    <hr>
+  </header>
+
+  <section>
+    <div class="block-head">
+      <h2>The finding</h2>
+      <span class="tag">prior art</span>
+    </div>
+    <p>Nobody has fine-tuned a language model on Pathfinder 2e. Zero models on HuggingFace, zero rules or lore datasets, and no PF2e benchmark of any kind. The only PF2e artifacts on the Hub are one person's embedding and reranker pair &mdash; retrieval components, not a model. On GitHub, a handful of 0&ndash;2&nbsp;star hobby RAG bots, none evaluated.</p>
+    <p>The community's own diagnosis is the right problem statement: general models fail at PF2e not from missing data but from <strong>D&amp;D 5e contamination</strong>. 5e dominates the training distribution, so models answer Pathfinder questions confidently in the wrong system.</p>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Existing work</th><th>What it is</th><th class="num">Reach</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="rowname mono">Kaylebor/pf2e-codex-embed-xs</td><td>Arctic-Embed fine-tune, PF2e retrieval</td><td class="num">93 dl</td></tr>
+          <tr><td class="rowname mono">Kaylebor/pf2e-codex-reranker-*</td><td>Cross-encoder rerankers, 3 variants</td><td class="num">&lt;5 dl</td></tr>
+          <tr><td class="rowname mono">Pathfinder-Rules-LLM</td><td>Pf2ools + SRD &rarr; ChromaDB &rarr; Claude/GPT</td><td class="num">0 &starf;</td></tr>
+          <tr><td class="rowname mono">PF2e-RAG</td><td>Capstone project, PF2e RAG assistant</td><td class="num">0 &starf;</td></tr>
+          <tr><td class="rowname mono">pathfinder-society-scribe</td><td>Discord bot, local models</td><td class="num">0 &starf;</td></tr>
+        </tbody>
+        <caption>Everything that exists is retrieval. Nothing addresses the prior.</caption>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="block-head">
+      <h2>RAG or fine-tune is the wrong question</h2>
+      <span class="tag">architecture</span>
+    </div>
+    <p>Two failure modes sit behind one complaint, and they have different fixes.</p>
+
+    <div class="thesis">
+      <div>
+        <h3>Failure one</h3>
+        <p>Doesn't know Vicious Swing's damage scaling at level&nbsp;10.</p>
+        <div class="verdict">Retrieval.</div>
+        <p>41,743 discrete entities with exact numbers is a lookup problem. No fine-tune reliably memorises 41k stat blocks, and errata makes weights stale the week it ships.</p>
+      </div>
+      <div>
+        <h3>Failure two</h3>
+        <p>Answers with bonus actions, death saves, and advantage.</p>
+        <div class="verdict">Fine-tuning.</div>
+        <p>That is a corrupted prior, not a missing fact. Retrieval does not remove a prior; it competes with one, and the prior often wins.</p>
+      </div>
+    </div>
+
+    <p><strong>Retrieval fixes facts. Fine-tuning fixes priors.</strong> Pathfinder gives you both problems, which is exactly why the existing hobby bots underdeliver &mdash; they hand correct chunks to a model that still thinks in 5e. So: retrieval carries the load, and a small LoRA does the three things retrieval cannot &mdash; kill the 5e prior, enforce Remaster vocabulary, and teach grounded citation and abstention.</p>
+
+    <p>The literature agrees, and points at the hybrid rather than either pole. <a href="https://arxiv.org/abs/2403.10131">RAFT</a> trains on retrieved context including distractors, with answers that quote the source verbatim &mdash; a near-perfect fit, since "cite the entry you used" is the target behaviour. <a href="https://arxiv.org/pdf/2409.07431">EntiGraph</a> synthetic pretraining recovers over 80% of RAG's gain parametrically and stacks with it; <a href="https://arxiv.org/pdf/2603.23562">Synthetic Mixed Training</a> measures +2.6% over RAG alone but <strong>+9.1% combined</strong>. And on small corpora specifically, <a href="https://arxiv.org/pdf/2508.06178">plain continued pretraining barely moves the needle</a> &mdash; diverse synthetic rephrasing is what lands.</p>
+  </section>
+
+  <section>
+    <div class="block-head">
+      <h2>Corpus</h2>
+      <span class="tag">64,347 chunks &middot; 19.1M tokens</span>
+    </div>
+    <p>Archives of Nethys serves its search index from an anonymously readable Elasticsearch cluster, one document per game entity, each carrying a pre-rendered <code>markdown</code> field. It is the cleanest Pathfinder rules text available anywhere. PathfinderWiki adds Golarion lore through the MediaWiki API &mdash; pulled as raw wikitext rather than rendered extracts, because the infoboxes carry structured lore the extract endpoint throws away.</p>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Source</th><th>Content</th><th class="num">Chunks</th><th class="num">Tokens</th><th>License</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="rowname">Archives of Nethys</td><td>Rules, feats, spells, creatures, equipment</td><td class="num">41,743</td><td class="num">13.5M</td><td>ORC / CUP</td></tr>
+          <tr><td class="rowname">PathfinderWiki</td><td>Golarion lore, people, places, factions</td><td class="num">22,604</td><td class="num">5.6M</td><td>Paizo CUP</td></tr>
+        </tbody>
+      </table>
+      <caption>Tiny for pretraining. Ample for retrieval &mdash; which already hints at the architecture.</caption>
+    </div>
+
+    <div class="bars" role="img" aria-label="Archives of Nethys document counts by category: equipment 8,988; feat 8,801; creature 4,745; rules 3,659; spell 2,737; class feature 1,366; item bonus 1,363; trait 921">
+      <span class="k">equipment</span><span class="track"><span class="fill" style="width:100%"></span></span><span class="v">8,988</span>
+      <span class="k">feat</span><span class="track"><span class="fill" style="width:97.9%"></span></span><span class="v">8,801</span>
+      <span class="k">creature</span><span class="track"><span class="fill" style="width:52.8%"></span></span><span class="v">4,745</span>
+      <span class="k">rules</span><span class="track"><span class="fill" style="width:40.7%"></span></span><span class="v">3,659</span>
+      <span class="k">spell</span><span class="track"><span class="fill" style="width:30.5%"></span></span><span class="v">2,737</span>
+      <span class="k">class feature</span><span class="track"><span class="fill" style="width:15.2%"></span></span><span class="v">1,366</span>
+      <span class="k">item bonus</span><span class="track"><span class="fill" style="width:15.2%"></span></span><span class="v">1,363</span>
+      <span class="k">trait</span><span class="track"><span class="fill" style="width:10.2%"></span></span><span class="v">921</span>
+    </div>
+
+    <p>Normalisation keeps what makes filtered retrieval work &mdash; level, traits, rarity, source book &mdash; plus <strong>403,511 outbound entity links</strong>, the natural seed for synthetic pretraining later. It also preserves the Remaster split, which is load-bearing:</p>
+
+    <div class="split" role="img" aria-label="Remaster split: 12,400 Remaster entries, 11,876 superseded legacy entries, 17,467 unaffected">
+      <span class="s1" style="width:29.7%"></span>
+      <span class="s2" style="width:28.4%"></span>
+      <span class="s3" style="width:41.9%"></span>
+    </div>
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--accent)"></span><b>12,400</b> Remaster</span>
+      <span><span class="swatch" style="background:var(--rule-strong)"></span><b>11,876</b> superseded legacy</span>
+      <span><span class="swatch" style="background:var(--surface-alt)"></span><b>17,467</b> unaffected</span>
+    </div>
+    <p class="note">Pre-2023 web text &mdash; which is what every base model was trained on &mdash; uses the legacy names. That makes the Remaster a second contamination axis, and hands the project 2,019 free renaming test items.</p>
+  </section>
+
+  <section>
+    <div class="block-head">
+      <h2>Benchmark</h2>
+      <span class="tag">470 items &middot; 7 families</span>
+    </div>
+    <p>No public Pathfinder benchmark exists, so this one is generated from the corpus with every answer derived from a structured field rather than a model's opinion. It is the most reusable thing the project will produce, and it has to come first &mdash; otherwise there is no way to tell whether the fine-tune helped.</p>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>Family</th><th class="num">Items</th><th>What it probes</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="rowname mono">lookup_level</td><td class="num">80</td><td>Exact attribute recall</td></tr>
+          <tr><td class="rowname mono">lookup_traits</td><td class="num">80</td><td>Complete set recall, no omissions</td></tr>
+          <tr><td class="rowname mono">lookup_rarity</td><td class="num">80</td><td>Recall against the majority-class guess</td></tr>
+          <tr><td class="rowname mono">prereq</td><td class="num">80</td><td>Multi-hop feat prerequisites</td></tr>
+          <tr><td class="rowname mono">remaster_rename</td><td class="num">80</td><td>Legacy-name staleness</td></tr>
+          <tr><td class="rowname mono">abstention</td><td class="num">40</td><td>Inventing feats that do not exist</td></tr>
+          <tr><td class="rowname mono">trap_5e</td><td class="num">30</td><td>D&amp;D 5e contamination &mdash; hand-authored</td></tr>
+        </tbody>
+      </table>
+      <caption>400 of the 470 items carry the id of their gold source chunk, so retrieval recall is measurable without annotating anything.</caption>
+    </div>
+
+    <div class="samples">
+      <div class="sample">
+        <div class="fam">trap_5e &middot; the family that matters</div>
+        <div class="q">In Pathfinder 2e, can any character make an attack of opportunity when an enemy leaves their reach?</div>
+        <div class="a">No. The reaction &mdash; called Reactive Strike since the Remaster &mdash; is not universal. Only characters who have specifically gained it, such as fighters at 1st level, can use it.</div>
+        <div class="meta">must_not_contain: <span class="bad">"everyone" &middot; "all characters can" &middot; "any character can"</span></div>
+      </div>
+      <div class="sample">
+        <div class="fam">remaster_rename &middot; generated from cross-references</div>
+        <div class="q">The Pathfinder 2e creature formerly called Flesh Golem was renamed in the Remaster. What is its current name?</div>
+        <div class="a">Charnel Creation</div>
+        <div class="meta">source: 2e.aonprd.com/Monsters.aspx?ID=2878</div>
+      </div>
+    </div>
+
+    <p>The <code>must_not_contain</code> lists are the design decision worth defending. Contamination is detectable by substring &mdash; "bonus action", "death saving throw", "advantage" &mdash; so the headline number needs no LLM judge, which keeps it cheap, reproducible, and not itself model-dependent.</p>
+  </section>
+
+  <section>
+    <div class="block-head">
+      <h2>Model and hardware</h2>
+      <span class="tag">32GB, sm_120</span>
+    </div>
+    <p>Baseline is <code>Qwen/Qwen3.8-27B</code> &mdash; Apache-2.0, 27.78B dense parameters, 64 layers, 262k context, released 5&nbsp;August&nbsp;2026. At 4-bit that is roughly 14.5&nbsp;GB of weights, leaving room for QLoRA at moderate sequence length on a single RTX&nbsp;5090. The 248k vocabulary makes the loss head unusually memory-hungry, so chunked cross-entropy matters more than it normally would.</p>
+    <p>The other Qwen3.8 checkpoints are not local options: <span class="mono">Flash-Next</span> is 180B MoE and <span class="mono">2.4T-A95B</span> is the flagship. The FP8 variant is for serving, not training. If 27B QLoRA proves too tight to iterate on daily, <code>Qwen3.5-9B</code> has a base checkpoint and trains fast.</p>
+    <p class="note"><strong>Ceiling check first.</strong> Run the same benchmark against a frontier model with the same retrieval. If frontier plus retrieval already clears the bar, the fine-tune only buys local, private and cheap &mdash; and that should be a known fact going in, not a discovery six weeks later.</p>
+  </section>
+
+  <section>
+    <div class="block-head">
+      <h2>Plan</h2>
+      <span class="tag">gated phases</span>
+    </div>
+    <p>Each phase produces a number that decides whether the next one is worth doing. The ordering is the point: the benchmark before the model, retrieval before the tune.</p>
+
+    <div class="phases">
+      <div class="phase">
+        <div class="n">00</div>
+        <div class="body">
+          <h3>Corpus <span class="status done">done</span></h3>
+          <p>Both dumps, normalisation to 64,347 chunks, the 470-item benchmark. Nothing derived is committed; everything rebuilds from four scripts.</p>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="n">01</div>
+        <div class="body">
+          <h3>Baseline measurement <span class="status now">next</span></h3>
+          <p>Build the scorer &mdash; deterministic graders for every family, substring checks for contamination, an LLM judge only as a secondary number on free-form answers. Then three closed-book runs: the 27B baseline, a frontier ceiling check, and the 9B to price the iteration cost.</p>
+          <div class="exit"><b>Exit criterion</b>If <span class="mono">trap_5e</span> comes back clean, the fine-tune premise is wrong and this becomes a retrieval-only project. Better to learn that in week one.</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="n">02</div>
+        <div class="body">
+          <h3>Retrieval <span class="status next">queued</span></h3>
+          <p>Index at entity granularity, never token windows &mdash; each entry is already atomic. Hybrid BM25 and dense, with hard metadata filters, because "level 4 fighter feats with the flourish trait" is a filter, not a similarity query. Default to excluding legacy content. Bake off the existing PF2e embedder against a strong general model.</p>
+          <div class="exit"><b>Exit criterion</b>The gap between "gold chunk was retrieved" and "answer was right" is the exact size of the prior problem &mdash; and the entire justification for phase 03.</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="n">03</div>
+        <div class="body">
+          <h3>RAFT LoRA <span class="status next">queued</span></h3>
+          <p>Train on retrieved context, not raw rules text: question, gold chunk plus distractors, and an answer that quotes the source and cites its URL. Deliberately include unanswerable questions, legacy-name questions whose correct answer is the Remaster name, and items where every retrieved chunk is a distractor.</p>
+          <div class="exit"><b>Exit criterion</b>Does the adapter beat base-plus-retrieval on contamination and abstention <em>without</em> regressing lookup? Those two families measure prior, not knowledge.</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="n">04</div>
+        <div class="body">
+          <h3>Lore pretraining <span class="status maybe">gated</span></h3>
+          <p>Only if phase 03 shows the model can hold Pathfinder framing. Lore is where parametric knowledge is actually appropriate &mdash; narrative, forgiving, few exact numbers &mdash; and where the 403k-edge entity graph earns its keep. Needs a lore eval that does not exist yet.</p>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="n">05</div>
+        <div class="body">
+          <h3>Serving <span class="status next">queued</span></h3>
+          <p>vLLM on the FP8 weights, or GGUF for a smaller footprint. Surface it where it gets used: an MCP server, or a Foundry VTT module. Every answer cites its source URL &mdash; that is both the trust mechanism and the attribution mechanism.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="block-head">
+      <h2>Licensing</h2>
+      <span class="tag">not legal advice</span>
+    </div>
+    <p>Rules mechanics are ORC-licensed &mdash; reusable with attribution, under a license stewarded by Azora Law rather than owned by Paizo. Golarion lore and PathfinderWiki sit under Paizo's Community Use Policy: <strong>non-commercial, freely available use only</strong>.</p>
+    <ul>
+      <li><strong>Personal local use of a fine-tuned model is fine.</strong> Nothing in Paizo's license pages addresses AI training either way, and non-commercial personal research is squarely what the CUP contemplates.</li>
+      <li><strong>Publishing lore-trained weights is genuinely grey.</strong> A weight file cannot carry the CUP's attribution requirements in any meaningful sense.</li>
+      <li><strong>The benchmark is the safe artifact</strong> &mdash; questions and structured answers with a source URL on every item.</li>
+    </ul>
+    <p>Paizo banned AI-generated content in its own products and marketplaces in 2023. That governs Paizo's publications, not a personal fine-tune, but it does predict how the community would receive published weights.</p>
+  </section>
+
+  <section>
+    <div class="block-head">
+      <h2>Rebuild it</h2>
+      <span class="tag">four scripts</span>
+    </div>
+<pre>uv venv &amp;&amp; uv pip install -e .
+
+python scripts/dump_aon.py            # 45,547 docs from the AoN index
+python scripts/dump_wiki.py           # 27,761 pages, rate-limited, ~10 min
+python scripts/build_chunks.py        # -&gt; aon_chunks.jsonl
+python scripts/build_wiki_chunks.py   # -&gt; wiki_chunks.jsonl
+python eval/generate_benchmark.py     # -&gt; benchmark.jsonl (seed 20260906)</pre>
+    <p>The benchmark is committed and frozen. Regenerating with a different seed produces a <em>new</em> benchmark; it does not replace this one.</p>
+  </section>
+
+  <footer>
+    <div>Survey conducted 6 September 2026. Corpus counts are from the build of the same date.</div>
+    <div class="srcs">
+      <a href="https://2e.aonprd.com/">Archives of Nethys</a>
+      <a href="https://pathfinderwiki.com/">PathfinderWiki</a>
+      <a href="https://paizo.com/licenses">Paizo licenses</a>
+      <a href="https://arxiv.org/abs/2403.10131">RAFT</a>
+      <a href="https://arxiv.org/pdf/2409.07431">EntiGraph</a>
+      <a href="https://arxiv.org/pdf/2603.23562">Synthetic Mixed Training</a>
+      <a href="https://arxiv.org/pdf/2508.06178">Low-resource injection</a>
+      <a href="https://huggingface.co/Qwen/Qwen3.8-27B">Qwen3.8-27B</a>
+    </div>
+  </footer>
+
+</div>
