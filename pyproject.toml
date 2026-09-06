@@ -1,0 +1,29 @@
+[project]
+name = "pf2etune"
+version = "0.1.0"
+description = "Adapting an open-weight LLM to Pathfinder 2e rules and lore: corpus, retrieval, benchmark, fine-tune."
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "orjson>=3.10",
+    "tqdm>=4.66",
+    "mwparserfromhell>=0.6",
+    "python-slugify>=8.0",
+]
+
+[project.optional-dependencies]
+retrieval = [
+    "sentence-transformers>=3.0",
+    "lancedb>=0.13",
+    "rank-bm25>=0.2.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pf2etune"]
+
+[tool.ruff]
+line-length = 100

@@ -1,0 +1,24 @@
+# Data is re-derivable from source; keep it out of git.
+data/raw/
+data/processed/
+*.jsonl
+*.parquet
+*.sqlite
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Training artifacts
+outputs/
+checkpoints/
+wandb/
+*.gguf
+*.safetensors
+
+# Secrets
+.env
