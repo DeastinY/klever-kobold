@@ -1,89 +1,98 @@
 # pf2etune
 
-Adapting an open-weight LLM to **Pathfinder 2e** rules and lore.
+A Pathfinder 2e rules assistant that runs on a laptop, answers questions the way
+players actually ask them, and cites Archives of Nethys for every answer.
 
-The premise, from the research writeup in [`notes/research.md`](notes/research.md)
-(prior art with links: [`notes/prior-art.md`](notes/prior-art.md)): a general
-model's PF2e failures are two different problems with two different fixes.
-
-| Failure | Fix |
-| --- | --- |
-| Doesn't know a feat's exact level, traits, or damage scaling | **Retrieval.** 41k discrete entities with exact numbers is a lookup problem. |
-| Answers with bonus actions, death saves, and advantage | **Fine-tuning.** That's a corrupted D&D 5e prior, not a missing fact. |
-
-Retrieval fixes facts; fine-tuning fixes priors. PF2e gives you both problems, which is why the
-handful of [existing hobby PF2e RAG bots](notes/prior-art.md) underdeliver — they hand correct chunks to a model that
-still thinks in 5e. The plan is a retrieval-first stack plus a small LoRA that kills the 5e prior,
-enforces Remaster vocabulary, and teaches grounded citation and abstention.
-
-**Baseline model: `Qwen/Qwen3.8-27B`** (Apache-2.0, 27.8B dense, 262k context) — QLoRA-trainable on
-the target 32 GB RTX 5090.
-
-## Corpus
-
-Both sources are rebuilt from scratch by the scripts below; nothing derived is committed.
-
-| Source | Documents | ~Tokens | Content | License |
-| --- | ---: | ---: | --- | --- |
-| [Archives of Nethys](https://2e.aonprd.com/) | 41,743 | 13.5 M | Rules, feats, spells, creatures, equipment | ORC / Paizo CUP |
-| [PathfinderWiki](https://pathfinderwiki.com/) | 22,604 | 5.6 M | Golarion lore, people, places, organizations | Paizo CUP |
-
-AoN serves its search index from an anonymously readable Elasticsearch cluster with a
-pre-rendered `markdown` field per entity — the cleanest PF2e rules text available anywhere.
-Normalisation keeps the metadata that makes filtered retrieval work (level, traits, rarity, source
-book, Remaster status) and the **403k outbound entity links**, which are the natural seed for
-EntiGraph-style synthetic continued pretraining later.
-
-The Remaster split is preserved and is load-bearing: 12,400 Remaster entries, 11,876 superseded
-legacy entries, 17,467 unaffected. Pre-2023 web text — which is what every base model was trained
-on — uses the legacy names.
-
-## Benchmark
-
-No public PF2e rules benchmark exists, so `eval/generate_benchmark.py` builds one where every
-answer is checkable against a structured field rather than a model's opinion. 470 items:
-
-| Family | Items | Probes |
-| --- | ---: | --- |
-| `lookup_level` | 80 | Exact attribute recall |
-| `lookup_traits` | 80 | Complete set recall |
-| `lookup_rarity` | 80 | Non-majority-class recall |
-| `prereq` | 80 | Multi-hop feat prerequisites |
-| `remaster_rename` | 80 | Legacy-name staleness |
-| `abstention` | 40 | Inventing feats that don't exist |
-| `trap_5e` | 30 | **D&D 5e contamination** (hand-authored) |
-
-The `trap_5e` family is the important one. Each item carries `must_not_contain` — the 5e vocabulary
-that must never appear ("bonus action", "death saving throw", "advantage") — which makes 5e
-contamination automatically scoreable.
-
-## Build the corpus
+**85.3%** on 109 hand-written questions, running locally through Ollama at about
+1.6 seconds a question and 6.6 GB of memory. → **[deploy/README.md](deploy/README.md)**
 
 ```bash
-uv venv && uv pip install -e .
+$ pf2etune ask "my monk is grabbed by an ogre, what are her options?"
 
-python scripts/dump_aon.py          # ~45.5k docs from the AoN Elasticsearch index
-python scripts/dump_wiki.py         # ~27.8k pages from the PathfinderWiki API (~10 min, rate-limited)
-python scripts/build_chunks.py      # AoN  -> data/processed/aon_chunks.jsonl
-python scripts/build_wiki_chunks.py # wiki -> data/processed/wiki_chunks.jsonl
-python scripts/corpus_stats.py      # -> data/processed/corpus_stats.json
-python eval/generate_benchmark.py   # -> eval/benchmark.jsonl
+Escape (one action, attack trait): attempt an unarmed attack, Athletics or
+Acrobatics check against the ogre's DC. Success removes the grabbed condition.
+While grabbed she is off-guard and immobilized, and any manipulate action
+requires a DC 5 flat check.
+
+sources:
+  Escape (action) — https://2e.aonprd.com/Actions.aspx?ID=2412
+  Grabbed (condition) — https://2e.aonprd.com/Conditions.aspx?ID=19
 ```
+
+## What it does
+
+Players describe situations; a rules database holds entities, and the two share
+almost no vocabulary. "An ogre has grabbed my monk" originally retrieved the
+`Escape` action **7.7%** of the time. So the model goes in front of the retriever
+as well as behind it:
+
+1. **Rewrite** — the question becomes a hypothetical one-line entry summary plus
+   up to three likely entry kinds. Asking for a *description* rather than a *name*
+   matters: asked to name things, the model invents feats that do not exist.
+2. **Narrow** — restrict to those kinds. Equipment and creatures are two thirds of
+   the corpus and answer almost none of these questions.
+3. **Retrieve** — fuse four rankings by reciprocal rank: BM25, dense over the full
+   entry, dense over the one-line summary, and the *hypothetical* summary against
+   the summary index.
+4. **Hop** — replace any pre-Remaster entry with the one that superseded it, so
+   legacy rules are never served as current.
+5. **Answer** — excerpts are authoritative; cite the URL; say so when the answer
+   is not among them.
+
+Retrieval on hand-written questions went from 47.2% to **76.4%** recall@5 this way,
+and situational questions from 7.7% to **77.4%**.
+
+## Results
+
+| | hand-written | generated |
+| --- | ---: | ---: |
+| Deployed runtime (Ollama, k=8) | **85.3%** | — |
+| Lab path (transformers, nf4) | 84.4% | 84.5% |
+| With the RAFT LoRA | 81.7% | 94.6% |
+| gpt-5 + retrieval | — | 83.7% |
+| Best closed-book (gpt-6-astra) | — | 31.6% |
+
+**The two columns disagreeing is the main finding.** The generated benchmark names
+its target entity in 88% of questions; the hand-written one, 37%. A fine-tune
+worth +10 points on the first is worth −3 on the second. Numbers from a benchmark
+written by the same pipeline that produced the training data describe the
+pipeline, not the world.
+
+Full history in [`notes/experiments.md`](notes/experiments.md), including
+everything that was tried and dropped.
 
 ## Layout
 
 ```
-src/pf2etune/     aon.py (ES export) · wiki.py (MediaWiki export) · normalize.py (chunking)
-scripts/          corpus build pipeline
-eval/             benchmark generator + hand-authored 5e-trap seeds
-docs/             research writeup as a web page, licensing notes
-notes/            research findings, decisions
-data/             raw + processed corpora (gitignored; rebuild from scripts)
+src/pf2etune/    app.py (runtime) · retrieval.py · bm25.py · mcp_server.py · __main__.py
+                 aon.py · wiki.py · normalize.py (corpus build)
+scripts/         corpus pipeline, index build, packaging, query rewriting, LoRA training
+eval/            two benchmarks, deterministic scorer, 25 pinned regression tests
+deploy/          MacBook install, requirements, install.sh
+notes/           research, prior art, experiment log, roadmap
+docs/            the dossier, licensing
 ```
+
+## Corpus
+
+| Source | Chunks | Tokens | License |
+| --- | ---: | ---: | --- |
+| [Archives of Nethys](https://2e.aonprd.com/) | 41,743 | 13.5 M | ORC / Paizo CUP |
+| [PathfinderWiki](https://pathfinderwiki.com/) | 22,604 | 5.6 M | Paizo CUP |
+
+Rebuilt from scratch by four scripts; nothing derived is committed. The packaged
+retrieval index ships as a [release asset](https://github.com/DeastinY/pf2etune/releases).
+
+## A note on the scorer
+
+Ten measurement bugs were found over this project's life, every one by reading
+model outputs rather than model scores, and the largest ran in the flattering
+direction for hours. `eval/test_score.py` pins 25 cases taken verbatim from real
+runs. If you change the grader, run it.
 
 ## Licensing
 
-Rules mechanics are ORC-licensed; Golarion lore and PathfinderWiki are under Paizo's Community
-Use Policy — **non-commercial, freely available use only**. See [`docs/LICENSING.md`](docs/LICENSING.md).
-Every chunk keeps its source URL so attribution stays possible. This repository is for personal,
+Rules mechanics are ORC-licensed; Golarion lore and PathfinderWiki are under
+Paizo's Community Use Policy — non-commercial, freely available use only. See
+[`docs/LICENSING.md`](docs/LICENSING.md). This repository is for personal,
 non-commercial research.
