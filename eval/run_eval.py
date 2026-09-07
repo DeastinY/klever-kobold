@@ -287,7 +287,8 @@ def attach_context(items: list[dict], retriever: str, mode: str, k: int,
           + (f" / rewriter {rewriter}" if rewrites else ""))
 
 
-def run_app(items: list[dict], index_dir: pathlib.Path, ollama_url: str, k: int) -> list[dict]:
+def run_app(items: list[dict], index_dir: pathlib.Path, ollama_url: str, k: int,
+            rerank: bool = False, pool: int = 24) -> list[dict]:
     """Evaluate the shipped runtime itself, not a lab reimplementation of it.
 
     Everything else in this file drives transformers directly. That is fine for
@@ -302,7 +303,7 @@ def run_app(items: list[dict], index_dir: pathlib.Path, ollama_url: str, k: int)
     assistant = Assistant(index_dir, ollama_url)
     out = []
     for n, item in enumerate(items, 1):
-        result = assistant.ask(item["question"], k=k)
+        result = assistant.ask(item["question"], k=k, rerank=rerank, pool=pool)
         out.append({"id": item["id"], "family": item["family"], "response": result["answer"],
                     "usage": {}, "retrieved": [s["url"] for s in result["sources"]]})
         if n % 20 == 0:
@@ -329,6 +330,8 @@ def main() -> int:
     ap.add_argument("--index-dir", type=pathlib.Path, default=ROOT / "dist" / "pf2e-index",
                     help="app backend: the packaged index to run against")
     ap.add_argument("--ollama", default="http://localhost:11434")
+    ap.add_argument("--rerank", action="store_true", help="app backend: listwise rerank")
+    ap.add_argument("--pool", type=int, default=24, help="candidates handed to the reranker")
     ap.add_argument("--adapter", type=pathlib.Path,
                     help="hf backend: LoRA adapter directory to load onto the base model")
     ap.add_argument("--chat-kwargs", default="{}",
@@ -398,7 +401,8 @@ def main() -> int:
         rows = run_api(items, args.model, args.base_url, key, args.workers,
                        args.max_tokens, args.reasoning_effort, system)
     elif args.backend == "app":
-        rows = run_app(items, args.index_dir, args.ollama, args.retrieve or 5)
+        rows = run_app(items, args.index_dir, args.ollama, args.retrieve or 5,
+                       args.rerank, args.pool)
     else:
         rows = run_hf(items, args.model, args.max_tokens, args.batch_size, not args.no_4bit,
                       json.loads(args.chat_kwargs), system, args.adapter)

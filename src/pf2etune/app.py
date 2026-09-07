@@ -64,6 +64,16 @@ REWRITE_SYSTEM = (
     "KINDS: action, feat"
 )
 
+RERANK_SYSTEM = (
+    "You are selecting which Archives of Nethys entries could answer a Pathfinder 2e question.\n"
+    "You will see a numbered list of candidate entries, each with its kind and a one-line summary, "
+    "then the question.\n"
+    "Reply with the numbers of the entries most likely to contain the answer, best first, comma "
+    "separated, at most {k}. Include an entry if it is plausibly relevant; the cost of a wrong "
+    "inclusion is low and the cost of dropping the answer is high.\n"
+    "Reply with numbers only. No words, no explanation."
+)
+
 ANSWER_SYSTEM = (
     "You are answering questions about the Pathfinder Second Edition tabletop roleplaying game. "
     "Rules excerpts from the Archives of Nethys are provided below. Treat them as authoritative "
@@ -86,6 +96,16 @@ RRF_SMOOTHING = 5
 # accumulate to drown it.
 DEFAULT_K = 8
 
+# Candidates handed to the reranker before it cuts down to DEFAULT_K.
+#
+# Reranking is on by default on a split decision. It is flat on the hand-written
+# gate (89.9% either way) and worth +6.0 points of recall@8 on the 300 mined
+# questions, which is eighteen items and well outside that set's noise. It also
+# takes false-premise questions to 19/19. It costs about a tenth of a second per
+# query and three points of descriptive accuracy, so it is a real trade rather
+# than a free win -- pass rerank=False to turn it off.
+DEFAULT_POOL = 24
+
 
 class OllamaError(RuntimeError):
     """Raised with a message a user can act on, not a stack trace."""
@@ -99,6 +119,7 @@ class Hit:
     level: object
     url: str
     text: str
+    summary: str = ""
 
 
 class Ollama:
@@ -213,7 +234,8 @@ class Assistant:
         prefix = self.manifest["query_prefix"]
         return self.ollama.embed([prefix + t for t in texts], self.manifest["ollama_embed"])
 
-    def search(self, question: str, k: int = DEFAULT_K, plan: dict | None = None) -> list[Hit]:
+    def search(self, question: str, k: int = DEFAULT_K, plan: dict | None = None,
+               rerank: bool = True, pool: int | None = None) -> list[Hit]:
         plan = plan if plan is not None else self.rewrite(question)
         queries = [question]
         if plan.get("summary"):
@@ -246,17 +268,61 @@ class Assistant:
             rankings.append(self.index.lexical(question, narrow_mask, 50))
             if hvec is not None:
                 rankings.append(self.index.dense(hvec, narrow_mask, 50, view="summary"))
-        order = retrieval.rrf(rankings, k * 4, smoothing=RRF_SMOOTHING, index=self.index)
+        take = (pool or DEFAULT_POOL) if rerank else k
+        order = retrieval.rrf(rankings, max(take * 4, k * 4), smoothing=RRF_SMOOTHING,
+                              index=self.index)
         order = retrieval.follow_remaster(self.index, order)
-        order = retrieval.dedupe(self.index, order)[:k]
+        order = retrieval.dedupe(self.index, order)[:take]
 
         hits = []
         for i in order:
             m = self.index.meta[i]
             hits.append(Hit(chunk_id=self.index.ids[i], name=m.get("name") or "",
                             category=m.get("category") or "", level=m.get("level"),
-                            url=m.get("url") or "", text=self.body(self.index.ids[i])))
+                            url=m.get("url") or "", text=self.body(self.index.ids[i]),
+                            summary=m.get("summary") or ""))
+        if rerank:
+            hits = self.rerank(question, hits, k)
         return hits
+
+    def rerank(self, question: str, hits: list[Hit], k: int) -> list[Hit]:
+        """Reorder candidates with the model that is already loaded.
+
+        A cross-encoder would be the textbook choice and would drag torch back
+        into a runtime that currently needs numpy, httpx and orjson. The answering
+        model is already resident, already knows the domain, and reads a list of
+        one-line summaries in about a second -- and a separate probe had already
+        shown the base model picks the right excerpt 80% of the time when that is
+        all it has to do.
+
+        Failure is designed to be free: anything the model does not mention keeps
+        its fusion order behind the entries it did, so a garbled reply degrades to
+        the ranking it was given.
+        """
+        if len(hits) <= k:
+            return hits[:k]
+        listing = "\n".join(
+            f"{n}. {h.name} ({h.category.replace('-', ' ')})"
+            + (f" [level {h.level}]" if h.level is not None else "")
+            + f" — {(h.summary or h.text[:110]).strip()}"
+            for n, h in enumerate(hits, 1))
+        try:
+            raw = self.ollama.chat(RERANK_SYSTEM.format(k=k),
+                                   f"{listing}\n\nQuestion: {question}",
+                                   self.manifest["ollama_llm"], max_tokens=60)
+        except OllamaError:
+            raise
+        except Exception:
+            return hits[:k]
+
+        picked, seen = [], set()
+        for token in re.findall(r"\d+", raw or ""):
+            i = int(token) - 1
+            if 0 <= i < len(hits) and i not in seen:
+                seen.add(i)
+                picked.append(hits[i])
+        rest = [h for n, h in enumerate(hits) if n not in seen]
+        return (picked + rest)[:k]
 
     def context(self, hits: Iterable[Hit], max_chars: int = 1600) -> str:
         blocks = []
@@ -268,9 +334,10 @@ class Assistant:
             blocks.append(head + "\n" + h.text[:max_chars].strip())
         return "<rules_excerpts>\n" + "\n\n".join(blocks) + "\n</rules_excerpts>"
 
-    def ask(self, question: str, k: int = DEFAULT_K) -> dict:
+    def ask(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
+            pool: int | None = None) -> dict:
         plan = self.rewrite(question)
-        hits = self.search(question, k=k, plan=plan)
+        hits = self.search(question, k=k, plan=plan, rerank=rerank, pool=pool)
         prompt = self.context(hits) + "\n\nQuestion: " + question
         answer = self.ollama.chat(ANSWER_SYSTEM, prompt, self.manifest["ollama_llm"])
         return {"question": question, "answer": answer, "plan": plan,

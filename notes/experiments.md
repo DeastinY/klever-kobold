@@ -665,3 +665,37 @@ is an improvement on both sets. `KS` now includes 8 and the summary ranks by it.
 | descriptive | 72.7% | 75.8% |
 | fabricated levels | 1 | **0** |
 | situational grounding | 70% | 80% |
+
+## Tier 1, increment 3 — listwise reranking with the model already loaded
+
+A cross-encoder is the textbook reranker and would have dragged torch back into a
+runtime that needs numpy, httpx and orjson. The answering model is already
+resident, already knows the domain, and reads twenty-four one-line summaries in
+about a tenth of a second. A separate probe had already shown the base model
+picks the right excerpt 80% of the time when that is all it has to do, which is
+the only thing a reranker is asked for.
+
+Anything the model does not mention keeps its fusion order behind the entries it
+did, so a garbled reply degrades to the ranking it was handed.
+
+| recall@8, through the shipped runtime | fusion only | + rerank |
+| --- | ---: | ---: |
+| hand-written holdout (89) | **84.3%** | 83.1% |
+| mined wild questions (300) | 28.7% | **34.7%** |
+
+| end to end, holdout | | |
+| --- | ---: | ---: |
+| overall | 89.9% | **89.9%** |
+| false premise | 94.7% | **100%** (19/19) |
+| situational grounding | 80% | 82% |
+| descriptive | 75.8% | 72.7% |
+
+**Kept on a split decision, which is worth stating plainly.** Flat on the gate,
+minus one item of retrieval recall there, plus eighteen items on the independent
+set — well outside its noise — and false premise finally clean. The cost is about
+a tenth of a second per query and three points of descriptive accuracy. On by
+default; `--no-rerank` turns it off.
+
+`eval/recall_app.py` measures recall through the shipped runtime rather than the
+lab implementation, so a retrieval change can be checked at the operating point
+before spending four minutes on a full answer run.

@@ -19,7 +19,7 @@ from .app import DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, Assistant, Ollama, Ol
 
 def cmd_ask(args) -> int:
     a = Assistant(args.index, args.ollama)
-    result = a.ask(args.question, k=args.k)
+    result = a.ask(args.question, k=args.k, rerank=not args.no_rerank)
     if args.json:
         sys.stdout.write(orjson.dumps(result, option=orjson.OPT_INDENT_2).decode() + "\n")
         return 0
@@ -33,7 +33,7 @@ def cmd_ask(args) -> int:
 def cmd_search(args) -> int:
     a = Assistant(args.index, args.ollama)
     plan = a.rewrite(args.question)
-    hits = a.search(args.question, k=args.k, plan=plan)
+    hits = a.search(args.question, k=args.k, plan=plan, rerank=not args.no_rerank)
     print(f"interpreted as: {plan['summary']!r}  kinds={plan['categories']}\n")
     for n, h in enumerate(hits, 1):
         level = f" (level {h.level})" if h.level is not None else ""
@@ -96,11 +96,14 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("question")
     p.add_argument("-k", type=int, default=DEFAULT_K)
     p.add_argument("--json", action="store_true")
+    p.add_argument("--no-rerank", action="store_true",
+                   help="skip the listwise rerank; slightly faster, worse on hard questions")
     p.set_defaults(func=cmd_ask)
 
     p = sub.add_parser("search", help="show what retrieval finds, without answering")
     p.add_argument("question")
     p.add_argument("-k", type=int, default=DEFAULT_K)
+    p.add_argument("--no-rerank", action="store_true")
     p.set_defaults(func=cmd_search)
 
     p = sub.add_parser("doctor", help="check Ollama, models and index")
