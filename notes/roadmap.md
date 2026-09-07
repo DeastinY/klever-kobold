@@ -1,145 +1,135 @@
 # Roadmap
 
-Ordering principle: **the benchmark comes before the model, and retrieval comes before the tune.**
-Each phase produces a number that decides whether the next phase is worth doing.
+State as of 2026-09-07: the deployed runtime answers **89.0%** of 109 hand-written
+questions, on a 16 GB laptop, in 1.6 s, citing Archives of Nethys.
+
+Everything below is ordered by where the remaining errors actually are, not by
+what is interesting to build.
 
 ---
 
-## Phase 0 — Corpus ✅ done
+## Where the 12 remaining failures live
 
-- `scripts/dump_aon.py` → 45,547 AoN documents
-- `scripts/dump_wiki.py` → 27,761 PathfinderWiki pages
-- `scripts/build_chunks.py` / `build_wiki_chunks.py` → 64,347 chunks, 19.1 M tokens, 403k entity links
-- `eval/generate_benchmark.py` → 470-item benchmark, 7 families
+| | count | |
+| --- | ---: | --- |
+| Retrieval missed the entry, descriptive questions | **8** | the answer was never in the context |
+| Model had the entry and answered wrong | 3 | 2 legacy naming, 1 descriptive |
+| Genuine abstention failure | 1 | declines the wrong question |
 
----
-
-## Phase 1 — Baseline measurement ✅ done
-
-**Build `eval/score.py`.** Graders per `answer_type`, all deterministic except one:
-
-| `answer_type` | Grader |
-| --- | --- |
-| `int`, `exact` | normalised string match against `acceptable` |
-| `set` | precision/recall over `acceptable`, report exact-set-match too |
-| `abstain` | did the response refuse, or did it invent a feat? |
-| `free` (`trap_5e`) | **`must_not_contain` is the primary metric** — a pure substring check for 5e vocabulary, no judge needed. An LLM judge scores substantive correctness as a secondary number. |
-
-The `must_not_contain` design is deliberate: contamination is detectable without a judge, so the
-headline number is cheap, reproducible, and not itself model-dependent.
-
-**Then run three closed-book baselines** (no retrieval, same prompt):
-
-1. `Qwen/Qwen3.8-27B` — the floor, and the 5e-contamination measurement that motivates the project.
-2. A frontier model (Claude / GPT) — the **ceiling check**. If frontier + retrieval later clears the
-   bar, the fine-tune only buys local/private/cheap. Know that before spending compute.
-3. `Qwen/Qwen3.5-9B` — is the 27B worth the iteration cost?
-
-**Exit criterion — answered.** `trap_5e` came back clean at 30/30 for both frontier models
-(`gpt-5`, `gpt-4.1-mini`) but 25/30 for `Qwen3.8-27B`, which put death saving throws and 1-hour
-short rests into Pathfinder rulings. The contamination premise is wrong about frontier models and
-right about the one whose weights are ours to change. A thinking-mode control rules out the obvious
-confound.
-`lookup_*` is as bad as predicted — 1–17%, and *below the trivial baseline* on rarity. Abstention
-turned out to be the discriminating axis nobody planned for: 33/40 fabricated levels for the small
-model, 1/40 for the large one. Full numbers in [`notes/experiments.md`](experiments.md).
-
-Still outstanding: the `Qwen3.8-27B` run, which is the one the premise actually depends on, and the
-`Qwen3.5-9B` run to price iteration cost.
+**Two thirds of the remaining headroom is descriptive retrieval.** Every failing
+question describes something the corpus contains — "a way to patch up an ally
+mid-fight", "the cantrip most casters take for reliable damage", "the item you
+need to pick locks" — and the right entry never reaches the context window.
 
 ---
 
-## Phase 2 — Retrieval ✅ done
+## Tier 0 — the instrument, before anything else
 
-The benchmark hands us **free retrieval labels**: 400 of the 470 items carry `source_ids` naming the
-exact gold chunk. Recall@k is measurable without annotating anything.
+12 failures across 109 items means **one item is 0.9%**. Nothing below can be
+told apart from noise at that resolution, and the project's history is a long
+list of measurement bugs found by reading outputs (twelve of them, the largest
+worth 15 points).
 
-- **Index** entity-level chunks (never token-window splits — each AoN entry is already atomic).
-- **Hybrid** BM25 + dense, with hard metadata filters on `level`, `traits`, `category`,
-  `remaster_status`. Filtering is where this corpus beats naive vector search: "level 4 fighter feats
-  with the flourish trait" is a filter, not a similarity query.
-- **Default `remaster_status != legacy`** unless the query asks for legacy content.
-- **Embedder bake-off**: `Kaylebor/pf2e-codex-embed-xs` (the only existing PF2e-tuned embedder) vs a
-  strong general model, scored on recall@{1,5,20}.
-- Re-run the benchmark **with** retrieval.
+1. **Grow the holdout to 300+.** Non-negotiable prerequisite for tuning.
+2. **Stop writing the questions myself.** Mine real ones — r/Pathfinder2e, the
+   PF2e Discord rules channels, Paizo forum threads. My questions share my blind
+   spots by construction, which is exactly the failure mode the first benchmark
+   had.
+3. **Cross-check the scorer against a judge.** Sample 60 graded items, have a
+   frontier model grade them independently, and read every disagreement. That is
+   how bug thirteen gets found before it flatters a headline for a week.
+4. **Split dev and test.** Everything so far has been tuned on the set it is
+   reported on. A frozen test half, opened rarely, would make the numbers mean
+   what they appear to mean.
 
-**Exit criterion — answered.** R@5 is 92.5% overall (hybrid + the legacy→Remaster hop). With five
-excerpts every model roughly triples: gpt-5 67.9%, Qwen3.5-9B 65.0%, Qwen3.8-27B and gpt-4.1-mini
-63.2%. A 9B in 4-bit lands 2.9 points off gpt-5.
-
-The gap turned out not to be a prior problem. Retrieval fixed the priors too — the 9B's applied-trap
-grounding went 9% → 81%. What it did not fix is precision (`prereq`: 100% R@5, 21% accuracy,
-over-answering on 61 of 80) and what it actively broke is abstention (Qwen3.8-27B 77.5% → 0.0%).
-Full numbers in [`notes/experiments.md`](experiments.md).
+*Effort: a day. Gate for everything else.*
 
 ---
 
-## Phase 3 — RAFT LoRA ✅ done
+## Tier 1 — descriptive retrieval (8 of 12 failures)
 
-Train on retrieved context, not on raw rules text.
+Recall@5 is 76.4% overall but the descriptive family carries almost all the loss.
+Four things to try, cheapest first, each measured alone:
 
-- **Synthesise** training items: question + k chunks (1 gold + distractors) + a CoT answer that
-  quotes the source verbatim and cites the AoN URL. Generate with a teacher model over AoN entries
-  held out from the benchmark.
-- **Deliberately include**: unanswerable questions (abstention), legacy-name questions whose correct
-  answer is the Remaster name, and items where *all* retrieved chunks are distractors.
-- **Train** QLoRA on `Qwen/Qwen3.8-27B` with Unsloth Studio (sm_120 kernels; chunked cross-entropy
-  matters at 248k vocab). Start rank 16–32, LR ~1e-4, ≤3 epochs, checkpoint often.
-- **Strict hygiene:** the benchmark's `source_ids` are excluded from training generation. No entity
-  in the test set contributes a training item.
+1. **A reranker over the top 50.** The pipeline fuses four rankings and then
+   truncates; nothing ever re-reads the candidates against the question. A small
+   cross-encoder is the standard fix and the obvious first move.
+2. **Train the embedder in-domain, properly.** Generate (question, entry) pairs
+   from the corpus with the 27B and fine-tune `Qwen3-Embedding-0.6B` on them.
+   The one published PF2e embedder turned out to be numerically identical to its
+   base, so this is genuinely unexplored — and it is the component that most
+   directly determines descriptive recall.
+3. **Multiple hypothetical summaries.** One generated summary is one sample from
+   a distribution; three, fused, cover more of it. Cheap: the rewriter already
+   runs.
+4. **Ask twice.** When the top result's score is low, re-rewrite with the first
+   attempt's misses visible and search again. Latency cost only on hard queries.
 
-**Exit criterion — revised after Phase 2.** `trap_5e` is off the list; retrieval solved it. The
-adapter must move `prereq` (21.2%) and `lookup_traits` (57.5%) toward their 100% retrieval ceilings,
-and drag `abstention` back from the collapse retrieval caused, without regressing `lookup_level`
-(96.2%), `lookup_rarity` (96.2%) or `trap_5e` (100%).
-
-Development target is **Qwen3.5-9B + retrieval at 65.0%** — faster to iterate than the 27B and
-marginally better with retrieval anyway.
-
----
-
-## Phase 4 — Query understanding ← next
-
-The hand-written holdout (`eval/holdout.jsonl`) showed retrieval R@5 falling from 97.1% to 45.8%
-when questions are phrased the way players phrase them, and BM25 from 88.5% to 20.0%. That is now
-the binding constraint on everything.
-
-- **Query rewriting / decomposition** before retrieval: turn "an ogre has grabbed my monk, what can
-  she do?" into lookups for the grabbed condition and the Escape action.
-- **A description→entity path** that does not rely on name overlap. The 403k-edge link graph and the
-  `summary` field are both unused by the current retriever.
-- **Route situational questions into the rules and action corpora**, not the entity corpus; 7.7% R@5
-  on that family is the worst number in the project.
-- Re-run the holdout after each change. It is 57 items and takes two minutes.
-
-## Phase 5 — Lore continued pretraining (optional, probably skip)
-
-Only worth doing if Phase 3 shows the model can hold PF2e framing. Lore is where parametric
-knowledge is actually appropriate — narrative, forgiving, few exact numbers.
-
-- EntiGraph-style synthetic CPT over the 403k-edge entity graph plus wiki infoboxes: sample entity
-  pairs, generate text relating them, train on the synthetic corpus.
-- Needs a **lore eval that does not exist yet** — build it from wiki infobox fields (ruler of X,
-  deity of Y, capital of Z) the same way the rules benchmark was built from AoN fields.
+*Expected: R@5 76% → 85%+, worth roughly 5 points end to end.*
 
 ---
 
-## Phase 5 — Serving
+## Tier 2 — coverage and freshness
 
-- vLLM with the FP8 weights, or GGUF via llama.cpp for a smaller footprint.
-- Surface it where it gets used: an MCP server for rules lookup, or a Foundry VTT module
-  (`foundryvtt/pf2e` is Apache-2.0 and officially partnered with Paizo).
-- Every answer cites its AoN URL. Non-negotiable — it is both the trust mechanism and the
-  attribution mechanism.
+1. **Index the lore.** 22,604 PathfinderWiki chunks are built and unused by the
+   deployed system, which answers rules questions only. Golarion questions are
+   half of what a GM asks. Needs a source filter so lore never answers a rules
+   question.
+2. **Structured queries deserve a structured path.** "Level 4 fighter feats with
+   the flourish trait" is a database filter wearing a question's clothes; running
+   it through semantic search is strictly worse than a `WHERE` clause. The
+   metadata is already in the index.
+3. **Errata.** Archives of Nethys changes continuously. A monthly re-dump,
+   re-embed and re-release, with the holdout run before publishing, keeps the
+   index from quietly rotting.
 
 ---
 
-## Cross-cutting
+## Tier 3 — the thing people actually use
 
-- **Freeze the test split now.** `eval/benchmark.jsonl` is generated with a fixed seed
-  (`--seed 20260906`) and committed. Regenerating with a different seed creates a *new* benchmark;
-  it does not replace this one.
-- **Corpus refresh**: AoN publishes errata continuously. Re-run the dump before any headline number
-  and record `data/processed/corpus_stats.json` alongside results.
-- **Track every run** with the corpus stats hash, model id, retrieval config, and per-family scores.
-  Seven numbers per run, not one.
+1. **Follow-up questions.** Every real rules conversation is multi-turn ("what
+   about if she's prone?"). Today each question is independent, which is the
+   single most obvious gap between this and a usable assistant.
+2. **Character context.** Import a Pathbuilder JSON and filter answers to what
+   *this* character can actually take. Turns a rules lookup into advice.
+3. **Foundry VTT module.** `foundryvtt/pf2e` is Apache-2.0 and officially
+   partnered with Paizo; it is where these questions get asked.
+4. **Streaming output.** 1.6 s to first token feels slower than it is.
+
+---
+
+## Tier 4 — the model (deliberately last)
+
+The evidence says this is the least valuable direction, and it took two adapters
+to establish that:
+
+- The RAFT adapter scored **+10 on a generated benchmark and −3 on hand-written
+  questions**. It learned a question shape, not the domain.
+- The abstention adapter was abandoned when its target family turned out to be a
+  grading artifact — 73.7% measured, 94.7% real, one genuine failure left.
+- The teacher refuses only 2 times in 31 on false premises, so there is nothing
+  to distil, and RefusalBench finds the same across thirty models.
+
+What would change the calculus:
+
+1. **Distil the rewriter.** The 27B rewrites queries 6 points better than the 9B,
+   and rewriting is a narrow, verifiable task with abundant training pairs — the
+   opposite of the open-ended answering task the adapters failed at. This is the
+   one fine-tune the data currently supports.
+2. **A small Qwen 3.6/3.8.** Neither family ships below 27B today. If a 4–9B
+   appears, re-run the model sweep; it is an afternoon.
+3. **Retrain only on mined natural questions**, never on templates, and only
+   after Tier 0.
+
+---
+
+## Standing rules
+
+- **Every change is measured on hand-written questions before it ships.** The
+  generated benchmark is kept for continuity and is not the deciding number.
+- **An implausible number is a bug until proven otherwise.** Twelve for twelve so
+  far.
+- **Read the outputs, not the scores.** Every single measurement bug in this
+  project was found that way, and none were found by a failing test.
+- **Add a case to `eval/test_score.py` whenever the grader changes.** 43 and
+  counting.
