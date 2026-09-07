@@ -1,14 +1,14 @@
 {
   "report": {
     "items": 459,
-    "correct": 379,
-    "accuracy": 0.8257080610021786,
+    "correct": 391,
+    "accuracy": 0.8518518518518519,
     "families": {
       "abstention": {
         "n": 40,
-        "correct": 0,
-        "accuracy": 0.0,
-        "fabricated": 27
+        "correct": 12,
+        "accuracy": 0.3,
+        "fabricated": 15
       },
       "lookup_level": {
         "n": 80,
@@ -3957,8 +3957,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0002",
@@ -3977,8 +3977,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0004",
@@ -4017,8 +4017,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0008",
@@ -4037,8 +4037,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0010",
@@ -4057,8 +4057,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0012",
@@ -4087,8 +4087,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0015",
@@ -4127,8 +4127,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0019",
@@ -4137,8 +4137,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0020",
@@ -4267,8 +4267,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0033",
@@ -4277,8 +4277,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0034",
@@ -4287,8 +4287,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0035",
@@ -4297,8 +4297,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "abstention-0036",

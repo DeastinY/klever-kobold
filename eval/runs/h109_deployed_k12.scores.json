@@ -1,8 +1,8 @@
 {
   "report": {
     "items": 109,
-    "correct": 88,
-    "accuracy": 0.8073394495412844,
+    "correct": 92,
+    "accuracy": 0.8440366972477065,
     "families": {
       "nl_comparative": {
         "n": 11,
@@ -17,9 +17,9 @@
       },
       "nl_false_premise": {
         "n": 19,
-        "correct": 13,
-        "accuracy": 0.6842105263157895,
-        "fabricated": 3,
+        "correct": 17,
+        "accuracy": 0.8947368421052632,
+        "fabricated": 0,
         "mean_grounding": 0.3157894736842105
       },
       "nl_legacy": {
@@ -586,8 +586,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "nl_false_premise-047",
@@ -596,8 +596,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "nl_false_premise-048",
@@ -606,8 +606,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "nl_legacy-049",
@@ -1204,7 +1204,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {

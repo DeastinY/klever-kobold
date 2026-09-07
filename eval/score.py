@@ -56,14 +56,46 @@ import orjson
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-# Phrases that mean "I am not answering this", for the abstention family.
-REFUSALS = (
-    "does not exist", "doesn't exist", "no such", "not a pathfinder", "not a real",
-    "cannot find", "can't find", "unable to find", "not aware of", "no record",
-    "i don't know", "i do not know", "not familiar", "no feat named", "no feat called",
-    "not an official", "isn't an official", "couldn't find", "could not find",
-    "unaware of", "not something i", "made up", "fictional", "not in pathfinder",
+# Refusal detection, for the abstention family.
+#
+# This began as a list of substrings and detected two of seven real refusals.
+# Models decline in far more ways than a fixed phrase list anticipates -- "there
+# is no creature called an Anadi Seeker in the provided excerpts", "I cannot
+# confirm the existence of a feat called Shoony Lore", "I don't see an item
+# called Renewing Quills" -- and every miss silently marked a correct refusal
+# wrong. The patterns below are anchored on *existence and presence* rather than
+# on negation generally, so "there is no penalty for that" is not mistaken for a
+# refusal to answer.
+REFUSAL_PATTERNS = (
+    r"there (?:is|are|'s) no\b[^.]{0,40}?\b(?:called|named|by that name|entry|record|mention)",
+    r"there (?:is|are|'s) no\b[^.]{0,60}?\bin (?:the |these |any )?(?:provided |given |supplied )?"
+    r"(?:rules? )?(?:excerpts?|entries|text|sources?)",
+    r"\b(?:does not|doesn't|do not|don't)\s+(?:seem to\s+)?(?:exist|appear)",
+    r"\bno such\b",
+    r"\bno (?:entry|record|mention|listing)\b",
+    r"\b(?:cannot|can't|could not|couldn't|unable to)\s+(?:confirm|find|locate|verify|identify)",
+    r"\b(?:don't|do not|didn't|did not)\s+see\b",
+    r"\b(?:not|isn't|aren't|is not|are not)\s+(?:included|listed|present|among|found|contained)\b",
+    r"\bis not (?:a|an) (?:pathfinder|official|real|recognised|recognized)",
+    r"\bnot aware of\b",
+    r"\bi (?:don't|do not) know\b",
+    r"\bnot familiar with\b",
+    r"\bno (?:feat|spell|item|creature|action|condition|ability|class feature)\b[^.]{0,30}?"
+    r"\b(?:called|named|by (?:that|this) name)",
 )
+RE_REFUSAL = re.compile("|".join(REFUSAL_PATTERNS), re.I)
+
+
+def refuses(text: str) -> bool:
+    """Does this response decline to answer, rather than answering?
+
+    Runs on normalised text. Models write "can\u2019t" with a typographic
+    apostrophe as often as "can't", and matching only the ASCII form lost
+    seventeen genuine refusals from one run.
+    """
+    return bool(RE_REFUSAL.search(norm(text or "")))
+
+
 RE_LEVEL_CLAIM = re.compile(r"\blevel\s+(\d{1,2})\b|\bis\s+a\s+(\d{1,2})(?:st|nd|rd|th)[- ]level\b", re.I)
 
 # Cues that turn a mention into a denial. Matched only when they directly govern
@@ -225,7 +257,7 @@ def grade(item: dict, response: str, vocab: set[str] | None = None) -> dict:
             out["correct"] = out["recall"] == 1.0
 
     elif kind == "abstain":
-        refused = any(r in hay for r in REFUSALS)
+        refused = refuses(response or "")
         out["correct"] = refused
         # The interesting failure is not "did not refuse" but "invented a level".
         out["fabricated"] = bool(RE_LEVEL_CLAIM.search(response or "")) and not refused

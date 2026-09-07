@@ -1,8 +1,8 @@
 {
   "report": {
     "items": 57,
-    "correct": 42,
-    "accuracy": 0.7368421052631579,
+    "correct": 44,
+    "accuracy": 0.7719298245614035,
     "families": {
       "nl_comparative": {
         "n": 6,
@@ -17,8 +17,8 @@
       },
       "nl_false_premise": {
         "n": 11,
-        "correct": 9,
-        "accuracy": 0.8181818181818182,
+        "correct": 11,
+        "accuracy": 1.0,
         "fabricated": 0,
         "mean_grounding": 0.0
       },
@@ -36,9 +36,9 @@
       }
     },
     "run": "holdout_9b_raft-lora",
-    "benchmark_items": 57,
+    "benchmark_items": 109,
     "excluded_items": 0,
-    "partial": false,
+    "partial": true,
     "trait_vocab": 569
   },
   "verdicts": [
@@ -604,7 +604,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -614,7 +614,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {

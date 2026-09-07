@@ -84,6 +84,30 @@ SET_CASES = [
 ]
 
 
+# Refusal detection. Positives are verbatim from model runs; negatives are
+# sentences that contain a negation but are answers, not refusals.
+REFUSAL_CASES = [
+    ('There is no creature called an "Anadi Seeker" in the provided excerpts.', True),
+    ('I cannot confirm the existence of a feat called "Shoony Lore".', True),
+    ("I don't see an item called \"Renewing Quills\" in the provided excerpts.", True),
+    ('There is no spell called "Conductor\'s of Scattered Leaves" in Pathfinder 2e.', True),
+    ('The feat "Gilded Rampart" does not appear in the provided rules excerpts.', True),
+    ('The concept of "bardic inspiration dice" does not exist in Pathfinder 2e.', True),
+    ("I can't find a feat named Scholar's Rain.", True),
+    ("Metallic Envisionment isn't among the excerpts here.", True),
+    ("No such feat exists in Pathfinder 2e.", True),
+    # typographic apostrophe, as models actually write it
+    ("I can\u2019t find any Pathfinder 2e feat named \u201cAnimate Blade Stance\u201d.", True),
+    ("I don\u2019t see that spell in the excerpts.", True),
+    # answers that merely contain a negation
+    ("There is no penalty on the first Strike; the second takes -5.", False),
+    ("Cat Fall is a 1st-level feat that treats falls as shorter than they are.", False),
+    ("No, a shield does not passively raise your AC; you must Raise a Shield.", False),
+    ("The spell does not require a saving throw.", False),
+    ("Fireball is a 3rd-rank spell dealing 6d6 fire damage.", False),
+]
+
+
 def main() -> int:
     failures = []
     for text, term, want_leak in CASES:
@@ -117,10 +141,19 @@ def main() -> int:
         print(f"FAIL set gold={gold} want={want} got={got}")
         print(f"     {response[:90]}")
 
-    total = len(CASES) + len(SET_CASES) + len(EXACT_CASES)
-    passed = total - len(failures) - len(set_failures) - len(exact_failures)
+    refusal_failures = []
+    for text, want in REFUSAL_CASES:
+        got = score.refuses(text)
+        if got != want:
+            refusal_failures.append((text, want, got))
+    for text, want, got in refusal_failures:
+        print(f"FAIL refusal want={want} got={got}\n     {text[:88]}")
+
+    total = len(CASES) + len(SET_CASES) + len(EXACT_CASES) + len(REFUSAL_CASES)
+    passed = (total - len(failures) - len(set_failures) - len(exact_failures)
+              - len(refusal_failures))
     print(f"\n{passed}/{total} cases pass")
-    return 1 if failures or set_failures or exact_failures else 0
+    return 1 if failures or set_failures or exact_failures or refusal_failures else 0
 
 
 if __name__ == "__main__":

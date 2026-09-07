@@ -1,13 +1,13 @@
 {
   "report": {
     "items": 459,
-    "correct": 81,
-    "accuracy": 0.17647058823529413,
+    "correct": 83,
+    "accuracy": 0.18082788671023964,
     "families": {
       "abstention": {
         "n": 40,
-        "correct": 11,
-        "accuracy": 0.275,
+        "correct": 13,
+        "accuracy": 0.325,
         "fabricated": 21
       },
       "lookup_level": {
@@ -4718,7 +4718,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -4868,7 +4868,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {

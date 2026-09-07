@@ -1,8 +1,8 @@
 {
   "report": {
     "items": 109,
-    "correct": 89,
-    "accuracy": 0.8165137614678899,
+    "correct": 93,
+    "accuracy": 0.8532110091743119,
     "families": {
       "nl_comparative": {
         "n": 11,
@@ -17,8 +17,8 @@
       },
       "nl_false_premise": {
         "n": 19,
-        "correct": 13,
-        "accuracy": 0.6842105263157895,
+        "correct": 17,
+        "accuracy": 0.8947368421052632,
         "fabricated": 0,
         "mean_grounding": 0.10526315789473684
       },
@@ -596,7 +596,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -606,7 +606,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -1235,7 +1235,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {
@@ -1245,7 +1245,7 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
+      "correct": true,
       "fabricated": false
     },
     {

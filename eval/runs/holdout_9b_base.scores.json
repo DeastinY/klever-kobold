@@ -1,8 +1,8 @@
 {
   "report": {
     "items": 57,
-    "correct": 46,
-    "accuracy": 0.8070175438596491,
+    "correct": 47,
+    "accuracy": 0.8245614035087719,
     "families": {
       "nl_comparative": {
         "n": 6,
@@ -17,9 +17,9 @@
       },
       "nl_false_premise": {
         "n": 11,
-        "correct": 8,
-        "accuracy": 0.7272727272727273,
-        "fabricated": 2,
+        "correct": 9,
+        "accuracy": 0.8181818181818182,
+        "fabricated": 1,
         "mean_grounding": 0.13636363636363635
       },
       "nl_legacy": {
@@ -36,9 +36,9 @@
       }
     },
     "run": "holdout_9b_base",
-    "benchmark_items": 57,
+    "benchmark_items": 109,
     "excluded_items": 0,
-    "partial": false,
+    "partial": true,
     "trait_vocab": 569
   },
   "verdicts": [
@@ -594,8 +594,8 @@
       "forbidden_hits": [],
       "forbidden_mentioned": [],
       "forbidden_echoed_from_question": [],
-      "correct": false,
-      "fabricated": true
+      "correct": true,
+      "fabricated": false
     },
     {
       "id": "nl_false_premise-048",
