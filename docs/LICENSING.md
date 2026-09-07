@@ -1,6 +1,8 @@
 # Licensing
 
 Not legal advice. This is the working understanding this project operates under.
+The required attribution and the full source acknowledgements are in
+[`NOTICE.md`](../NOTICE.md).
 
 ## The two bodies of text are licensed differently
 
@@ -36,6 +38,20 @@ in its own products and on the Pathfinder/Starfinder Infinite marketplaces in 20
 unresolved ethical and legal questions around how models are trained. That policy governs Paizo's
 publications and marketplaces, not a personal fine-tune — but it does predict how the community
 would receive published weights.
+
+## The grey area, named
+
+The Archives of Nethys corpus was read from the Elasticsearch index that backs
+the site's own search, which answers anonymous queries. The site publishes no
+`robots.txt` (404) and no API terms, so nothing forbids it — but nothing permits
+it either, and a publicly reachable backend is not a public API. One
+non-commercial read of 45,547 documents is a small thing; a commercial product or
+a recurring high-volume crawl is not, and either should start with an email to
+the Archives of Nethys team.
+
+RPG Stack Exchange content is CC BY-SA 4.0. This repository does not redistribute
+it — the mined questions are gitignored and rebuilt by script — but anything that
+did would owe attribution and share-alike.
 
 ## Practical rules this repo follows
 

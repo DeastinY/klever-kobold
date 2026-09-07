@@ -321,6 +321,19 @@ the part of this project worth copying. Short version: the gate is 109
 hand-written questions, run it before and after, record the number when your
 change loses, and treat an implausible number as a bug until proven otherwise.
 
+## Attribution
+
+**This work uses trademarks and/or copyrights owned by Paizo Inc., used under
+Paizo's Community Use Policy. We are expressly prohibited from charging you to
+use or access this content. This work is not published, endorsed, or specifically
+approved by Paizo.**
+
+The rules corpus is [Archives of Nethys](https://2e.aonprd.com/) — a free,
+complete reference maintained by volunteers through an edition remaster. Every
+answer here is really theirs. Please use and support the site directly.
+Acknowledgements for every source, and exactly how each was collected, are in
+[`NOTICE.md`](NOTICE.md).
+
 ## Licensing
 
 Rules mechanics are ORC-licensed; Golarion lore and PathfinderWiki are under

@@ -118,7 +118,16 @@ def main() -> int:
         "ollama_llm": args.ollama_llm,
         "query_prefix": QUERY_PREFIX,
         "retrieval_mode": "hybrid3+hyde+cat+hop",
-        "source": "Archives of Nethys (ORC / Paizo Community Use Policy)",
+        "source": "Archives of Nethys (https://2e.aonprd.com/)",
+        "notice": ("This work uses trademarks and/or copyrights owned by Paizo Inc., "
+                   "used under Paizo's Community Use Policy "
+                   "(https://paizo.com/communityuse). We are expressly prohibited from "
+                   "charging you to use or access this content. This work is not "
+                   "published, endorsed, or specifically approved by Paizo. For more "
+                   "information about Paizo Inc. and Paizo products, visit paizo.com."),
+        "licence": "Rules mechanics under the ORC License and OGL v1.0a; "
+                   "setting material under Paizo's Community Use Policy. "
+                   "Non-commercial use only.",
     }, option=orjson.OPT_INDENT_2))
 
     total = sum(p.stat().st_size for p in args.out.iterdir())
