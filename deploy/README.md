@@ -104,15 +104,25 @@ carries this system and a stronger reader does better with the same excerpts.
 
 ## Docker instead
 
+**On this machine, containerise the app but not Ollama.**
+
 ```bash
-docker compose up
+ollama serve &                                 # or Ollama.app
+docker compose -f docker-compose.mac.yml up
 ```
 
-Two services: Ollama holding the models, and this on port 8765. The entrypoint
-waits for Ollama, pulls the two models if absent, and fetches the index if
-absent, so first run is genuinely one command. Everything lands in named volumes;
-later starts take seconds. Works on CPU — uncomment the GPU block in
-`docker-compose.yml` for an NVIDIA card.
+Docker Desktop runs containers inside a Linux VM and that VM cannot reach Metal —
+Apple's Hypervisor.framework does not pass the GPU through — so an Ollama
+container on Apple Silicon falls back to CPU and runs 2–5x slower. Keeping Ollama
+native costs nothing: it holds every heavy thing, and this app is four
+pure-Python dependencies.
+
+Honestly, on a Mac `deploy/install.sh` is simpler still and gives the same
+performance. Docker is worth it here mainly if you want the service supervised
+and restarting on its own.
+
+(`docker compose up`, with the plain file, brings up Ollama as a second container.
+That is the right shape on Linux with an NVIDIA card and the wrong one here.)
 
 ## What to expect
 

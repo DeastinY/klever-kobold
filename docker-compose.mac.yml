@@ -1,0 +1,33 @@
+# Apple Silicon: run Ollama natively, containerise only this app.
+#
+#     ollama serve &                 # or launch Ollama.app
+#     docker compose -f docker-compose.mac.yml up
+#
+# Docker Desktop on macOS runs containers inside a Linux VM, and that VM has no
+# path to Metal — Apple's Hypervisor.framework does not pass the GPU through. A
+# containerised Ollama on Apple Silicon therefore runs on CPU, 2–5x slower than
+# the same model served natively. Since this app is four pure-Python
+# dependencies and Ollama holds every heavy thing, the right split is obvious:
+# the models stay on the host where they can reach the GPU, and only the small
+# part is containerised.
+#
+# On an Intel Mac the same applies for a different reason: there is no GPU worth
+# reaching either way, but native Ollama still avoids a layer of virtualisation.
+
+services:
+  pf2e:
+    build: .
+    ports:
+      - "8765:8765"
+    volumes:
+      - pf2e-index:/data
+    environment:
+      # Docker Desktop resolves this to the host on macOS and Windows.
+      OLLAMA_URL: http://host.docker.internal:11434
+    extra_hosts:
+      # Harmless on macOS, and makes the same file work on Linux.
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  pf2e-index:

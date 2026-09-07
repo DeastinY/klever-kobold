@@ -62,12 +62,28 @@ ones. The full record, including everything that failed, is in
 ## Run it
 
 **Docker** — one command, no Python setup. First run pulls ~6.3 GB of models and
-a 143 MB index into named volumes; later runs start in seconds. Works on CPU;
-uncomment the GPU block in `docker-compose.yml` if you have an NVIDIA card.
+a 143 MB index into named volumes; later runs start in seconds.
 
 ```bash
-docker compose up
+docker compose up                              # Linux, Windows
+docker compose -f docker-compose.mac.yml up    # Apple Silicon — see below
 ```
+
+> **Apple Silicon: do not containerise Ollama.** Docker Desktop runs containers
+> inside a Linux VM, and that VM has no path to Metal — Apple's
+> Hypervisor.framework does not pass the GPU through. A containerised Ollama on
+> an M-series Mac falls back to CPU and runs
+> [2–5× slower](https://chariotsolutions.com/blog/post/apple-silicon-gpus-docker-and-ollama-pick-two/).
+> `docker-compose.mac.yml` keeps Ollama on the host where it can reach the GPU
+> and containerises only this app, which is four pure-Python dependencies
+> anyway. Start Ollama first (`ollama serve` or Ollama.app).
+
+| platform | what to run | GPU |
+| --- | --- | --- |
+| Apple Silicon | `deploy/install.sh`, or native Ollama + `docker-compose.mac.yml` | **Metal** |
+| Linux + NVIDIA | `docker compose up`, GPU block uncommented | **CUDA** |
+| Linux / Windows, CPU | `docker compose up` | none |
+| Intel Mac | `deploy/install.sh` | none |
 
 **On a laptop, without Docker** — 6.7 GB resident, ~1.6 s a question, no torch
 and no CUDA. See [`deploy/README.md`](deploy/README.md).
@@ -208,6 +224,16 @@ Ordered by where the errors actually are, not by what is interesting to build.
   negatives. Two cheaper variants failed for diagnosed reasons; this is the
   version the evidence still supports.
 - A structured query path for filterable questions, bypassing embeddings.
+
+**Platform**
+
+- An OpenAI-compatible backend alongside the Ollama one, which would allow
+  **MLX** on Apple Silicon. Ollama serves GGUF through llama.cpp with Metal;
+  MLX is Apple's own array framework and is faster than llama.cpp for some
+  models on M-series hardware. `mlx_lm.server` speaks the OpenAI API, so the
+  chat side is a small adapter — embeddings would need a second answer, since
+  the index must be queried with the model that built it.
+- Publish the image to a registry so `docker compose up` needs no local build.
 
 **Coverage**
 

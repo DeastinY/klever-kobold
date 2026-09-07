@@ -1,12 +1,17 @@
-# One command to a rules reference on the table:
+# Linux and Windows: one command to a rules reference on the table.
 #
 #     docker compose up
 #
 # then open http://localhost:8765. First run pulls ~6.3 GB of models and a 143 MB
 # index into named volumes; later runs start in seconds.
 #
-# GPU is optional. Without one Ollama runs on CPU, which works and is slower --
-# fine for looking things up, noticeable when you press Ask.
+# ON APPLE SILICON, USE docker-compose.mac.yml INSTEAD.
+# Docker Desktop runs containers in a Linux VM with no path to Metal, so a
+# containerised Ollama falls back to CPU and runs 2-5x slower. That file keeps
+# Ollama on the host, where it can reach the GPU, and containerises only this app.
+#
+# GPU is optional here too. Without one Ollama runs on CPU, which works and is
+# slower -- fine for looking things up, noticeable when you press Ask.
 
 services:
   ollama:
