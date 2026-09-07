@@ -29,6 +29,7 @@ import os
 import pathlib
 import re
 import sys
+import time
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -40,6 +41,11 @@ from . import retrieval
 from .bm25 import BM25
 
 DEFAULT_OLLAMA = "http://localhost:11434"
+
+# Ollama evicts a model after five minutes idle by default. At a table, questions
+# arrive in bursts separated by long gaps, and paying a 5.7 GB reload every time
+# someone thinks of something is the difference between useful and abandoned.
+KEEP_ALIVE = "2h"
 
 INDEX_URL = ("https://github.com/DeastinY/pf2etune/releases/download/"
              "index-v1/pf2e-index.tar.gz")
@@ -190,18 +196,22 @@ class Ollama:
         r.raise_for_status()
         return orjson.loads(r.content)
 
-    def embed(self, texts: list[str], model: str) -> np.ndarray:
-        data = self._post("/api/embed", {"model": model, "input": texts})
+    def embed(self, texts: list[str], model: str,
+              keep_alive: str = KEEP_ALIVE) -> np.ndarray:
+        data = self._post("/api/embed",
+                          {"model": model, "input": texts, "keep_alive": keep_alive})
         vecs = np.asarray(data["embeddings"], dtype=np.float32)
         norms = np.linalg.norm(vecs, axis=1, keepdims=True)
         return vecs / np.where(norms == 0, 1, norms)
 
-    def chat(self, system: str, user: str, model: str, max_tokens: int = 700) -> str:
+    def chat(self, system: str, user: str, model: str, max_tokens: int = 700,
+             keep_alive: str = KEEP_ALIVE) -> str:
         data = self._post("/api/chat", {
             "model": model,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
             "stream": False,
             "think": False,
+            "keep_alive": keep_alive,
             "options": {"temperature": 0, "num_predict": max_tokens},
         })
         return (data.get("message") or {}).get("content", "").strip()
@@ -271,6 +281,30 @@ class Assistant:
         with self._bodies_path.open("rb") as fh:
             fh.seek(offset)
             return orjson.loads(fh.read(length)).get("text", "")
+
+    def warmup(self, progress=None) -> dict:
+        """Make both models resident before anyone asks a question.
+
+        On a laptop the first request pays for reading several gigabytes off
+        disk. Doing that lazily means the first thing a new user sees is an
+        unresponsive page with no explanation, which is how this was reported.
+        """
+        timings = {}
+        for label, call in (
+            ("embedding model", lambda: self.ollama.embed(["warmup"],
+                                                          self.manifest["ollama_embed"])),
+            ("language model", lambda: self.ollama.chat("Reply with: ok", "ok",
+                                                        self.manifest["ollama_llm"],
+                                                        max_tokens=4)),
+        ):
+            if progress:
+                progress(label, None)
+            started = time.time()
+            call()
+            timings[label] = time.time() - started
+            if progress:
+                progress(label, timings[label])
+        return timings
 
     # --- pipeline ------------------------------------------------------------
 

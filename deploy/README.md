@@ -103,6 +103,17 @@ ollama serve &
 docker compose -f docker-compose.mac.yml up
 ```
 
+## First start
+
+`serve` loads both models before it accepts questions and says so — in the
+terminal and in the page, which shows a status line and keeps the input disabled
+until it is ready. On a laptop that first load reads several gigabytes off disk
+and can take a minute; afterwards models stay resident for two hours of idle
+time, so a session's worth of questions costs nothing extra.
+
+The page has an Auto / Light / Dark toggle, remembered per browser. Auto follows
+the system setting.
+
 ## What to expect
 
 Measured on 109 hand-written questions phrased the way players actually ask —
