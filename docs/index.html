@@ -380,7 +380,7 @@
   <section>
     <div class="block-head">
       <h2>What shipped</h2>
-      <span class="tag">85.3% &middot; 6.6 GB &middot; 1.6 s</span>
+      <span class="tag">88.1% &middot; 6.7 GB &middot; 1.6 s</span>
     </div>
     <p>A Pathfinder 2e rules assistant that runs on a 16&nbsp;GB MacBook, answers questions phrased
     the way players phrase them, and cites Archives of Nethys for every answer. Ollama holds the two
@@ -430,11 +430,29 @@
     difference at all), and tuning the RRF constant (real, but inside the sample's noise).</p>
 
     <h3 class="finding">The deployed program is what was measured</h3>
-    <p>85.3% through Ollama with Q4 weights and float16 embeddings, against 84.4% through
+    <p>88.1% through Ollama with Q4 weights and float16 embeddings, against 86.2% through
     transformers with nf4 and float32. The quantised chain costs nothing measurable &mdash; which is
     only knowable because the shipped runtime was benchmarked, rather than a laboratory
-    reimplementation of it. Excerpt count was swept end to end: 5&nbsp;&rarr;&nbsp;81.7%,
-    <strong>8&nbsp;&rarr;&nbsp;85.3%</strong>, 12&nbsp;&rarr;&nbsp;80.7%.</p>
+    reimplementation of it. Excerpt count was swept end to end: 5&nbsp;&rarr;&nbsp;83.5%,
+    <strong>8&nbsp;&rarr;&nbsp;88.1%</strong>, 12&nbsp;&rarr;&nbsp;84.4%.</p>
+
+    <h3 class="finding">An eleventh measurement bug, and the largest correction yet</h3>
+    <p>Building training data for the system's weakest family surfaced the reason it looked weak.
+    The generator filters teacher output by whether it actually refused, and it was discarding
+    answers like <em>"There is no creature called an Anadi Seeker in the provided excerpts"</em> and
+    <em>"I cannot confirm the existence of a feat called Shoony Lore"</em> &mdash; which are exactly
+    the behaviour being trained for.</p>
+    <p>The same detector grades the abstention family. It was a list of fixed substrings and caught
+    <strong>two of seven</strong> genuine refusals; models decline in far more ways than a phrase
+    list anticipates. A second, smaller cause: it ran on raw text while normalisation happened
+    elsewhere, so <span class="mono">can't</span> matched and <span class="mono">can’t</span>
+    did not &mdash; seventeen refusals in one run lost to a typographic apostrophe.</p>
+    <p class="note"><strong>The weakness commissioned for a fine-tune was mostly a grading
+    artifact.</strong> False-premise questions score <strong>89.5%</strong>, not 73.7% &mdash;
+    seventeen of nineteen, with two invented answers left. Every headline moved upward: deployed
+    85.3&nbsp;&rarr;&nbsp;88.1, gpt-5 with retrieval 83.7&nbsp;&rarr;&nbsp;85.8. Training against two
+    remaining items is a much smaller prize than the regression risk the previous adapter
+    demonstrated, so it is being built and measured, and will ship only if it wins.</p>
   </section>
 
   <section>
@@ -683,7 +701,7 @@
   <section>
     <div class="block-head">
       <h2>Results</h2>
-      <span class="tag" id="results-tag">18 runs scored</span>
+      <span class="tag" id="results-tag">16 runs scored</span>
     </div>
     <p>Closed-book means no retrieval: the model answers from weights alone. These numbers are the
     floor every later phase is measured against. Read them against the trivial baselines
@@ -698,28 +716,26 @@
         </thead>
         <tbody>
           <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>95%</strong></td><td class="num">100%</td><td class="num">90%</td><td class="num">98%</td><td class="num">99%</td><td class="num">77%</td><td class="num">100%</td><td class="num">93%</td></tr>
-          <tr><td class="rowname mono">deployed-runtime</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=8)</td><td class="num"><strong>85%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>85%</strong></td><td class="num">98%</td><td class="num">88%</td><td class="num">96%</td><td class="num">82%</td><td class="num">74%</td><td class="num">35%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>84%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>84%</strong></td><td class="num">90%</td><td class="num">86%</td><td class="num">96%</td><td class="num">91%</td><td class="num">77%</td><td class="num">18%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>83%</strong></td><td class="num">99%</td><td class="num">88%</td><td class="num">95%</td><td class="num">91%</td><td class="num">72%</td><td class="num">0%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>82%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>82%</strong></td><td class="num">95%</td><td class="num">88%</td><td class="num">96%</td><td class="num">92%</td><td class="num">62%</td><td class="num">8%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">deployed-runtime</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>82%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>82%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-          <tr><td class="rowname mono">deployed-runtime</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=12)</td><td class="num"><strong>81%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>81%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>74%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
-          <tr><td class="rowname mono">gpt-6-astra</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>32%</strong></td><td class="num">16%</td><td class="num">6%</td><td class="num">28%</td><td class="num">16%</td><td class="num">45%</td><td class="num">60%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>28%</strong></td><td class="num">19%</td><td class="num">1%</td><td class="num">31%</td><td class="num">8%</td><td class="num">9%</td><td class="num">78%</td><td class="num">97%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>23%</strong></td><td class="num">12%</td><td class="num">0%</td><td class="num">19%</td><td class="num">2%</td><td class="num">19%</td><td class="num">78%</td><td class="num">87%</td></tr>
+          <tr><td class="rowname mono">deployed-runtime</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=8)</td><td class="num"><strong>88%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+          <tr><td class="rowname mono">deployed-runtime</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=8)</td><td class="num"><strong>88%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>87%</strong></td><td class="num">98%</td><td class="num">88%</td><td class="num">96%</td><td class="num">82%</td><td class="num">74%</td><td class="num">68%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>86%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>86%</strong></td><td class="num">90%</td><td class="num">86%</td><td class="num">96%</td><td class="num">91%</td><td class="num">77%</td><td class="num">42%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>85%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>85%</strong></td><td class="num">99%</td><td class="num">88%</td><td class="num">95%</td><td class="num">91%</td><td class="num">72%</td><td class="num">30%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">deployed-runtime</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=12)</td><td class="num"><strong>84%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+          <tr><td class="rowname mono">deployed-runtime</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>83%</strong></td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td><td class="num">&mdash;</td></tr>
+          <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">+ retrieval (k=5)</td><td class="num"><strong>82%</strong></td><td class="num">95%</td><td class="num">88%</td><td class="num">96%</td><td class="num">92%</td><td class="num">62%</td><td class="num">12%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">gpt-5</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>28%</strong></td><td class="num">19%</td><td class="num">1%</td><td class="num">31%</td><td class="num">8%</td><td class="num">9%</td><td class="num">80%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">gpt-6-astra</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>28%</strong></td><td class="num">16%</td><td class="num">6%</td><td class="num">28%</td><td class="num">16%</td><td class="num">45%</td><td class="num">18%</td><td class="num">97%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.8-27B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>24%</strong></td><td class="num">12%</td><td class="num">0%</td><td class="num">19%</td><td class="num">2%</td><td class="num">19%</td><td class="num">85%</td><td class="num">87%</td></tr>
           <tr><td class="rowname mono">gpt-4.1-mini</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>23%</strong></td><td class="num">6%</td><td class="num">0%</td><td class="num">57%</td><td class="num">4%</td><td class="num">15%</td><td class="num">5%</td><td class="num">100%</td></tr>
-          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>18%</strong></td><td class="num">10%</td><td class="num">1%</td><td class="num">22%</td><td class="num">2%</td><td class="num">15%</td><td class="num">28%</td><td class="num">70%</td></tr>
+          <tr><td class="rowname mono">Qwen/Qwen3.5-9B</td><td class="mono" style="font-size:0.82rem;color:var(--muted)">closed-book</td><td class="num"><strong>18%</strong></td><td class="num">10%</td><td class="num">1%</td><td class="num">22%</td><td class="num">2%</td><td class="num">15%</td><td class="num">32%</td><td class="num">70%</td></tr>
         </tbody>
         <caption>Closed-book accuracy by family. Every grade is deterministic.</caption>
       </table>
     </div>
-    <ul><li><strong>Qwen/Qwen3.5-9B</strong>: 18% &rarr; 74% with retrieval, 4.2&times;.</li><li><strong>gpt-5</strong>: 28% &rarr; 84% with retrieval, 3.0&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong>: 23% &rarr; 83% with retrieval, 3.5&times;.</li><li><strong>gpt-4.1-mini</strong>: 23% &rarr; 82% with retrieval, 3.5&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li></ul>
+    <ul><li><strong>Qwen/Qwen3.5-9B</strong>: 18% &rarr; 85% with retrieval, 4.7&times;.</li><li><strong>gpt-5</strong>: 28% &rarr; 86% with retrieval, 3.1&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong>: 24% &rarr; 85% with retrieval, 3.6&times;.</li><li><strong>gpt-4.1-mini</strong>: 23% &rarr; 82% with retrieval, 3.6&times;.</li><li><strong>Qwen/Qwen3.8-27B</strong> control run (enable_thinking=True, reasoning_effort=low): 5e trap 90%.</li><li><strong>Qwen/Qwen3.5-9B</strong> control run (enable_thinking=False): .</li><li><strong>Qwen/Qwen3.5-9B</strong> control run (enable_thinking=False): .</li><li><strong>Qwen/Qwen3.5-9B</strong> control run (enable_thinking=False): .</li></ul>
     <!-- results:end -->
 
     <h3 class="finding">Phase 01 &mdash; closed book</h3>

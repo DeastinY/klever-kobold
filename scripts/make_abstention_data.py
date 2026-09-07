@@ -93,18 +93,15 @@ QUESTION_SYSTEM = (
     "Reply with the question only. One sentence or two. No preamble, no quotation marks."
 )
 
-RE_NAME = re.compile(r"[^a-z0-9 ]+")
-REFUSAL_MARKERS = (
-    "does not exist", "doesn't exist", "no such", "not a pathfinder", "cannot find",
-    "can't find", "unable to find", "not aware of", "no record", "not in the excerpts",
-    "do not include", "don't include", "not among", "no entry", "isn't a", "is not a",
-    "not appear", "no mention",
-)
-
-
 def looks_like_refusal(text: str) -> bool:
-    low = (text or "").lower()
-    return any(m in low for m in REFUSAL_MARKERS)
+    """Share the evaluator's detector rather than keeping a second one.
+
+    The first version of this filter had its own phrase list and discarded most of
+    the teacher's refusals, which is how the evaluator's identical bug came to
+    light. One implementation, one set of regression tests.
+    """
+    import score
+    return score.refuses(text)
 
 
 def excluded(text: str) -> bool:
@@ -332,13 +329,21 @@ def main() -> int:
             dropped[spec["kind"] + ":length"] += 1
             continue
         refused = looks_like_refusal(answer)
+        if spec["kind"] == "false_mechanic":
+            # The target behaviour here is correction, not refusal: "Pathfinder 2e
+            # has no bardic inspiration dice; bards use spell slots and a muse."
+            # Requiring a refusal phrase discarded most of them.
+            refused = refused or bool(RE_CORRECTS.search(answer))
         if spec["kind"] in refusal_kinds:
             if not refused:
                 dropped[spec["kind"] + ":did-not-refuse"] += 1
                 continue
-            # A guided refusal that invents a level defeats the purpose.
-            if re.search(r"\blevel\s+\d{1,2}\b", answer, re.I) and spec["kind"] != "withheld":
-                dropped[spec["kind"] + ":invented-a-level"] += 1
+            # Reject only an *asserted* level for the thing that does not exist.
+            # A good refusal often mentions levels legitimately -- "you cannot take
+            # it at 1st level or any other" -- and the first version of this rule
+            # threw away ten of twelve good examples for saying so.
+            if RE_ASSERTS_LEVEL.search(answer) and spec["kind"] != "withheld":
+                dropped[spec["kind"] + ":asserted-a-level"] += 1
                 continue
         else:
             name = spec["chunk"]["name"]

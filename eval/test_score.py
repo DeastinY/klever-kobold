@@ -96,6 +96,8 @@ REFUSAL_CASES = [
     ("I can't find a feat named Scholar's Rain.", True),
     ("Metallic Envisionment isn't among the excerpts here.", True),
     ("No such feat exists in Pathfinder 2e.", True),
+    ("The provided rules excerpts do not contain information about the Gilded Parry feat.", True),
+    ("The excerpts don't mention that spell at all.", True),
     # typographic apostrophe, as models actually write it
     ("I can\u2019t find any Pathfinder 2e feat named \u201cAnimate Blade Stance\u201d.", True),
     ("I don\u2019t see that spell in the excerpts.", True),

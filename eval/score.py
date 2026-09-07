@@ -70,7 +70,8 @@ REFUSAL_PATTERNS = (
     r"there (?:is|are|'s) no\b[^.]{0,40}?\b(?:called|named|by that name|entry|record|mention)",
     r"there (?:is|are|'s) no\b[^.]{0,60}?\bin (?:the |these |any )?(?:provided |given |supplied )?"
     r"(?:rules? )?(?:excerpts?|entries|text|sources?)",
-    r"\b(?:does not|doesn't|do not|don't)\s+(?:seem to\s+)?(?:exist|appear)",
+    r"\b(?:does not|doesn't|do not|don't)\s+(?:seem to\s+)?"
+    r"(?:exist|appear|contain|include|mention|cover|list)\b",
     r"\bno such\b",
     r"\bno (?:entry|record|mention|listing)\b",
     r"\b(?:cannot|can't|could not|couldn't|unable to)\s+(?:confirm|find|locate|verify|identify)",
