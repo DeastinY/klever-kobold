@@ -1,5 +1,15 @@
 # pf2etune
 
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![Runs offline](https://img.shields.io/badge/runs-fully%20offline-2f6b4f)
+![No torch](https://img.shields.io/badge/runtime%20deps-4-2f6b4f)
+![Memory](https://img.shields.io/badge/RAM-6.7%20GB-informational)
+![Model](https://img.shields.io/badge/model-Qwen3.5--9B%20Q4-8a1b2e)
+![Corpus](https://img.shields.io/badge/corpus-41%2C743%20AoN%20entries-8a1b2e)
+![Benchmark](https://img.shields.io/badge/hand--written%20lookups-89.9%25-2f6b4f)
+![Real questions](https://img.shields.io/badge/real%20questions-31.8%25-8a5a12)
+![License](https://img.shields.io/badge/content-ORC%20%2F%20Paizo%20CUP-lightgrey)
+
 A Pathfinder 2e rules reference that runs on your own machine, searches the
 Archives of Nethys, and cites its sources.
 
@@ -75,47 +85,150 @@ system. Config in [`deploy/README.md`](deploy/README.md).
 
 ---
 
-## What it does
+## How it works
 
 Players describe situations; a rules database holds entities, and the two share
 almost no vocabulary. "An ogre has grabbed my monk" originally retrieved the
-`Escape` action **7.7%** of the time. So the model goes in front of the retriever
-as well as behind it:
+`Escape` action **7.7%** of the time. The pipeline exists to close that gap.
 
-1. **Rewrite** — the question becomes a hypothetical one-line entry summary plus
-   up to three likely entry kinds. Asking for a *description* rather than a *name*
-   matters: asked to name things, the model invents feats that do not exist.
-2. **Narrow** — restrict to those kinds. Equipment and creatures are two thirds of
-   the corpus and answer almost none of these questions.
-3. **Retrieve** — fuse four rankings by reciprocal rank: BM25, dense over the full
-   entry, dense over the one-line summary, and the *hypothetical* summary against
-   the summary index.
-4. **Hop** — replace any pre-Remaster entry with the one that superseded it, so
-   legacy rules are never served as current.
-5. **Answer** — excerpts are authoritative; cite the URL; say so when the answer
-   is not among them.
+```
+question
+   │
+   ├─▶ 1. Rewrite ─────── the model writes the one-line summary the answering
+   │                      entry would have, plus up to 3 likely entry kinds
+   │
+   ├─▶ 2. Retrieve ────── seven rankings fused by reciprocal rank:
+   │                      BM25 · dense(full) · dense(summary)
+   │                      × {whole corpus, narrowed to those kinds}
+   │                      + dense(hypothetical summary) against the summary index
+   │
+   ├─▶ 3. Hop ─────────── pre-Remaster entries replaced by what superseded them
+   │
+   ├─▶ 4. Rerank ──────── the same model picks 8 of 24 candidates listwise
+   │
+   └─▶ 5. Answer ─────── excerpts are authoritative; cite the URL; say so when
+                          the answer is not among them
+```
 
-Retrieval on hand-written questions went from 47.2% to **76.4%** recall@5 this way,
-and situational questions from 7.7% to **77.4%**.
+**Techniques, and why each is there.**
 
-## Results
+| | what it is | worth |
+| --- | --- | --- |
+| **Entity chunking** | one chunk per game object, never token windows | metadata filters become possible |
+| **Hybrid retrieval** | BM25 + dense, fused by reciprocal rank | names and descriptions fail differently |
+| **Summary index** | a second embedding over name + one-line summary | +12.4 R@5 |
+| **HyDE, narrowed** | generate the *summary* an answer would have, not its name | +4.4 R@5 |
+| **Kind routing** | rewriter names entry kinds; search both narrowed and not, fused | +12.4 R@5 |
+| **Remaster hop** | legacy entries rewritten to their replacements | legacy questions 71% → 100% |
+| **Listwise rerank** | the answering model reorders 24 → 8 | +9.4 R@8 on real questions |
+| **Canonical collapse** | duplicate entries merged *before* fusion | evidence stops splitting |
+| **Compact BM25** | flat inverted index in numpy | 36 MB pickle → 8 MB, no dependency |
+| **float16 + mmap, blocked scoring** | index loads in 0.25 s | 583 MB → 395 MB resident |
 
-| | hand-written | generated |
-| --- | ---: | ---: |
-| Deployed runtime (Ollama, k=8) | **85.3%** | — |
-| Lab path (transformers, nf4) | 84.4% | 84.5% |
-| With the RAFT LoRA | 81.7% | 94.6% |
-| gpt-5 + retrieval | — | 83.7% |
-| Best closed-book (gpt-6-astra) | — | 31.6% |
+Everything heavy is delegated to Ollama over HTTP, so the package itself needs
+only `httpx`, `numpy` and `orjson` — no torch, no transformers, no CUDA.
 
-**The two columns disagreeing is the main finding.** The generated benchmark names
-its target entity in 88% of questions; the hand-written one, 37%. A fine-tune
-worth +10 points on the first is worth −3 on the second. Numbers from a benchmark
-written by the same pipeline that produced the training data describe the
-pipeline, not the world.
+## What we tried
 
-Full history in [`notes/experiments.md`](notes/experiments.md), including
-everything that was tried and dropped.
+Twenty-odd experiments, roughly half of which failed. The failures produced more
+durable knowledge than the wins, so they are listed too. Full record with numbers
+and diagnoses in [`notes/experiments.md`](notes/experiments.md).
+
+**Shipped**
+
+| | result |
+| --- | --- |
+| Retrieval over closed-book | 18% → 89.5% on the generated benchmark. The whole project in one line. |
+| Query understanding (summary index, HyDE, kind routing) | recall@5 on real phrasing 47.2% → 76.4%; situational questions 7.7% → 77.4% |
+| Fused narrowed + unnarrowed search | R@8 +1.1 on the gate, +17.7 on validated real questions |
+| Listwise reranking | +9.4 R@8 on real questions; false-premise questions to 19/19 |
+| 8 excerpts rather than 5 | 81.7% → 85.3% end to end; 12 excerpts is worse again |
+
+**Rejected**
+
+| | result |
+| --- | --- |
+| **RAFT LoRA** | **+10.1** on the generated benchmark, **−3.0** on hand-written. It learned a question shape, not the domain. |
+| Abstention adapter | abandoned mid-build: the weakness it targeted was 73.7% measured and 94.7% real |
+| Embedder fine-tune v1 | −12.3 R@8. Positives contained the anchor verbatim, so it learned separation without alignment |
+| Embedder fine-tune v2 | recall *up* on the gate, end-to-end **down** 87.2% → 84.4% |
+| One-hop link expansion | parity on the gate, −4.7 on judged answerability. A rules page cites its whole neighbourhood |
+| Never excluding the `rules` category | +9 on real questions, −4.5 on the gate |
+
+**Comparisons**
+
+| model, with the same retrieval | generated benchmark |
+| --- | ---: |
+| Qwen3.5-9B (shipped, on a laptop) | **89.5%** |
+| gpt-5 | 88.0% |
+| Qwen3.8-27B | 85.2% |
+| gpt-4.1-mini | 82.4% |
+| best closed-book, any model (gpt-6-astra) | 32.5% |
+
+Retrieval, not scale, is what closed the gap. Closed-book, everything scores
+18–32%.
+
+## Shortcomings
+
+Stated plainly, worst first.
+
+1. **Rule interactions are unreliable and confidently wrong.** The failure quoted
+   at the top of this file cited two real pages while importing a Pathfinder 1e
+   rule. This is the single largest gap and it is where a table most wants help.
+2. **Real questions are much harder than the benchmark suggests.** 89.9% on
+   hand-written lookups; 31.8% of retrieved excerpt sets judged to contain the
+   answer on questions mined from RPG StackExchange.
+3. **Lore is not indexed.** 22,604 PathfinderWiki chunks are built and unused, so
+   Golarion questions are answered from Archives of Nethys article fragments.
+4. **No conversation.** Every question is independent; "what about if she's
+   prone?" starts from nothing.
+5. **The benchmark is small and partly self-authored.** 109 hand-written items
+   means one item is 0.9%, and the author's blind spots are in it by
+   construction — the mined set exists because of that and is itself only 85
+   validated items.
+6. **The generated benchmark flatters everything.** It names its target entity in
+   88% of questions. Kept for continuity; it decides nothing.
+7. **No auth on the web UI.** `--host 0.0.0.0` is documented for reaching it from
+   a tablet; do not expose it beyond a home network.
+8. **Structured queries go through semantic search.** "Level 4 fighter feats with
+   the flourish trait" is a `WHERE` clause wearing a question's clothes.
+
+## Future work
+
+Ordered by where the errors actually are, not by what is interesting to build.
+
+**Retrieval — two thirds of remaining gate failures**
+
+- A cross-encoder reranker over a wider pool. The current reranker is the
+  answering model, chosen to avoid a torch dependency; a real one would be better
+  if the deployment can afford it.
+- Multi-hop along a *reasoned* path. A blanket one-hop walk failed; asking the
+  model which link to follow has not been tried.
+- Embedder fine-tuning on **teacher-written player questions** with mined hard
+  negatives. Two cheaper variants failed for diagnosed reasons; this is the
+  version the evidence still supports.
+- A structured query path for filterable questions, bypassing embeddings.
+
+**Coverage**
+
+- Index the lore with a source filter so it never answers a rules question.
+- Monthly re-dump for errata, gated on the holdout before publishing.
+
+**Product**
+
+- Multi-turn follow-ups — the largest gap between this and something usable.
+- Character context: import a Pathbuilder JSON, filter to what *this* character
+  can take.
+- A Foundry VTT module. `foundryvtt/pf2e` is Apache-2.0 and Paizo-partnered.
+- Streaming output; 1.6 s to first token feels slower than it is.
+
+**Measurement**
+
+- Grow the holdout past 300 and split dev from test. Everything so far has been
+  tuned on the set it is reported on.
+- Mine questions from more sources; one forum is one community's blind spots.
+- Cross-check the grader against a judge on a sample and read every
+  disagreement — that is how bug sixteen gets found.
 
 ## Layout
 
@@ -145,6 +258,13 @@ Ten measurement bugs were found over this project's life, every one by reading
 model outputs rather than model scores, and the largest ran in the flattering
 direction for hours. `eval/test_score.py` pins 25 cases taken verbatim from real
 runs. If you change the grader, run it.
+
+## Contributing
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) — mostly the measurement discipline, which is
+the part of this project worth copying. Short version: the gate is 109
+hand-written questions, run it before and after, record the number when your
+change loses, and treat an implausible number as a bug until proven otherwise.
 
 ## Licensing
 
