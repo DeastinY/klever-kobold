@@ -123,6 +123,19 @@ What would change the calculus:
 
 ---
 
+## Measurement, as it now stands
+
+| set | n | labels | role |
+| --- | ---: | --- | --- |
+| `eval/holdout.jsonl` | 109 | hand-written | **the gate**; a change must not regress it |
+| `eval/wild_clean.jsonl` | 85 | mined, judge-validated | advisory, and has earned a vote |
+| `eval/wild.jsonl` | 300 | mined, raw | superset; ~72% label noise, kept for provenance |
+| `eval/benchmark.jsonl` | 459 | generated | continuity only; names its target in 88% of questions |
+
+Current: deployed **89.9%** end to end on the gate, **84.3%** recall@8 there and
+**58.8%** on validated real questions. The last number is the honest one about
+how this performs on questions nobody here wrote.
+
 ## Standing rules
 
 - **Every change is measured on hand-written questions before it ships.** The

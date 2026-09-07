@@ -699,3 +699,55 @@ default; `--no-rerank` turns it off.
 `eval/recall_app.py` measures recall through the shipped runtime rather than the
 lab implementation, so a retrieval change can be checked at the operating point
 before spending four minutes on a full answer run.
+
+## Tier 0, increment 4 — validating the instrument that was driving decisions
+
+Two increments running, the mined set and the hand-written set disagreed about
+direction, and I had been trading gate points against the mined one. Before
+letting that continue, a recall curve over the whole corpus:
+
+| | R@1 | R@8 | R@50 | R@300 |
+| --- | ---: | ---: | ---: | ---: |
+| hand-written | 39.3% | 73.0% | 89.9% | **95.5%** |
+| mined, raw | 13.3% | 33.3% | 49.7% | **64.0%** |
+
+Nearly every hand-written gold is findable somewhere in 41,743 entries. **A third
+of mined golds are not findable at all**, which is what an unanswerable label
+looks like, not a hard one.
+
+### Judging the labels
+
+`scripts/validate_wild.py` shows the 27B each question and the full text of the
+cited entry and asks whether that entry answers it. The judge never sees a
+ranking — filtering by whether *this* retriever can find something would delete
+exactly the questions the set exists to expose.
+
+| verdict | pairs |
+| --- | ---: |
+| ANSWERS | 104 |
+| CONTEXT | 238 |
+| UNRELATED | 249 |
+
+**The mined set was about 72% noise.** Answers link liberally: "Do Skeletons need
+to breathe?" cited a Wyrwood Sneak stat block. 85 of 300 questions have at least
+one entry that genuinely answers them; those are `eval/wild_clean.jsonl`.
+
+### Both earlier decisions were right, by much more than the noisy set showed
+
+| recall@8 | raw mined | **cleaned** | hand-written |
+| --- | ---: | ---: | ---: |
+| narrow only → fused (increment 2) | 22.0 → 31.0 | **38.8 → 56.5** | 82.0 → 83.1 |
+| rerank off → on (increment 3) | 28.7 → 34.7 | **49.4 → 58.8** | 84.3 → 83.1 |
+
+Two changes kept on thin or negative evidence from the gate turn out to be worth
++17.7 and +9.4 points on validated real questions. The noise had been diluting
+their signal by roughly a factor of two, not inventing it.
+
+### And real questions are simply harder
+
+Cleaned mined recall@8 is **58.8%** against the hand-written set's 84.3%, with
+labels now validated on both sides. That gap is not noise and not label quality:
+questions people actually ask are harder than the ones I wrote to test myself.
+
+`eval/wild_clean.jsonl` is now a reported metric alongside the gate. It is 85
+items, so it advises rather than decides, but it has earned a vote.

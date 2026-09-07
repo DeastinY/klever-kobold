@@ -36,6 +36,7 @@ REWRITES = ROOT / "data" / "processed" / "query_rewrites.json"
 # 8 is the deployed excerpt count, so it is the operating point that matters;
 # 5 and 20 bracket it.
 KS = (1, 5, 8, 20)
+DEEP_KS = (1, 8, 20, 50, 100, 200)
 
 
 def remaster_partners(index: retrieval.Index, positions: set[int]) -> set[str]:
@@ -232,6 +233,9 @@ def main() -> int:
     ap.add_argument("--benchmark", type=pathlib.Path, default=ROOT / "eval" / "benchmark.jsonl")
     ap.add_argument("--out", type=pathlib.Path, default=ROOT / "eval" / "runs" / "retrieval.scores.json")
     ap.add_argument("--include-legacy", action="store_true")
+    ap.add_argument("--deep", action="store_true",
+                    help="report a deep recall curve; a curve that stays flat means the gold "
+                         "is not findable at all, which is a label problem, not a ranking one")
     ap.add_argument("--always-allow", nargs="*", default=[[]], action="append",
                     help="categories never excluded by narrowing; repeat to sweep")
     ap.add_argument("--smoothing", nargs="*", type=int, default=[5],
