@@ -751,3 +751,54 @@ questions people actually ask are harder than the ones I wrote to test myself.
 
 `eval/wild_clean.jsonl` is now a reported metric alongside the gate. It is 85
 items, so it advises rather than decides, but it has earned a vote.
+
+## Tier 1, increment 5 — the in-domain embedder, and why the free version fails
+
+Descriptive questions are the remaining retrieval failure, and the pipeline
+handles them by writing the summary the answering entry would have and matching
+that against a summary index. So the retriever's job is description → entry, and
+the corpus ships 38,482 examples of that pairing for free: every entry has its own
+one-line summary. No teacher, no generated data.
+
+Trained `Qwen3-Embedding-0.6B` for one epoch on those pairs with cached in-batch
+negatives, excluding every benchmark-cited entry. Training loss reached **1.1e-05**
+and evaluation loss **4.2e-05**, which was the first sign something was wrong: a
+retrieval objective should not be that easy.
+
+**It made retrieval substantially worse on both sets.**
+
+| recall@8 | base | tuned | |
+| --- | ---: | ---: | ---: |
+| hand-written holdout | **83.1%** | 70.8% | −12.3 |
+| validated real questions | **56.5%** | 45.9% | −10.6 |
+
+### The mechanism, which is the useful part
+
+The obvious suspicion is representation collapse. It is the opposite:
+
+| | mean pairwise cosine | sd | p99 |
+| --- | ---: | ---: | ---: |
+| base | 0.344 | 0.088 | 0.550 |
+| tuned | **0.045** | 0.060 | 0.215 |
+
+The tuned model spread the corpus *further apart*, not together. Uniformity
+without alignment.
+
+The cause is in the training pair. An entry's one-line summary appears **verbatim
+inside the entry text** that serves as its positive, so matching them requires no
+paraphrase at all — the anchor is a substring of the target. With nothing to learn
+on the positive side, the gradient is dominated by pushing in-batch negatives
+apart, and the model duly destroyed the semantic neighbourhood structure that
+descriptive retrieval depends on. It got better at telling entries apart and worse
+at recognising that a description means one of them.
+
+### What this rules in
+
+The failure is specific and it names its own fix: **positives must be paraphrases
+that do not share surface form with the target.** Teacher-written player questions
+are exactly that, and are what the roadmap called for before this increment tried
+to shortcut it with free data. Hard negatives mined from the retriever's own
+confusions would sharpen it further.
+
+Not shipped. Artifacts deleted; the training script stays, since the recipe is
+right and only the pairs were wrong.
