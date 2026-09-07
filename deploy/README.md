@@ -103,6 +103,38 @@ ollama serve &
 docker compose -f docker-compose.mac.yml up
 ```
 
+## MLX on Apple Silicon
+
+**You probably already have it.** Ollama replaced its llama.cpp Metal backend
+with Apple's MLX in 0.19, which roughly doubled decode speed on M-series
+hardware. `pf2e doctor` reports your Ollama version and says which backend that
+means you are on.
+
+```bash
+pf2e doctor        # ...  ok  ollama version  0.33.2  — uses MLX on Apple Silicon
+```
+
+If it says you are below 0.19, `brew upgrade ollama` is the whole optimisation.
+
+If you would rather use a different MLX server —
+[mlx-serve](https://github.com/raspoli/mlx-serve),
+[vllm-mlx](https://github.com/waybarrios/vllm-mlx),
+[mlx-openai-server](https://github.com/cubist38/mlx-openai-server), or LM Studio —
+anything speaking the OpenAI API works:
+
+```bash
+pf2e --backend openai --ollama http://localhost:8080/v1 \
+     --llm-model mlx-community/Qwen3.5-9B-4bit serve
+```
+
+**The embedding model is not interchangeable.** The index was built with
+`Qwen3-Embedding-0.6B`, and querying it with a different encoder returns
+plausible but unrelated entries rather than failing. The manifest carries a
+fingerprint of the encoder that built it and startup checks against it, so a
+mismatch stops with a message naming both models instead of quietly degrading.
+In practice: serve the LLM wherever you like, keep the embedder on the model the
+index names.
+
 ## First start
 
 `serve` loads both models before it accepts questions and says so — in the

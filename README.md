@@ -118,7 +118,7 @@ card.
 
 | platform | run this | GPU |
 | --- | --- | --- |
-| **Apple Silicon** | **uv** | Metal |
+| **Apple Silicon** | **uv** | Metal via MLX (Ollama ≥ 0.19) |
 | Linux + NVIDIA | uv, or `docker compose up` with the GPU block | CUDA |
 | Linux / Windows, CPU | uv, or `docker compose up` | none |
 | Intel Mac | uv | none |
@@ -256,13 +256,9 @@ Ordered by where the errors actually are, not by what is interesting to build.
 
 **Platform**
 
-- An OpenAI-compatible backend alongside the Ollama one, which would allow
-  **MLX** on Apple Silicon. Ollama serves GGUF through llama.cpp with Metal;
-  MLX is Apple's own array framework and is faster than llama.cpp for some
-  models on M-series hardware. `mlx_lm.server` speaks the OpenAI API, so the
-  chat side is a small adapter — embeddings would need a second answer, since
-  the index must be queried with the model that built it.
 - Publish the image to a registry so `docker compose up` needs no local build.
+- A native MLX embedding path, so an Apple Silicon user could run one server
+  rather than relying on Ollama for the encoder.
 
 **Coverage**
 

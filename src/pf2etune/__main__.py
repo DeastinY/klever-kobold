@@ -28,8 +28,14 @@ import orjson
 from .app import DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, Assistant, Ollama, OllamaError
 
 
+def _assistant(args) -> Assistant:
+    return Assistant(args.index, args.ollama, backend=args.backend,
+                     llm_model=getattr(args, "llm_override", None),
+                     embed_model=getattr(args, "embed_override", None))
+
+
 def cmd_ask(args) -> int:
-    a = Assistant(args.index, args.ollama)
+    a = _assistant(args)
     result = a.ask(args.question, k=args.k, rerank=not args.no_rerank)
     if args.json:
         sys.stdout.write(orjson.dumps(result, option=orjson.OPT_INDENT_2).decode() + "\n")
@@ -42,7 +48,7 @@ def cmd_ask(args) -> int:
 
 
 def cmd_search(args) -> int:
-    a = Assistant(args.index, args.ollama)
+    a = _assistant(args)
     plan = a.rewrite(args.question)
     hits = a.search(args.question, k=args.k, plan=plan, rerank=not args.no_rerank)
     print(f"interpreted as: {plan['summary']!r}  kinds={plan['categories']}\n")
@@ -69,7 +75,25 @@ def cmd_doctor(args) -> int:
         return 1
 
     manifest = orjson.loads((index / "manifest.json").read_bytes())
-    if not shutil.which("ollama"):
+    if args.backend == "ollama":
+        try:
+            import httpx
+            version = httpx.get(f"{args.ollama.rstrip('/')}/api/version",
+                                timeout=5.0).json().get("version", "?")
+            note = ""
+            if sys.platform == "darwin":
+                parts = version.split(".")
+                try:
+                    recent = (int(parts[0]), int(parts[1])) >= (0, 19)
+                except (ValueError, IndexError):
+                    recent = False
+                note = ("  — uses MLX on Apple Silicon" if recent
+                        else "  — older than 0.19, so still on the llama.cpp Metal "
+                             "backend; upgrading roughly doubles decode speed")
+            print(f"  ok   ollama version     {version}{note}")
+        except Exception:
+            pass
+    if args.backend == "ollama" and not shutil.which("ollama"):
         hint = INSTALL_HINT.get(
             "linux" if sys.platform.startswith("linux") else sys.platform,
             "See https://ollama.com/download")
@@ -89,7 +113,7 @@ def cmd_doctor(args) -> int:
             ok = False
 
     if ok:
-        a = Assistant(args.index, args.ollama)
+        a = _assistant(args)
         hits = a.search("a feat that makes falling less dangerous", k=3)
         names = ", ".join(h.name for h in hits)
         print(f"\n  retrieval smoke test -> {names}")
@@ -278,7 +302,8 @@ def cmd_setup(args) -> int:
 
 def cmd_serve(args) -> int:
     from .server import serve
-    serve(args.index, args.ollama, args.host, args.port)
+    serve(args.index, args.ollama, args.host, args.port, args.backend,
+          getattr(args, "llm_override", None), getattr(args, "embed_override", None))
     return 0
 
 
@@ -291,7 +316,16 @@ def cmd_mcp(args) -> int:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="pf2etune", description="Pathfinder 2e rules assistant")
     ap.add_argument("--index", type=pathlib.Path, default=DEFAULT_INDEX)
-    ap.add_argument("--ollama", default=DEFAULT_OLLAMA)
+    ap.add_argument("--ollama", default=DEFAULT_OLLAMA,
+                    help="model server URL; with --backend openai this is its base URL")
+    ap.add_argument("--backend", choices=("ollama", "openai"), default="ollama",
+                    help="'openai' points at any OpenAI-compatible server "
+                         "(mlx-serve, vllm-mlx, LM Studio, llama.cpp)")
+    ap.add_argument("--llm-model", dest="llm_override",
+                    help="override the answering model")
+    ap.add_argument("--embed-model", dest="embed_override",
+                    help="override the embedding model — must be the one the index "
+                         "was built with, and is checked at startup")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p = sub.add_parser("ask", help="answer a rules question with citations")
@@ -319,10 +353,10 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=cmd_doctor)
 
     p = sub.add_parser("serve", help="web UI for looking things up at the table")
+    p.set_defaults(func=cmd_serve)
     p.add_argument("--host", default="127.0.0.1",
                    help="0.0.0.0 to let other devices on your network reach it")
     p.add_argument("--port", type=int, default=8765)
-    p.set_defaults(func=cmd_serve)
 
     p = sub.add_parser("mcp", help="run as an MCP server over stdio")
     p.set_defaults(func=cmd_mcp)

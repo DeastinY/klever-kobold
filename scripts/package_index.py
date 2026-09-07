@@ -110,6 +110,16 @@ def main() -> int:
         BM25.build([retrieval.tokenize(retrieval.chunk_text(r)) for r in rows]).save(bm25_path)
     shutil.copy(bm25_path, args.out / "bm25.npz")
 
+    # A fingerprint of the encoder that built this index, so a runtime serving a
+    # different embedding model fails loudly instead of retrieving nonsense.
+    probe_text = "Treat falls as shorter than they are."
+    from sentence_transformers import SentenceTransformer
+    probe_model = SentenceTransformer(args.embed_model, device="cpu")
+    kwargs = {"prompt_name": "query"} if getattr(probe_model, "prompts", None) and \
+        "query" in probe_model.prompts else {}
+    probe_vec = probe_model.encode([probe_text], normalize_embeddings=True,
+                                   convert_to_numpy=True, **kwargs)[0]
+
     (args.out / "manifest.json").write_bytes(orjson.dumps({
         "version": 1,
         "chunks": len(rows),
@@ -117,6 +127,7 @@ def main() -> int:
         "ollama_embed": args.ollama_embed,
         "ollama_llm": args.ollama_llm,
         "query_prefix": QUERY_PREFIX,
+        "probe": {"text": probe_text, "vector": [round(float(x), 6) for x in probe_vec]},
         "retrieval_mode": "hybrid3+hyde+cat+hop",
         "source": "Archives of Nethys (https://2e.aonprd.com/)",
         "notice": ("This work uses trademarks and/or copyrights owned by Paizo Inc., "

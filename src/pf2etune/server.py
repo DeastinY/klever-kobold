@@ -224,8 +224,10 @@ def _hits(hits) -> list[dict]:
 
 
 def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLLAMA,
-          host: str = "127.0.0.1", port: int = 8765) -> None:
-    assistant = Assistant(index_dir, ollama_url)
+          host: str = "127.0.0.1", port: int = 8765, backend: str = "ollama",
+          llm_model: str | None = None, embed_model: str | None = None) -> None:
+    assistant = Assistant(index_dir, ollama_url, backend=backend,
+                          llm_model=llm_model, embed_model=embed_model)
     health = {"state": "starting", "detail": "loading models…"}
 
     def warm() -> None:

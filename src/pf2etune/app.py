@@ -176,6 +176,56 @@ class Hit:
     summary: str = ""
 
 
+class OpenAICompatible:
+    """Any server speaking the OpenAI API: mlx-serve, vllm-mlx, LM Studio, llama.cpp.
+
+    Ollama is the default because it installs in one command and, since 0.19,
+    uses MLX on Apple Silicon anyway. This exists for the cases it does not
+    cover -- a model Ollama has no build of, an already-running LM Studio, or a
+    server tuned harder than Ollama's defaults.
+
+    The embedding model is not interchangeable. The index was built with one
+    specific encoder and querying it with another produces vectors in a different
+    space, which does not error -- it just quietly returns nonsense. `verify_probe`
+    exists to make that loud.
+    """
+
+    def __init__(self, base_url: str, api_key: str = "not-needed",
+                 timeout: float | None = 180.0) -> None:
+        self.base_url = base_url.rstrip("/")
+        self._client = httpx.Client(timeout=timeout,
+                                    headers={"Authorization": f"Bearer {api_key}"})
+
+    def _post(self, path: str, body: dict) -> dict:
+        try:
+            r = self._client.post(f"{self.base_url}{path}", json=body)
+        except httpx.ConnectError as exc:
+            raise OllamaError(f"Cannot reach an OpenAI-compatible server at "
+                              f"{self.base_url}.") from exc
+        if r.status_code >= 400:
+            raise OllamaError(f"{self.base_url}{path} returned {r.status_code}: "
+                              f"{r.text[:200]}")
+        return orjson.loads(r.content)
+
+    def embed(self, texts: list[str], model: str, keep_alive: str = KEEP_ALIVE) -> np.ndarray:
+        data = self._post("/v1/embeddings", {"model": model, "input": texts})
+        vecs = np.asarray([d["embedding"] for d in data["data"]], dtype=np.float32)
+        norms = np.linalg.norm(vecs, axis=1, keepdims=True)
+        return vecs / np.where(norms == 0, 1, norms)
+
+    def chat(self, system: str, user: str, model: str, max_tokens: int = 700,
+             keep_alive: str = KEEP_ALIVE) -> str:
+        data = self._post("/v1/chat/completions", {
+            "model": model,
+            "messages": [{"role": "system", "content": system},
+                         {"role": "user", "content": user}],
+            "temperature": 0,
+            "max_tokens": max_tokens,
+            "stream": False,
+        })
+        return (data["choices"][0]["message"].get("content") or "").strip()
+
+
 class Ollama:
     def __init__(self, base_url: str = DEFAULT_OLLAMA, timeout: float | None = 180.0) -> None:
         self.base_url = base_url.rstrip("/")
@@ -219,7 +269,8 @@ class Ollama:
 
 class Assistant:
     def __init__(self, index_dir: pathlib.Path = DEFAULT_INDEX,
-                 ollama_url: str = DEFAULT_OLLAMA) -> None:
+                 ollama_url: str = DEFAULT_OLLAMA, backend: str = "ollama",
+                 llm_model: str | None = None, embed_model: str | None = None) -> None:
         index_dir = pathlib.Path(index_dir)
         if not (index_dir / "manifest.json").exists():
             raise OllamaError(
@@ -228,7 +279,15 @@ class Assistant:
                 f"or point --index at an unpacked pf2e-index directory."
             )
         self.manifest = orjson.loads((index_dir / "manifest.json").read_bytes())
-        self.ollama = Ollama(ollama_url)
+        if backend == "openai":
+            self.ollama = OpenAICompatible(ollama_url)
+        else:
+            self.ollama = Ollama(ollama_url)
+        self.backend = backend
+        if llm_model:
+            self.manifest["ollama_llm"] = llm_model
+        if embed_model:
+            self.manifest["ollama_embed"] = embed_model
 
         meta = [orjson.loads(l) for l in (index_dir / "meta.jsonl").open("rb")]
 
@@ -282,6 +341,26 @@ class Assistant:
             fh.seek(offset)
             return orjson.loads(fh.read(length)).get("text", "")
 
+    def verify_embedder(self) -> tuple[bool, float]:
+        """Check the query encoder matches the one that built the index.
+
+        The manifest stores the embedding of a fixed probe string. If the running
+        encoder is a different model the cosine collapses, and catching that here
+        turns a silent quality failure -- retrieval that returns plausible,
+        unrelated entries -- into a message at startup.
+        """
+        probe = self.manifest.get("probe")
+        if not probe:
+            return True, 1.0
+        vec = self._embed_queries([probe["text"]])[0]
+        expected = np.asarray(probe["vector"], dtype=np.float32)
+        if vec.shape != expected.shape:
+            # A different encoder family: different width, so not even comparable.
+            # This is the common shape of the mistake and deserves its own answer
+            # rather than a matmul traceback.
+            return False, 0.0
+        return float(vec @ expected) >= 0.95, float(vec @ expected)
+
     def warmup(self, progress=None) -> dict:
         """Make both models resident before anyone asks a question.
 
@@ -304,6 +383,17 @@ class Assistant:
             timings[label] = time.time() - started
             if progress:
                 progress(label, timings[label])
+
+        ok, similarity = self.verify_embedder()
+        if not ok:
+            detail = (f"dimensions differ" if similarity == 0.0
+                      else f"similarity {similarity:.2f}, expected ~1.00")
+            raise OllamaError(
+                f"The embedding model does not match the one this index was built "
+                f"with ({detail}).\n"
+                f"  Index built with: {self.manifest['embed_model']}\n"
+                f"  Serving now:      {self.manifest['ollama_embed']}\n"
+                f"Retrieval would return plausible but unrelated entries.")
         return timings
 
     # --- pipeline ------------------------------------------------------------
