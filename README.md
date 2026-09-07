@@ -1,23 +1,79 @@
 # pf2etune
 
-A Pathfinder 2e rules assistant that runs on a laptop, answers questions the way
-players actually ask them, and cites Archives of Nethys for every answer.
-
-**85.3%** on 109 hand-written questions, running locally through Ollama at about
-1.6 seconds a question and 6.6 GB of memory. → **[deploy/README.md](deploy/README.md)**
+A Pathfinder 2e rules reference that runs on your own machine, searches the
+Archives of Nethys, and cites its sources.
 
 ```bash
-$ pf2etune ask "my monk is grabbed by an ogre, what are her options?"
-
-Escape (one action, attack trait): attempt an unarmed attack, Athletics or
-Acrobatics check against the ogre's DC. Success removes the grabbed condition.
-While grabbed she is off-guard and immobilized, and any manipulate action
-requires a DC 5 flat check.
-
-sources:
-  Escape (action) — https://2e.aonprd.com/Actions.aspx?ID=2412
-  Grabbed (condition) — https://2e.aonprd.com/Conditions.aspx?ID=19
+docker compose up          # then open http://localhost:8765
 ```
+
+---
+
+## Read this before you trust it
+
+This is a **lookup tool**, not a rules adjudicator. The distinction is not
+modesty — it is measured, and it matters most exactly where you would want help.
+
+| Ask it | How it does |
+| --- | --- |
+| "What level is Battle Medicine?" | **Reliable.** |
+| "How does Treat Wounds work?" | **Reliable**, with a citation you can check. |
+| "Is there a feat that makes falling less dangerous?" | **Mostly** — about three times in four. |
+| "Was Magic Missile renamed?" | **Mostly** — about five times in six. |
+| **"Does X interact with Y?"** | **Do not trust it.** |
+| "Tell me about Cheliax" | **Thin.** Lore is not indexed yet. |
+
+A real failure, verbatim, asked whether a rogue gets sneak attack on the
+*fighter's* Reactive Strike:
+
+> **Yes, she gets Sneak Attack damage.** … a creature is flat-footed if they are
+> flanked by at least two enemies and have not yet acted in the current round (or
+> are otherwise denied their Dexterity bonus).
+
+That answer is wrong three times over. Sneak attack applies to the rogue's own
+Strikes. *Flat-footed* is the pre-Remaster name for *off-guard*. And "denied
+their Dexterity bonus" is Pathfinder 1e language for a rule 2e does not have. It
+cited two real Archives of Nethys pages while doing it.
+
+**Interaction questions are where it fails and where a table most wants an
+answer.** Use it to find the rule fast; read the rule yourself before settling an
+argument. Every answer carries its source URL precisely so that is a one-click
+check — the web UI puts the rules entries first and the generated answer behind a
+button for the same reason.
+
+Measured: **89.9%** on 109 hand-written questions, but those are lookups. On 85
+real questions mined from RPG StackExchange, only **31.8%** of retrieved excerpt
+sets are judged to contain the answer outright, against 56% for the hand-written
+ones. The full record, including everything that failed, is in
+[`notes/experiments.md`](notes/experiments.md).
+
+---
+
+## Run it
+
+**Docker** — one command, no Python setup. First run pulls ~6.3 GB of models and
+a 143 MB index into named volumes; later runs start in seconds. Works on CPU;
+uncomment the GPU block in `docker-compose.yml` if you have an NVIDIA card.
+
+```bash
+docker compose up
+```
+
+**On a laptop, without Docker** — 6.7 GB resident, ~1.6 s a question, no torch
+and no CUDA. See [`deploy/README.md`](deploy/README.md).
+
+```bash
+bash deploy/install.sh
+PYTHONPATH=src .venv/bin/python -m pf2etune serve     # web UI
+PYTHONPATH=src .venv/bin/python -m pf2etune ask "..."  # one-shot
+```
+
+**In Claude Desktop or Claude Code** — an MCP server exposing `pf2e_ask` and
+`pf2e_search`. Prefer `pf2e_search` when the caller is a strong model: hand it
+the rules text and let it reason, since retrieval is the part that carries this
+system. Config in [`deploy/README.md`](deploy/README.md).
+
+---
 
 ## What it does
 

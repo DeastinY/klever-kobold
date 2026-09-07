@@ -2,6 +2,7 @@
 
     python -m pf2etune ask "can my level 4 fighter take Power Attack?"
     python -m pf2etune search "a feat that makes falling less dangerous"
+    python -m pf2etune serve           # web UI on localhost:8765
     python -m pf2etune doctor          # check Ollama, models, index
     python -m pf2etune mcp             # stdio MCP server
 """
@@ -80,6 +81,12 @@ def cmd_doctor(args) -> int:
     return 0 if ok else 1
 
 
+def cmd_serve(args) -> int:
+    from .server import serve
+    serve(args.index, args.ollama, args.host, args.port)
+    return 0
+
+
 def cmd_mcp(args) -> int:
     from .mcp_server import serve
     serve(args.index, args.ollama)
@@ -108,6 +115,12 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("doctor", help="check Ollama, models and index")
     p.set_defaults(func=cmd_doctor)
+
+    p = sub.add_parser("serve", help="web UI for looking things up at the table")
+    p.add_argument("--host", default="127.0.0.1",
+                   help="0.0.0.0 to let other devices on your network reach it")
+    p.add_argument("--port", type=int, default=8765)
+    p.set_defaults(func=cmd_serve)
 
     p = sub.add_parser("mcp", help="run as an MCP server over stdio")
     p.set_defaults(func=cmd_mcp)

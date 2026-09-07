@@ -65,6 +65,10 @@ mkdir -p dist && tar -xzf pf2e-index.tar.gz -C dist
 ```bash
 export PYTHONPATH=src
 
+# web UI for the table — rules entries first, generated answer behind a button
+.venv/bin/python -m pf2etune serve
+# ...then http://localhost:8765, or --host 0.0.0.0 to reach it from a tablet
+
 # ask a question
 .venv/bin/python -m pf2etune ask "an ogre grabbed my monk, what can she do?"
 
@@ -97,6 +101,18 @@ Two tools are exposed. `pf2e_ask` runs the whole pipeline locally. **`pf2e_searc
 returns the rules excerpts and lets the calling model reason over them** — worth
 preferring when the caller is a frontier model, since retrieval is the part that
 carries this system and a stronger reader does better with the same excerpts.
+
+## Docker instead
+
+```bash
+docker compose up
+```
+
+Two services: Ollama holding the models, and this on port 8765. The entrypoint
+waits for Ollama, pulls the two models if absent, and fetches the index if
+absent, so first run is genuinely one command. Everything lands in named volumes;
+later starts take seconds. Works on CPU — uncomment the GPU block in
+`docker-compose.yml` for an NVIDIA card.
 
 ## What to expect
 
