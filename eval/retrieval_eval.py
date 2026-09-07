@@ -33,7 +33,9 @@ from pf2etune import retrieval  # noqa: E402
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 INDEX = ROOT / "data" / "processed" / "index"
 REWRITES = ROOT / "data" / "processed" / "query_rewrites.json"
-KS = (1, 5, 20)
+# 8 is the deployed excerpt count, so it is the operating point that matters;
+# 5 and 20 bracket it.
+KS = (1, 5, 8, 20)
 
 
 def remaster_partners(index: retrieval.Index, positions: set[int]) -> set[str]:
@@ -95,7 +97,7 @@ def encode_queries(model_name: str, queries: list[str]) -> np.ndarray:
 def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None,
              mode: str, exclude_legacy: bool, hyde_vecs: np.ndarray | None = None,
              rewrites: dict | None = None, hyde_weight: float = 1.0,
-             smoothing: int = 5) -> dict:
+             smoothing: int = 5, always_allow: tuple[str, ...] = ()) -> dict:
     # The hop mode searches legacy entries deliberately and rewrites the hits, so
     # it must not filter them out first.
     parts = mode.split("+")
@@ -103,6 +105,10 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
     hop = "hop" in parts
     use_hyde = "hyde" in parts
     use_cat = "cat" in parts
+    # "cat2" fuses the narrowed and unnarrowed rankings instead of replacing one
+    # with the other. Narrowing sharpens entity lookup and blinds concept
+    # questions; keeping both rankings costs one extra scan and no model call.
+    use_both = "cat2" in parts
     # base_mask is the corpus-level filter. Query-time narrowing (category routing)
     # reassigns `mask` per item and its mistakes must count as retrieval failures,
     # not as unreachable items -- otherwise a filter that hides the answer scores
@@ -141,15 +147,24 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
         pool = kmax if not hop else kmax * 2
 
         mask = base_mask
-        if use_cat and rewrites:
-            cats = (rewrites.get(item["question"]) or {}).get("categories") or []
+        narrow_mask = None
+        if (use_cat or use_both) and rewrites:
+            cats = list((rewrites.get(item["question"]) or {}).get("categories") or [])
+            # Categories that answer a *concept* question. The rewriter names entry
+            # kinds -- feat, spell, action -- and narrowing to them excludes the
+            # rules chapters entirely, which is where questions like "is a critical
+            # failure a failure?" are answered.
+            cats += [c for c in always_allow if c not in cats]
             if cats:
                 # Narrow to the kinds of entry that could answer this. Equipment and
                 # creatures are two thirds of the corpus and answer almost nothing.
                 narrowed = base_mask & index.allowed(
                     exclude_legacy=exclude_legacy and not hop, categories=cats)
                 if narrowed.sum() >= kmax:
-                    mask = narrowed
+                    if use_both:
+                        narrow_mask = narrowed
+                    else:
+                        mask = narrowed
         if base_mode == "dense":
             order = index.dense(qvec, mask, pool)
         elif base_mode == "summary":
@@ -169,6 +184,14 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
                 rankings.append(index.dense(hyde_vecs[i], mask, 50, view="summary"))
                 rankings.append(index.dense(hyde_vecs[i], mask, 50))
                 weights += [hyde_weight, hyde_weight]
+            if narrow_mask is not None:
+                rankings.append(index.dense(qvec, narrow_mask, 50))
+                rankings.append(index.dense(qvec, narrow_mask, 50, view="summary"))
+                rankings.append(index.lexical(item["question"], narrow_mask, 50))
+                weights += [1.0, 1.0, 1.0]
+                if use_hyde and hyde_vecs is not None:
+                    rankings.append(index.dense(hyde_vecs[i], narrow_mask, 50, view="summary"))
+                    weights += [hyde_weight]
             order = retrieval.rrf(rankings, pool, smoothing, weights=weights, index=index)
         else:
             order = retrieval.rrf([index.dense(qvec, mask, 50),
@@ -191,6 +214,7 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
     return {
         "mode": mode, "model": index.model_name, "scored": scored,
         "hyde_weight": hyde_weight, "smoothing": smoothing,
+        "always_allow": list(always_allow),
         "unreachable": unreachable, "seconds": round(time.time() - started, 1),
         "recall": {str(k): hits[k] / scored if scored else 0.0 for k in KS},
         "mrr": mrr,
@@ -208,6 +232,8 @@ def main() -> int:
     ap.add_argument("--benchmark", type=pathlib.Path, default=ROOT / "eval" / "benchmark.jsonl")
     ap.add_argument("--out", type=pathlib.Path, default=ROOT / "eval" / "runs" / "retrieval.scores.json")
     ap.add_argument("--include-legacy", action="store_true")
+    ap.add_argument("--always-allow", nargs="*", default=[[]], action="append",
+                    help="categories never excluded by narrowing; repeat to sweep")
     ap.add_argument("--smoothing", nargs="*", type=int, default=[5],
                     help="RRF constant; 60 is the TREC default and is far too flat here")
     ap.add_argument("--hyde-weights", nargs="*", type=float, default=[1.0],
@@ -243,22 +269,25 @@ def main() -> int:
         for mode in [m for m in args.modes if not m.startswith("bm25")]:
             for w in (args.hyde_weights if "hyde" in mode else [1.0]):
                 for sm in args.smoothing:
-                    results.append(evaluate(index, items, qvecs, mode, not args.include_legacy,
-                                            hyde_vecs, rewrites, w, sm))
+                    for aa in args.always_allow:
+                        results.append(evaluate(index, items, qvecs, mode,
+                                                not args.include_legacy, hyde_vecs,
+                                                rewrites, w, sm, tuple(aa)))
 
-    print(f"\n{'retriever':32s} {'mode':26s} {'R@1':>6s} {'R@5':>6s} {'R@20':>6s} {'MRR':>6s}")
-    print(f"{'-' * 32} {'-' * 26} {'-' * 6} {'-' * 6} {'-' * 6} {'-' * 6}")
+    print(f"\n{'retriever':32s} {'mode':26s} {'R@1':>6s} {'R@5':>6s} {'R@8':>6s} {'R@20':>6s} {'MRR':>6s}")
+    print(f"{'-' * 32} {'-' * 26} {'-' * 6} {'-' * 6} {'-' * 6} {'-' * 6} {'-' * 6}")
     for r in results:
         name = r["model"] or "—"
-        tag = f"{r['mode']} k={r.get('smoothing', 60)}"
+        aa = "+".join(r.get("always_allow") or []) or "none"
+        tag = f"{r['mode']} keep={aa}"
         print(f"{name:32s} {tag:26s} {r['recall']['1']:6.1%} {r['recall']['5']:6.1%} "
-              f"{r['recall']['20']:6.1%} {r['mrr']:6.3f}")
+              f"{r['recall']['8']:6.1%} {r['recall']['20']:6.1%} {r['mrr']:6.3f}")
 
-    best = max(results, key=lambda r: r["recall"]["5"])
-    print(f"\nbest by R@5: {best['model']} / {best['mode']}")
-    print(f"  per family (R@5):")
+    best = max(results, key=lambda r: r["recall"]["8"])
+    print(f"\nbest by R@8: {best['model']} / {best['mode']}")
+    print(f"  per family (R@8):")
     for fam, v in best["families"].items():
-        print(f"    {fam:18s} n={v['n']:4d}  {v['5']:6.1%}")
+        print(f"    {fam:18s} n={v['n']:4d}  {v['8']:6.1%}")
     unreachable = {(r["mode"], r["unreachable"]) for r in results if r["unreachable"]}
     for mode, n in sorted(unreachable):
         print(f"  {n} unreachable in {mode} (gold removed by the corpus filter)")

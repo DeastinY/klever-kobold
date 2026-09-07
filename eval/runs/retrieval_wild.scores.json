@@ -1,61 +1,17 @@
 [
   {
-    "mode": "hybrid+hop",
-    "model": "Qwen/Qwen3-Embedding-0.6B",
-    "scored": 300,
-    "hyde_weight": 1.0,
-    "smoothing": 5,
-    "unreachable": 0,
-    "seconds": 22.9,
-    "recall": {
-      "1": 0.10333333333333333,
-      "5": 0.26,
-      "20": 0.41333333333333333
-    },
-    "mrr": 0.1779813204797725,
-    "families": {
-      "wild_rules": {
-        "n": 300,
-        "1": 0.10333333333333333,
-        "5": 0.26,
-        "20": 0.41333333333333333
-      }
-    }
-  },
-  {
-    "mode": "hybrid3+hop",
-    "model": "Qwen/Qwen3-Embedding-0.6B",
-    "scored": 300,
-    "hyde_weight": 1.0,
-    "smoothing": 5,
-    "unreachable": 0,
-    "seconds": 28.7,
-    "recall": {
-      "1": 0.10666666666666667,
-      "5": 0.27,
-      "20": 0.41
-    },
-    "mrr": 0.18419642360277036,
-    "families": {
-      "wild_rules": {
-        "n": 300,
-        "1": 0.10666666666666667,
-        "5": 0.27,
-        "20": 0.41
-      }
-    }
-  },
-  {
     "mode": "hybrid3+hyde+cat+hop",
     "model": "Qwen/Qwen3-Embedding-0.6B",
     "scored": 300,
     "hyde_weight": 1.0,
     "smoothing": 5,
+    "always_allow": [],
     "unreachable": 0,
-    "seconds": 33.6,
+    "seconds": 31.4,
     "recall": {
       "1": 0.08666666666666667,
       "5": 0.19,
+      "8": 0.22,
       "20": 0.27
     },
     "mrr": 0.1330267768723651,
@@ -64,7 +20,34 @@
         "n": 300,
         "1": 0.08666666666666667,
         "5": 0.19,
+        "8": 0.22,
         "20": 0.27
+      }
+    }
+  },
+  {
+    "mode": "hybrid3+hyde+cat2+hop",
+    "model": "Qwen/Qwen3-Embedding-0.6B",
+    "scored": 300,
+    "hyde_weight": 1.0,
+    "smoothing": 5,
+    "always_allow": [],
+    "unreachable": 0,
+    "seconds": 60.5,
+    "recall": {
+      "1": 0.10333333333333333,
+      "5": 0.28,
+      "8": 0.31,
+      "20": 0.4033333333333333
+    },
+    "mrr": 0.1779365661571544,
+    "families": {
+      "wild_rules": {
+        "n": 300,
+        "1": 0.10333333333333333,
+        "5": 0.28,
+        "8": 0.31,
+        "20": 0.4033333333333333
       }
     }
   }

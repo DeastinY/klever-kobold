@@ -622,3 +622,46 @@ is a rules section.
 **Next increment:** make narrowing conditional — never exclude the `rules`
 category, and skip narrowing entirely when the rewriter's suggested kinds look
 like a concept question. Gate on the hand-written holdout, confirm on wild.
+
+## Tier 1, increment 2 — fuse the narrowed and unnarrowed rankings
+
+The wild set said category narrowing blinds concept questions. Two fixes tried.
+
+**Rejected: never exclude the rules category.** The hypothesis was right about wild
+and wrong about the gate.
+
+| always-allow | hand-written R@5 | wild R@5 |
+| --- | ---: | ---: |
+| none | **80.9%** | 19.0% |
+| rules | 77.5% | 25.0% |
+| rules + class-feature + trait | 76.4% | **27.0%** |
+
+Nine points of wild recall for four and a half points of the gate. Not kept.
+
+**Kept: fuse both rankings instead of choosing.** Run retrieval narrowed *and*
+unnarrowed and fuse all of it by reciprocal rank. One extra scan of a
+memory-mapped matrix, no additional model call.
+
+| | hand-written | wild |
+| --- | ---: | ---: |
+| narrow only, R@8 | 82.0% | 22.0% |
+| **fused, R@8** | **83.1%** | **31.0%** |
+
+### The methodology error underneath
+
+Fused retrieval looked like a regression at first — hand-written R@5 fell 80.9% →
+76.4% — and it was only better at R@1, R@20 and MRR. Fusion reorders inside the
+top twenty, moving some answers from rank 4 to rank 6.
+
+**The deployed system retrieves eight excerpts.** Every retrieval decision in this
+project had been gated at R@5, a point the product does not use. At R@8 the change
+is an improvement on both sets. `KS` now includes 8 and the summary ranks by it.
+
+### End-to-end
+
+| | before | after |
+| --- | ---: | ---: |
+| **deployed, holdout** | 89.0% | **89.9%** |
+| descriptive | 72.7% | 75.8% |
+| fabricated levels | 1 | **0** |
+| situational grounding | 70% | 80% |

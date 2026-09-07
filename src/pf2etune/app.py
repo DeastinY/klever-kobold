@@ -222,11 +222,17 @@ class Assistant:
         qvec, hvec = vecs[0], (vecs[1] if len(vecs) > 1 else None)
 
         mask = self._base_mask
+        # Narrowing to the rewriter's entry kinds sharpens entity lookup and blinds
+        # concept questions -- the rules chapters are excluded, and that is where
+        # "is a critical failure a failure?" is answered. So both rankings are
+        # kept and fused rather than one replacing the other. Costs one extra
+        # scan of a memory-mapped matrix and no model call.
+        narrow_mask = None
         if plan.get("categories"):
             narrowed = mask & self.index.allowed(exclude_legacy=False,
                                                  categories=plan["categories"])
             if narrowed.sum() >= k:
-                mask = narrowed
+                narrow_mask = narrowed
 
         rankings = [self.index.dense(qvec, mask, 50),
                     self.index.dense(qvec, mask, 50, view="summary"),
@@ -234,6 +240,12 @@ class Assistant:
         if hvec is not None:
             rankings.append(self.index.dense(hvec, mask, 50, view="summary"))
             rankings.append(self.index.dense(hvec, mask, 50))
+        if narrow_mask is not None:
+            rankings.append(self.index.dense(qvec, narrow_mask, 50))
+            rankings.append(self.index.dense(qvec, narrow_mask, 50, view="summary"))
+            rankings.append(self.index.lexical(question, narrow_mask, 50))
+            if hvec is not None:
+                rankings.append(self.index.dense(hvec, narrow_mask, 50, view="summary"))
         order = retrieval.rrf(rankings, k * 4, smoothing=RRF_SMOOTHING, index=self.index)
         order = retrieval.follow_remaster(self.index, order)
         order = retrieval.dedupe(self.index, order)[:k]
