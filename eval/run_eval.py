@@ -288,7 +288,8 @@ def attach_context(items: list[dict], retriever: str, mode: str, k: int,
 
 
 def run_app(items: list[dict], index_dir: pathlib.Path, ollama_url: str, k: int,
-            rerank: bool = False, pool: int = 24) -> list[dict]:
+            rerank: bool = False, pool: int = 24, context_chars: int = 1600,
+            answer_tokens: int = 400) -> list[dict]:
     """Evaluate the shipped runtime itself, not a lab reimplementation of it.
 
     Everything else in this file drives transformers directly. That is fine for
@@ -300,14 +301,21 @@ def run_app(items: list[dict], index_dir: pathlib.Path, ollama_url: str, k: int,
     sys.path.insert(0, str(ROOT / "src"))
     from pf2etune.app import Assistant
 
-    assistant = Assistant(index_dir, ollama_url)
-    out = []
+    assistant = Assistant(index_dir, ollama_url, context_chars=context_chars,
+                          answer_tokens=answer_tokens)
+    out, elapsed = [], []
     for n, item in enumerate(items, 1):
         result = assistant.ask(item["question"], k=k, rerank=rerank, pool=pool)
+        elapsed.append(result["timings"])
         out.append({"id": item["id"], "family": item["family"], "response": result["answer"],
-                    "usage": {}, "retrieved": [s["url"] for s in result["sources"]]})
+                    "usage": {}, "timings": result["timings"],
+                    "retrieved": [s["url"] for s in result["sources"]]})
         if n % 20 == 0:
             print(f"  {n}/{len(items)}", flush=True)
+    if elapsed:
+        keys = sorted({k for t in elapsed for k in t})
+        means = {k: round(sum(t.get(k, 0) for t in elapsed) / len(elapsed), 2) for k in keys}
+        print(f"  mean per-question seconds: {means}", flush=True)
     return out
 
 
@@ -332,6 +340,10 @@ def main() -> int:
     ap.add_argument("--ollama", default="http://localhost:11434")
     ap.add_argument("--rerank", action="store_true", help="app backend: listwise rerank")
     ap.add_argument("--pool", type=int, default=24, help="candidates handed to the reranker")
+    ap.add_argument("--answer-tokens", type=int, default=400,
+                    help="app backend: cap on generated answer length")
+    ap.add_argument("--app-context-chars", type=int, default=1600,
+                    help="app backend: characters of each entry shown to the model")
     ap.add_argument("--adapter", type=pathlib.Path,
                     help="hf backend: LoRA adapter directory to load onto the base model")
     ap.add_argument("--chat-kwargs", default="{}",
@@ -402,7 +414,7 @@ def main() -> int:
                        args.max_tokens, args.reasoning_effort, system)
     elif args.backend == "app":
         rows = run_app(items, args.index_dir, args.ollama, args.retrieve or 5,
-                       args.rerank, args.pool)
+                       args.rerank, args.pool, args.app_context_chars, args.answer_tokens)
     else:
         rows = run_hf(items, args.model, args.max_tokens, args.batch_size, not args.no_4bit,
                       json.loads(args.chat_kwargs), system, args.adapter)

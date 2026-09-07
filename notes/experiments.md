@@ -965,3 +965,83 @@ still support: the PART bucket is interaction and edge-case questions, my
 hand-written set asks lookups, and real players ask what happens when two rules
 meet. What does not survive is the claim that the two instruments disagreed about
 how large that gap is. They never did; I measured them differently.
+
+## Latency: the 60-second answer on a MacBook
+
+Reported from the field: `pf2e serve` on an M-series 16 GB took upwards of a
+minute per question, after the warm-start fix had already landed. So this was
+per-question inference cost, not cold start.
+
+Nothing in the pipeline was instrumented, which is why "it is slow" had gone
+three rounds without a cause. Adding a per-stage timer first turned out to be
+the whole job: it named a duplicated stage, a silently disabled one, and the
+stage actually worth cutting.
+
+### Bugs the instrumentation found
+
+**The web UI ran retrieval twice.** `/api/ask` called `ask()` and then called
+`search()` again to get the hits for the cards, because `ask()` only returned
+citation dicts. That is a second rewrite *and* a second listwise rerank on every
+question — two extra model calls, roughly a third of the wall clock, for a
+ranking that had already been computed. `ask()` now returns its hits and the
+server uses them.
+
+**Reranking silently stopped happening.** Splitting the timing out of `search()`
+meant calling it with `rerank=False` and reranking in `ask()`. But `search` read
+`take = (pool or DEFAULT_POOL) if rerank else k`, so `rerank=False` also
+collapsed the candidate pool from 24 to 8 — and `rerank()` returns early when
+it is handed fewer candidates than `k`. The pipeline scored the same on the
+holdout with reranking disabled, which is its own finding about how much the
+holdout can see. Caught by noticing `rerank` missing from the timing output, not
+by a score moving.
+
+### What the stages actually cost
+
+Measured on the holdout (109 questions), mean seconds per question on a desktop
+GPU. A laptop scales the three model calls up roughly 20×; retrieval, being
+numpy over memory-mapped float16, scales far less.
+
+| stage | seconds | what it is |
+| --- | ---: | --- |
+| rewrite | 0.20 | model call, ~90 tokens out |
+| retrieve | 0.54 | BM25 + two dense views + fusion, no model |
+| rerank | 0.21 | model call, 24 summaries in, ~60 tokens out |
+| answer | 1.20 | model call, ~3.5k tokens of prefill, up to 400 out |
+
+The answer call is the target, and within it the decode. Which is why the
+largest change here is not a reduction at all.
+
+### Streaming
+
+The answer is now streamed end to end — Ollama and OpenAI-compatible backends,
+the CLI, and the web UI over server-sent events. The total does not change. What
+changes is that the sources appear as soon as retrieval finishes and the first
+sentence follows immediately after, instead of a blank spinner until the last
+token. On the measured desktop, first token lands at 1.1s of a 2.4s answer; the
+same ratio on a laptop turns a 60-second blank wait into about 20 seconds to
+first text, with the rest arriving at reading speed.
+
+### Swept, and what the holdout could not see
+
+| configuration | holdout |
+| --- | ---: |
+| 700 answer tokens, 1600 context chars (shipped) | 97/109 (89.0%) |
+| **400 answer tokens**, 1600 chars | **98/109 (89.9%)** |
+| 400 tokens, 1000 chars | 98/109 (89.9%) |
+| 400 tokens, 1600 chars, rerank pool 12 | 97/109 (89.0%) |
+
+All four are one item apart. The honest reading is that this holdout cannot
+separate them, not that the differences are zero.
+
+**Taken:** 400 answer tokens. It caps the model's habit of restating the
+excerpts as bullets, and costs nothing measurable.
+
+**Not taken:** 1000 context chars, though it scored identically and would cut
+prompt processing by a third. 45% of corpus entries are longer than 1000
+characters (23% are longer than 1600), so it truncates nearly half the corpus
+mid-entry — a real information loss that 109 lookup-shaped questions happen not
+to punish. It is exposed as `pf2e serve --context-chars` instead, with the
+measurement written down, so the trade is the user's to make on their hardware.
+
+**Not taken:** pool 12. It saves the least of the three and cuts rerank depth,
+which is a quality safeguard measured in an earlier increment.

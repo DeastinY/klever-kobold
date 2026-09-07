@@ -36,14 +36,29 @@ def _assistant(args) -> Assistant:
 
 def cmd_ask(args) -> int:
     a = _assistant(args)
-    result = a.ask(args.question, k=args.k, rerank=not args.no_rerank)
     if args.json:
+        result = a.ask(args.question, k=args.k, rerank=not args.no_rerank)
+        result.pop("hits", None)   # Hit bodies would bloat the JSON; sources cover it
         sys.stdout.write(orjson.dumps(result, option=orjson.OPT_INDENT_2).decode() + "\n")
         return 0
-    print(result["answer"])
-    print("\nsources:")
-    for s in result["sources"]:
+
+    # Streamed, because on a laptop the answer decodes at reading speed and a
+    # silent terminal for half a minute is indistinguishable from a hang.
+    sources, timings = [], {}
+    for event in a.ask_stream(args.question, k=args.k, rerank=not args.no_rerank):
+        if event["event"] == "sources":
+            sources = event["sources"]
+        elif event["event"] == "token":
+            sys.stdout.write(event["text"])
+            sys.stdout.flush()
+        elif event["event"] == "done":
+            timings = event["timings"]
+    print("\n\nsources:")
+    for s in sources:
         print(f"  {s['name']} ({s['category']}) — {s['url']}")
+    if args.timings:
+        parts = " · ".join(f"{k.replace('_', ' ')} {v:.1f}s" for k, v in timings.items())
+        print(f"\n{parts}", file=sys.stderr)
     return 0
 
 
@@ -303,7 +318,8 @@ def cmd_setup(args) -> int:
 def cmd_serve(args) -> int:
     from .server import serve
     serve(args.index, args.ollama, args.host, args.port, args.backend,
-          getattr(args, "llm_override", None), getattr(args, "embed_override", None))
+          getattr(args, "llm_override", None), getattr(args, "embed_override", None),
+          context_chars=getattr(args, "context_chars", None))
     return 0
 
 
@@ -334,6 +350,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--json", action="store_true")
     p.add_argument("--no-rerank", action="store_true",
                    help="skip the listwise rerank; slightly faster, worse on hard questions")
+    p.add_argument("--timings", action="store_true",
+                   help="print seconds spent per stage to stderr")
     p.set_defaults(func=cmd_ask)
 
     p = sub.add_parser("search", help="show what retrieval finds, without answering")
@@ -357,6 +375,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--host", default="127.0.0.1",
                    help="0.0.0.0 to let other devices on your network reach it")
     p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--context-chars", type=int, default=None,
+                   help="characters of each entry shown to the model (default 1600). "
+                        "1000 scored the same on the holdout and cuts prompt-processing "
+                        "time on a laptop, at the cost of truncating longer entries.")
 
     p = sub.add_parser("mcp", help="run as an MCP server over stdio")
     p.set_defaults(func=cmd_mcp)

@@ -59,6 +59,25 @@ ones. The full record, including everything that failed, is in
 
 ---
 
+## The table view
+
+`pf2e serve` puts a search box and the rules behind it on `localhost:8765`.
+Entries render as Pathfinder stat blocks — action glyphs, trait pills, the four
+degrees of success — and every one links back to its Archives of Nethys page.
+The generated answer is opt-in, marked as generated, and its `[1]`-style
+citations become links to the entries it drew on. Light, dark and system themes.
+
+| light | dark |
+| --- | --- |
+| ![Light theme](docs/img/ui-light.png) | ![Dark theme](docs/img/ui-dark.png) |
+
+Answers stream, so the sources appear as soon as retrieval finishes and the text
+follows at reading speed rather than after a silent wait. `pf2e ask --timings`
+prints the per-stage seconds if you want to know where the time goes on your
+hardware.
+
+---
+
 ## Run it
 
 ### uv — recommended everywhere, and the only sensible option on a Mac

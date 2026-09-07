@@ -31,7 +31,7 @@ import re
 import sys
 import time
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, Iterator
 
 import httpx
 import numpy as np
@@ -126,6 +126,15 @@ RE_CLEAN = re.compile(r"^[\s\-*\d.)]+|[\s;:]+$")
 # Swept on the holdout; 5 was best, though the margin is inside the noise of a
 # 48-item sample.
 RRF_SMOOTHING = 5
+
+# Characters of each retrieved entry put in front of the model. Swept on the
+# holdout; see notes/experiments.md.
+CONTEXT_CHARS = 1600
+
+# Cap on generated answer length. The model will happily produce 700 tokens of
+# bulleted restatement; on a laptop each one costs real time, and the answers that
+# matter are short.
+ANSWER_TOKENS = 400
 
 # Excerpts per answer. Swept end-to-end on the hand-written holdout: 5 -> 81.7%,
 # 8 -> 85.3%, 12 -> 80.7%. The curve is an inverted U -- recall@20 is higher than
@@ -225,6 +234,33 @@ class OpenAICompatible:
         })
         return (data["choices"][0]["message"].get("content") or "").strip()
 
+    def stream(self, system: str, user: str, model: str, max_tokens: int = 700,
+               keep_alive: str = KEEP_ALIVE) -> Iterator[str]:
+        body = {
+            "model": model,
+            "messages": [{"role": "system", "content": system},
+                         {"role": "user", "content": user}],
+            "temperature": 0, "max_tokens": max_tokens, "stream": True,
+        }
+        try:
+            with self._client.stream("POST", f"{self.base_url}/v1/chat/completions",
+                                     json=body) as r:
+                if r.status_code >= 400:
+                    raise OllamaError(f"{self.base_url}/v1/chat/completions returned "
+                                      f"{r.status_code}")
+                for line in r.iter_lines():
+                    if not line.startswith("data:"):
+                        continue
+                    payload = line[5:].strip()
+                    if payload == "[DONE]":
+                        break
+                    delta = orjson.loads(payload)["choices"][0].get("delta") or {}
+                    if delta.get("content"):
+                        yield delta["content"]
+        except httpx.ConnectError as exc:
+            raise OllamaError(f"Cannot reach an OpenAI-compatible server at "
+                              f"{self.base_url}.") from exc
+
 
 class Ollama:
     def __init__(self, base_url: str = DEFAULT_OLLAMA, timeout: float | None = 180.0) -> None:
@@ -254,23 +290,61 @@ class Ollama:
         norms = np.linalg.norm(vecs, axis=1, keepdims=True)
         return vecs / np.where(norms == 0, 1, norms)
 
-    def chat(self, system: str, user: str, model: str, max_tokens: int = 700,
-             keep_alive: str = KEEP_ALIVE) -> str:
-        data = self._post("/api/chat", {
+    def _body(self, system: str, user: str, model: str, max_tokens: int,
+              keep_alive: str, stream: bool) -> dict:
+        return {
             "model": model,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
-            "stream": False,
+            "stream": stream,
             "think": False,
             "keep_alive": keep_alive,
             "options": {"temperature": 0, "num_predict": max_tokens},
-        })
+        }
+
+    def chat(self, system: str, user: str, model: str, max_tokens: int = 700,
+             keep_alive: str = KEEP_ALIVE) -> str:
+        data = self._post("/api/chat",
+                          self._body(system, user, model, max_tokens, keep_alive, False))
         return (data.get("message") or {}).get("content", "").strip()
+
+    def stream(self, system: str, user: str, model: str, max_tokens: int = 700,
+               keep_alive: str = KEEP_ALIVE) -> Iterator[str]:
+        """Yield answer text as it is generated.
+
+        On a laptop the answer is decoded at ~15 tokens/second, so a 300-token
+        reply is twenty seconds during which a non-streaming UI shows nothing at
+        all. The total does not change; what changes is that the first sentence
+        arrives while the rest is still being written.
+        """
+        body = self._body(system, user, model, max_tokens, keep_alive, True)
+        try:
+            with self._client.stream("POST", f"{self.base_url}/api/chat", json=body) as r:
+                if r.status_code == 404:
+                    raise OllamaError(
+                        f"Ollama does not have the model {model!r}. "
+                        f"Pull it with `ollama pull {model}`.")
+                r.raise_for_status()
+                for line in r.iter_lines():
+                    if not line:
+                        continue
+                    chunk = orjson.loads(line)
+                    piece = (chunk.get("message") or {}).get("content") or ""
+                    if piece:
+                        yield piece
+                    if chunk.get("done"):
+                        break
+        except httpx.ConnectError as exc:
+            raise OllamaError(
+                f"Cannot reach Ollama at {self.base_url}. Start it with `ollama serve`."
+            ) from exc
 
 
 class Assistant:
     def __init__(self, index_dir: pathlib.Path = DEFAULT_INDEX,
                  ollama_url: str = DEFAULT_OLLAMA, backend: str = "ollama",
-                 llm_model: str | None = None, embed_model: str | None = None) -> None:
+                 llm_model: str | None = None, embed_model: str | None = None,
+                 context_chars: int = CONTEXT_CHARS,
+                 answer_tokens: int = ANSWER_TOKENS) -> None:
         index_dir = pathlib.Path(index_dir)
         if not (index_dir / "manifest.json").exists():
             raise OllamaError(
@@ -284,6 +358,8 @@ class Assistant:
         else:
             self.ollama = Ollama(ollama_url)
         self.backend = backend
+        self.context_chars = context_chars
+        self.answer_tokens = answer_tokens
         if llm_model:
             self.manifest["ollama_llm"] = llm_model
         if embed_model:
@@ -457,7 +533,10 @@ class Assistant:
             rankings.append(self.index.lexical(question, narrow_mask, 50))
             if hvec is not None:
                 rankings.append(self.index.dense(hvec, narrow_mask, 50, view="summary"))
-        take = (pool or DEFAULT_POOL) if rerank else k
+        # An explicit pool wins even when this call is not reranking: `ask` runs
+        # the rerank itself so it can time the stage, and still needs the deep
+        # candidate list. Collapsing to k here silently disables reranking.
+        take = pool or (DEFAULT_POOL if rerank else k)
         order = retrieval.rrf(rankings, max(take * 4, k * 4), smoothing=RRF_SMOOTHING,
                               index=self.index)
 
@@ -529,7 +608,8 @@ class Assistant:
         rest = [h for n, h in enumerate(hits) if n not in seen]
         return (picked + rest)[:k]
 
-    def context(self, hits: Iterable[Hit], max_chars: int = 1600) -> str:
+    def context(self, hits: Iterable[Hit], max_chars: int | None = None) -> str:
+        max_chars = self.context_chars if max_chars is None else max_chars
         blocks = []
         for n, h in enumerate(hits, 1):
             head = f"[{n}] {h.name} ({h.category.replace('-', ' ')}"
@@ -539,11 +619,71 @@ class Assistant:
             blocks.append(head + "\n" + h.text[:max_chars].strip())
         return "<rules_excerpts>\n" + "\n\n".join(blocks) + "\n</rules_excerpts>"
 
-    def ask(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
-            pool: int | None = None, expand: int = DEFAULT_EXPAND) -> dict:
+    def retrieve(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
+                 pool: int | None = None, expand: int = DEFAULT_EXPAND) -> tuple:
+        """Everything up to the answer call, timed per stage.
+
+        Split out from `ask` so the web UI can put sources on screen while the
+        answer is still decoding, and so no caller has to run retrieval twice to
+        get both halves of a result.
+        """
+        timings: dict[str, float] = {}
+        t = time.time()
         plan = self.rewrite(question)
-        hits = self.search(question, k=k, plan=plan, rerank=rerank, pool=pool, expand=expand)
-        prompt = self.context(hits) + "\n\nQuestion: " + question
-        answer = self.ollama.chat(ANSWER_SYSTEM, prompt, self.manifest["ollama_llm"])
+        timings["rewrite"] = round(time.time() - t, 2)
+
+        t = time.time()
+        hits = self.search(question, k=k, plan=plan, rerank=False,
+                           pool=pool or DEFAULT_POOL, expand=expand)
+        timings["retrieve"] = round(time.time() - t, 2)
+
+        if rerank:
+            t = time.time()
+            hits = self.rerank(question, hits, k)
+            timings["rerank"] = round(time.time() - t, 2)
+        return plan, hits[:k], timings
+
+    def prompt(self, question: str, hits: Iterable[Hit]) -> str:
+        return self.context(hits) + "\n\nQuestion: " + question
+
+    def ask(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
+            pool: int | None = None, expand: int = DEFAULT_EXPAND,
+            max_tokens: int | None = None) -> dict:
+        max_tokens = self.answer_tokens if max_tokens is None else max_tokens
+        plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
+                                            pool=pool, expand=expand)
+        t = time.time()
+        answer = self.ollama.chat(ANSWER_SYSTEM, self.prompt(question, hits),
+                                  self.manifest["ollama_llm"], max_tokens=max_tokens)
+        timings["answer"] = round(time.time() - t, 2)
+        timings["total"] = round(sum(timings.values()), 2)
         return {"question": question, "answer": answer, "plan": plan,
-                "sources": [{"name": h.name, "category": h.category, "url": h.url} for h in hits]}
+                "timings": timings, "hits": hits,
+                "sources": [{"name": h.name, "category": h.category, "url": h.url}
+                            for h in hits]}
+
+    def ask_stream(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
+                   pool: int | None = None, expand: int = DEFAULT_EXPAND,
+                   max_tokens: int | None = None) -> Iterator[dict]:
+        """Yield one `sources` event, then `token` events, then `done`."""
+        max_tokens = self.answer_tokens if max_tokens is None else max_tokens
+        plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
+                                            pool=pool, expand=expand)
+        # `hits` carries the Hit objects (full body text) for a caller that wants
+        # to render cards; `sources` is the JSON-safe citation list.
+        yield {"event": "sources", "plan": plan, "timings": dict(timings), "hits": hits,
+               "sources": [{"name": h.name, "category": h.category, "url": h.url}
+                           for h in hits]}
+        t = time.time()
+        first = None
+        for piece in self.ollama.stream(ANSWER_SYSTEM, self.prompt(question, hits),
+                                        self.manifest["ollama_llm"],
+                                        max_tokens=max_tokens):
+            if first is None:
+                first = round(time.time() - t, 2)
+                timings["first_token"] = first
+            yield {"event": "token", "text": piece}
+        timings["answer"] = round(time.time() - t, 2)
+        timings["total"] = round(sum(v for key, v in timings.items()
+                                     if key != "first_token"), 2)
+        yield {"event": "done", "timings": timings}
