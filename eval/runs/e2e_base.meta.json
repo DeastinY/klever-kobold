@@ -1,0 +1,27 @@
+{
+  "label": "e2e_base",
+  "model": "Qwen/Qwen3.5-9B",
+  "backend": "hf",
+  "base_url": null,
+  "items": 109,
+  "seconds": 193.5,
+  "max_tokens": 600,
+  "reasoning_effort": null,
+  "chat_kwargs": {
+    "enable_thinking": false
+  },
+  "retrieval": {
+    "k": 8,
+    "retriever": "Qwen/Qwen3-Embedding-0.6B",
+    "mode": "hybrid3+hyde+cat+hop",
+    "rewriter": "Qwen/Qwen3.5-9B",
+    "context_chars": 1600
+  },
+  "quantization": "nf4-4bit",
+  "adapter": null,
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0
+  },
+  "empty_responses": 0
+}

@@ -802,3 +802,60 @@ confusions would sharpen it further.
 
 Not shipped. Artifacts deleted; the training script stays, since the recipe is
 right and only the pairs were wrong.
+
+## Tier 1, increment 6 — the fix worked, the model still lost
+
+Increment 5 diagnosed the failure precisely: an entry's summary appears verbatim
+inside its own text, so the training positive contained the anchor and no
+paraphrase was ever learned. The fix is free — remove the summary sentence from
+the positive.
+
+**The diagnosis was right.** Training loss went from 1.1e-05 to 0.087 and grad
+norms from 0.0002 to ~11. The task became non-trivial, exactly as predicted.
+
+**Retrieval improved on the gate:**
+
+| recall | base | v2 (anchor stripped) |
+| --- | ---: | ---: |
+| holdout R@5 | 76.4% | **82.0%** |
+| holdout R@8 | 83.1% | **84.3%** |
+| holdout R@20 | 89.9% | **93.3%** |
+| holdout MRR | 0.655 | **0.688** |
+| wild_clean R@8 | 56.5% | 57.6% |
+| wild_clean MRR | **0.345** | 0.306 |
+
+**And end-to-end it lost anyway:**
+
+| | base retriever | v2 retriever |
+| --- | ---: | ---: |
+| overall | **87.2%** | 84.4% |
+| **descriptive** | **72.7%** | 63.6% |
+| situational | 100% | 96.9% |
+| false premise | 89.5% | 94.7% |
+
+Descriptive questions — the family this was built to fix — got nine points worse
+while their retrieval recall got better.
+
+### Recall@k is not the objective
+
+The retriever's job is not to contain the gold entry. It is to assemble eight
+excerpts the model can answer from. v2 finds the gold slightly more often and
+fills the other seven slots worse — more near-duplicates of the target, fewer
+entries that supply the surrounding rules an answer needs. Better on the metric,
+worse at the job.
+
+This is worth more than the increment. Every retrieval decision in this project
+has been taken on recall@k, and recall@k has now been shown to move in the
+opposite direction from answer quality. It stays as a cheap screen, but a change
+that clears it still has to face the end-to-end gate before shipping.
+
+Not shipped. Both tuned models deleted; `scripts/train_embedder.py` keeps the
+stripping fix.
+
+### What is still untested
+
+Neither run used the pairs the roadmap actually specified: **teacher-written
+player questions**, which differ from summaries in register as well as surface
+form, plus hard negatives mined from the retriever's own confusions. That remains
+the version worth trying, and it now has to beat 87.2% end to end rather than a
+recall number.

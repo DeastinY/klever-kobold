@@ -12,9 +12,20 @@ No teacher model, no generated data, no cost beyond the training run. The one
 published PF2e embedder turned out to be numerically identical to its base, so
 this is the first in-domain retriever this domain has actually had.
 
+**The first attempt at this failed instructively.** Using the entry text unchanged
+as the positive made recall *worse* by twelve points, because an entry's summary
+appears verbatim inside its own text: the anchor was a substring of the target, so
+matching them required no paraphrase, and the gradient went entirely into pushing
+in-batch negatives apart. Mean pairwise cosine across the corpus fell from 0.344
+to 0.045 -- uniformity without alignment.
+
+So the positive now has the summary sentence removed (``--strip-anchor``). The
+anchor describes what the entry does; the positive is the same thing said in
+rulebook language, with no shared surface form to shortcut through. That is the
+alignment signal the first run never had.
+
 Trained with in-batch negatives: every other entry in the batch is a negative for
-this summary, which is the right shape for a retrieval objective and needs no
-mined hard negatives to get started.
+this summary, which is the right shape for a retrieval objective.
 
 **Hygiene:** entries cited by any benchmark are excluded, so the retriever is never
 shown a description of something it will be asked to find.
@@ -48,6 +59,9 @@ def main() -> int:
     ap.add_argument("--max-chars", type=int, default=1200)
     ap.add_argument("--eval-frac", type=float, default=0.03)
     ap.add_argument("--seed", type=int, default=23)
+    ap.add_argument("--strip-anchor", action="store_true", default=True,
+                    help="remove the summary from the positive so the anchor is not a substring")
+    ap.add_argument("--no-strip-anchor", dest="strip_anchor", action="store_false")
     args = ap.parse_args()
 
     import torch
@@ -76,8 +90,17 @@ def main() -> int:
         summary = r["summary"].strip()
         if len(summary) < 25:
             continue
-        pairs.append({"anchor": summary,
-                      "positive": retrieval.chunk_text(r, args.max_chars)})
+        positive = retrieval.chunk_text(r, args.max_chars)
+        if args.strip_anchor:
+            # Remove the anchor's own words from the target. Without this the task
+            # is substring matching and teaches nothing about paraphrase.
+            positive = positive.replace(summary, " ")
+            if summary[:60] in positive:
+                positive = positive.replace(summary[:60], " ")
+            positive = " ".join(positive.split())
+            if len(positive) < 200:
+                continue
+        pairs.append({"anchor": summary, "positive": positive})
     random.Random(args.seed).shuffle(pairs)
     print(f"{len(pairs):,} description/entry pairs")
 
