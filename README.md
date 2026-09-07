@@ -65,13 +65,24 @@ ones. The full record, including everything that failed, is in
 
 ```bash
 uv tool install git+ssh://git@github.com/DeastinY/pf2etune     # private repo, so ssh
-pf2e setup        # pulls the two Ollama models and fetches the 143 MB index
-pf2e serve        # web UI on http://localhost:8765
+pf2e setup --install-ollama                                    # everything, once
+pf2e serve                                                     # localhost:8765
 ```
 
-`pf2e setup` is idempotent and tells you what it is doing; `pf2e doctor` checks
-each moving part separately if something breaks. Needs [Ollama](https://ollama.com)
-installed and running (`ollama serve`, or Ollama.app).
+`pf2e setup` does the lot: installs [Ollama](https://ollama.com) if you pass
+`--install-ollama`, starts it if it is installed but not running, pulls the two
+models, and fetches the 143 MB index. It is idempotent — re-run it any time.
+
+Without `--install-ollama` it will not touch your system; it prints the one
+command for your platform and stops:
+
+| | |
+| --- | --- |
+| macOS | `brew install ollama` — or the app from [ollama.com/download](https://ollama.com/download) |
+| Linux | `curl -fsSL https://ollama.com/install.sh \| sh` |
+| Windows | `winget install Ollama.Ollama` |
+
+`pf2e doctor` checks each moving part separately if something breaks.
 
 The index lands in your user data directory — `~/.local/share/pf2etune` on Linux,
 `~/Library/Application Support/pf2etune` on macOS — so it survives tool upgrades.

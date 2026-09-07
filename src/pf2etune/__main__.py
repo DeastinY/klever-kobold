@@ -21,6 +21,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import time
 
 import orjson
 
@@ -68,6 +69,12 @@ def cmd_doctor(args) -> int:
         return 1
 
     manifest = orjson.loads((index / "manifest.json").read_bytes())
+    if not shutil.which("ollama"):
+        hint = INSTALL_HINT.get(
+            "linux" if sys.platform.startswith("linux") else sys.platform,
+            "See https://ollama.com/download")
+        print(f"\n  Ollama is not installed.\n  {hint}\n  Then: pf2e setup")
+        return 1
     client = Ollama(args.ollama)
     for key in ("ollama_embed", "ollama_llm"):
         model = manifest[key]
@@ -90,6 +97,90 @@ def cmd_doctor(args) -> int:
     return 0 if ok else 1
 
 
+INSTALL_HINT = {
+    "darwin": "brew install ollama\n  or download the app from https://ollama.com/download",
+    "linux": "curl -fsSL https://ollama.com/install.sh | sh",
+    "win32": "winget install Ollama.Ollama\n  or download from https://ollama.com/download",
+}
+
+
+def install_ollama() -> bool:
+    """Run the official installer. Only ever from --install-ollama."""
+    if sys.platform == "darwin":
+        if shutil.which("brew"):
+            return subprocess.call(["brew", "install", "ollama"]) == 0
+        print("  Homebrew not found. Download the app: https://ollama.com/download",
+              file=sys.stderr)
+        return False
+    if sys.platform.startswith("linux"):
+        print("  running the official installer (it will ask for sudo)")
+        return subprocess.call(
+            "curl -fsSL https://ollama.com/install.sh | sh", shell=True) == 0
+    print("  Automatic install is not supported here. See https://ollama.com/download",
+          file=sys.stderr)
+    return False
+
+
+def ensure_ollama(url: str, install: bool) -> bool:
+    """Make sure Ollama is installed and answering, or explain precisely why not.
+
+    Installing is opt-in because it modifies the system. Starting an
+    already-installed server is not, because that is plainly what someone running
+    `pf2e setup` is asking for -- and it is the step people most often miss.
+    """
+    import httpx
+
+    def up() -> bool:
+        try:
+            httpx.get(f"{url.rstrip('/')}/api/tags", timeout=3.0)
+            return True
+        except httpx.HTTPError:
+            return False
+
+    if up():
+        return True
+
+    if not shutil.which("ollama"):
+        if install:
+            print("ollama    not installed — installing", flush=True)
+            if not install_ollama():
+                return False
+        else:
+            hint = INSTALL_HINT.get(
+                "linux" if sys.platform.startswith("linux") else sys.platform,
+                "See https://ollama.com/download")
+            print(f"ollama    not installed.\n\n  {hint}\n\n"
+                  f"  Then re-run `pf2e setup`, or `pf2e setup --install-ollama` to have "
+                  f"this do it.", file=sys.stderr)
+            return False
+
+    # Installed but not answering. Only start one if the caller is asking for the
+    # default endpoint: someone who passed --ollama http://host:9999 wants *that*
+    # server, and launching a local one on 11434 would not help them.
+    if url.rstrip("/") == DEFAULT_OLLAMA:
+        print("ollama    installed but not running — starting it", flush=True)
+        try:
+            subprocess.Popen(["ollama", "serve"],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                             start_new_session=True)
+        except OSError as exc:
+            print(f"  could not start it: {exc}", file=sys.stderr)
+            return False
+        for _ in range(30):
+            time.sleep(1)
+            if up():
+                print("  ok   running", flush=True)
+                return True
+        print("  it did not come up. Try `ollama serve` in another terminal.",
+              file=sys.stderr)
+        return False
+
+    print(f"ollama    installed, but nothing is answering at {url}.\n"
+          f"  Start it there, or drop --ollama to use {DEFAULT_OLLAMA}.",
+          file=sys.stderr)
+    return False
+
+
 def cmd_setup(args) -> int:
     """Pull the models and fetch the index, so first run needs nothing else."""
     import tarfile
@@ -99,14 +190,10 @@ def cmd_setup(args) -> int:
 
     from .app import INDEX_URL
 
-    client = Ollama(args.ollama, timeout=None)
-    print(f"ollama    {args.ollama}")
-    try:
-        tags = httpx.get(f"{args.ollama.rstrip('/')}/api/tags", timeout=10.0).json()
-    except httpx.HTTPError:
-        print("  not reachable. Install it (https://ollama.com) and run `ollama serve`.",
-              file=sys.stderr)
+    if not ensure_ollama(args.ollama, args.install_ollama):
         return 1
+    print(f"ollama    {args.ollama}")
+    tags = httpx.get(f"{args.ollama.rstrip('/')}/api/tags", timeout=10.0).json()
     present = {m["name"] for m in tags.get("models", [])}
 
     for model in (args.embed_model, args.llm_model):
@@ -224,6 +311,8 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("setup", help="pull the models and fetch the index")
     p.add_argument("--llm-model", default="qwen3.5:9b")
     p.add_argument("--embed-model", default="qwen3-embedding:0.6b")
+    p.add_argument("--install-ollama", action="store_true",
+                   help="install Ollama too (brew on macOS, the official script on Linux)")
     p.set_defaults(func=cmd_setup)
 
     p = sub.add_parser("doctor", help="check Ollama, models and index")

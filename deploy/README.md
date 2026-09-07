@@ -25,12 +25,16 @@ a full answer about 1.6 s.
 ## Install
 
 ```bash
-brew install ollama && ollama serve &        # or launch Ollama.app
-
 uv tool install git+ssh://git@github.com/DeastinY/pf2etune
-pf2e setup                                   # models + index, ~6.5 GB total
+pf2e setup --install-ollama                  # Ollama, both models, the index
 pf2e doctor                                  # verify each part
 ```
+
+`--install-ollama` runs `brew install ollama` for you. Leave it off and setup
+prints the command and stops without touching anything — if you would rather do
+it yourself, that is `brew install ollama`, or the app from
+[ollama.com/download](https://ollama.com/download). Either way setup starts the
+server if it is installed but not running, which is the step people miss.
 
 That is the whole thing. The index goes to
 `~/Library/Application Support/pf2etune/pf2e-index` and survives tool upgrades.
