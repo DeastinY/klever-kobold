@@ -563,3 +563,62 @@ failing test:
   canonical row per (name, category) before fusion — and the evaluator had to
   learn the same lesson, scoring 25% until it matched gold by canonical position
   instead of chunk id.
+
+---
+
+# Tier 0, increment 1 — a benchmark nobody here wrote
+
+`eval/wild.jsonl`: **300 real Pathfinder 2e questions** from RPG StackExchange, with
+gold entries taken from the Archives of Nethys pages the *accepted answer* links
+to. Neither the questions nor the labels come from this project.
+
+`scripts/mine_wild_questions.py` builds it. 730 questions fetched, 574 with an
+accepted answer, 397 of those linking AoN, 300 kept after requiring one to four
+resolvable entry links.
+
+An earlier version matched entry *names* against the answer prose and produced
+labels like "Advanced Player's Guide, Treasure by Level" for a question about
+weapon runes. Name matching in free text is too noisy to be a benchmark. Links
+are not.
+
+## Thirteenth measurement bug: labels age
+
+Most mined answers were written before the Remaster and cite legacy pages. The
+retriever deliberately returns the entry that *superseded* a legacy page, so
+doing the right thing was scored as a miss. Gold matching now accepts either side
+of the Remaster relation.
+
+This was worth more on the hand-written set than on the wild one:
+
+| | before | after |
+| --- | ---: | ---: |
+| hand-written holdout R@5 | 76.4% | **80.9%** |
+| wild R@5 | 26.0% | 27.0% |
+
+(Also fixed: the summary line reported the first mode's unreachable count as if it
+were global, which made a no-hop baseline's 201 look like a property of the whole
+run.)
+
+## The wild set says the pipeline is overfit to entity lookup
+
+| Configuration | wild R@5 | hand-written R@5 |
+| --- | ---: | ---: |
+| hybrid + hop | 26.0% | 47.2% |
+| hybrid3 + hop | **27.0%** | 59.6% |
+| hybrid3 + hyde + cat + hop | 19.0% | **80.9%** |
+
+**The full pipeline is the best configuration on questions I wrote and the worst
+on questions I did not.** Same labels and same noise within each column, so the
+ordering is trustworthy even though the absolute numbers are not comparable:
+wild labels are incidental citations and many wild questions are discussion
+rather than lookup.
+
+The likely cause is specific. Wild questions are frequently about rules
+*concepts* — "Is a Critical Failure a Failure?" cites the Playing the Game rules
+page — while category routing narrows to entity kinds and HyDE writes a summary
+in the shape of an *entry*. Both help when the answer is a feat and hurt when it
+is a rules section.
+
+**Next increment:** make narrowing conditional — never exclude the `rules`
+category, and skip narrowing entirely when the rewriter's suggested kinds look
+like a concept question. Gate on the hand-written holdout, confirm on wild.

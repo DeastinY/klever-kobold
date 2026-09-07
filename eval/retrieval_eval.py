@@ -36,6 +36,20 @@ REWRITES = ROOT / "data" / "processed" / "query_rewrites.json"
 KS = (1, 5, 20)
 
 
+def remaster_partners(index: retrieval.Index, positions: set[int]) -> set[str]:
+    """Chunk ids on the other side of the Remaster relation from these rows."""
+    out: set[str] = set()
+    for p in positions:
+        meta = index.meta[p]
+        for field in ("remaster_id", "legacy_id"):
+            targets = meta.get(field) or []
+            if isinstance(targets, str):
+                targets = [targets]
+            for t in targets:
+                out.add(f"aon:{meta['category']}:{t}")
+    return out
+
+
 def load_rewrites(model: str) -> dict:
     """Cached hypothetical summaries and category hints, keyed by rewriter model."""
     if not REWRITES.exists():
@@ -107,8 +121,16 @@ def evaluate(index: retrieval.Index, items: list[dict], qvecs: np.ndarray | None
         # Rankings are collapsed to one row per entity, so a gold chunk that is a
         # duplicate row will never appear by id. Compare canonical positions: it is
         # the entity that has to be retrieved, not one particular copy of it.
-        gold_canon = {index.canonical[p] for p in
-                      ({index.position(g) for g in gold} - {None})}
+        positions_raw = {index.position(g) for g in gold} - {None}
+        # A label naming a pre-Remaster page is satisfied by the entry that
+        # superseded it, and vice versa. Mined labels come from answers written
+        # years ago and mostly cite legacy pages; the system deliberately returns
+        # the current entry, and marking that wrong measures the label's age
+        # rather than the retrieval.
+        positions_raw |= {p for p in
+                          (index.position(t) for t in remaster_partners(index, positions_raw))
+                          if p is not None}
+        gold_canon = {index.canonical[p] for p in positions_raw}
         positions = {index.position(g) for g in gold} - {None}
         if not positions or not any(base_mask[p] for p in positions):
             # Not in the index at all, or removed by the corpus-level legacy filter:
@@ -237,8 +259,9 @@ def main() -> int:
     print(f"  per family (R@5):")
     for fam, v in best["families"].items():
         print(f"    {fam:18s} n={v['n']:4d}  {v['5']:6.1%}")
-    if results[0]["unreachable"]:
-        print(f"\n  {results[0]['unreachable']} items unreachable (gold chunk filtered out)")
+    unreachable = {(r["mode"], r["unreachable"]) for r in results if r["unreachable"]}
+    for mode, n in sorted(unreachable):
+        print(f"  {n} unreachable in {mode} (gold removed by the corpus filter)")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_bytes(orjson.dumps(results, option=orjson.OPT_INDENT_2))
