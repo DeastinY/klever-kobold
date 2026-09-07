@@ -25,39 +25,22 @@ a full answer about 1.6 s.
 ## Install
 
 ```bash
-# 1. Ollama, if you do not have it
-brew install ollama
-ollama serve &            # or launch Ollama.app
+brew install ollama && ollama serve &        # or launch Ollama.app
 
-# 2. Models
-ollama pull qwen3.5:9b
-ollama pull qwen3-embedding:0.6b
-
-# 3. This package
-git clone git@github.com:DeastinY/pf2etune.git
-cd pf2etune
-python3 -m venv .venv && .venv/bin/pip install -r deploy/requirements.txt
-
-# 4. The index (143 MB download, 244 MB unpacked)
-gh release download index-v1 --pattern 'pf2e-index.tar.gz'
-mkdir -p dist && tar -xzf pf2e-index.tar.gz -C dist
-
-# 5. Check
-PYTHONPATH=src .venv/bin/python -m pf2etune doctor
+uv tool install git+ssh://git@github.com/DeastinY/pf2etune
+pf2e setup                                   # models + index, ~6.5 GB total
+pf2e doctor                                  # verify each part
 ```
 
-The index is a release asset rather than a repo file, and downloading it is the
-recommended path: building one from scratch needs an embedding model and so the
-much heavier `[retrieval]` extra. The prebuilt index is portable because the
-runtime reproduces its query embeddings through Ollama — verified at cosine 0.999
-against the embeddings the index was actually built with.
+That is the whole thing. The index goes to
+`~/Library/Application Support/pf2etune/pf2e-index` and survives tool upgrades.
 
-Or, without the `gh` CLI:
+Without uv, from a clone:
 
 ```bash
-curl -L -o pf2e-index.tar.gz \
-  https://github.com/DeastinY/pf2etune/releases/download/index-v1/pf2e-index.tar.gz
-mkdir -p dist && tar -xzf pf2e-index.tar.gz -C dist
+git clone git@github.com:DeastinY/pf2etune.git && cd pf2etune
+python3 -m venv .venv && .venv/bin/pip install -e .
+.venv/bin/pf2e setup
 ```
 
 ## Use
@@ -102,27 +85,19 @@ returns the rules excerpts and lets the calling model reason over them** — wor
 preferring when the caller is a frontier model, since retrieval is the part that
 carries this system and a stronger reader does better with the same excerpts.
 
-## Docker instead
+## Docker on a Mac — usually don't
 
-**On this machine, containerise the app but not Ollama.**
+Docker Desktop runs containers inside a Linux VM that cannot reach Metal, so a
+containerised Ollama on Apple Silicon falls back to CPU and runs 2–5x slower.
+uv above is both simpler and faster.
+
+If you want the app supervised and restarting on its own, keep Ollama native and
+containerise only the app:
 
 ```bash
-ollama serve &                                 # or Ollama.app
+ollama serve &
 docker compose -f docker-compose.mac.yml up
 ```
-
-Docker Desktop runs containers inside a Linux VM and that VM cannot reach Metal —
-Apple's Hypervisor.framework does not pass the GPU through — so an Ollama
-container on Apple Silicon falls back to CPU and runs 2–5x slower. Keeping Ollama
-native costs nothing: it holds every heavy thing, and this app is four
-pure-Python dependencies.
-
-Honestly, on a Mac `deploy/install.sh` is simpler still and gives the same
-performance. Docker is worth it here mainly if you want the service supervised
-and restarting on its own.
-
-(`docker compose up`, with the plain file, brings up Ollama as a second container.
-That is the right shape on Linux with an NVIDIA card and the wrong one here.)
 
 ## What to expect
 

@@ -3,15 +3,26 @@ name = "pf2etune"
 version = "0.1.0"
 description = "Adapting an open-weight LLM to Pathfinder 2e rules and lore: corpus, retrieval, benchmark, fine-tune."
 requires-python = ">=3.11"
+# The runtime, and nothing else. Ollama holds the models over HTTP, so there is
+# no torch, no transformers and no CUDA anywhere in this graph. Everything needed
+# to *build* a corpus or train something lives in an extra.
 dependencies = [
     "httpx>=0.27",
+    "numpy>=1.26",
     "orjson>=3.10",
+]
+
+[project.scripts]
+pf2e = "pf2etune.__main__:main"
+
+[project.optional-dependencies]
+corpus = [
     "tqdm>=4.66",
     "mwparserfromhell>=0.6",
     "python-slugify>=8.0",
+    "huggingface_hub>=0.26",
+    "hf_transfer>=0.1",
 ]
-
-[project.optional-dependencies]
 # Local inference on Blackwell (sm_120): torch must be a cu128-or-newer build and
 # bitsandbytes >=0.45 for 4-bit on this architecture.
 local = [

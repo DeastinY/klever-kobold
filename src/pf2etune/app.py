@@ -25,8 +25,10 @@ The pipeline is the one the benchmark measured, in order:
 
 from __future__ import annotations
 
+import os
 import pathlib
 import re
+import sys
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -37,8 +39,37 @@ import orjson
 from . import retrieval
 from .bm25 import BM25
 
-DEFAULT_INDEX = pathlib.Path(__file__).resolve().parents[2] / "dist" / "pf2e-index"
 DEFAULT_OLLAMA = "http://localhost:11434"
+
+INDEX_URL = ("https://github.com/DeastinY/pf2etune/releases/download/"
+             "index-v1/pf2e-index.tar.gz")
+
+
+def default_index() -> pathlib.Path:
+    """Where the index lives, whether this is a clone or an installed tool.
+
+    Running from a checkout, ``dist/pf2e-index`` is right there. Installed with
+    ``uv tool install`` or run with ``uvx``, the package sits in a cache that is
+    wiped on upgrade, so a 244 MB index cannot live beside it -- it goes to the
+    user data directory instead and survives.
+    """
+    repo = pathlib.Path(__file__).resolve().parents[2] / "dist" / "pf2e-index"
+    if (repo / "manifest.json").exists():
+        return repo
+    env = os.environ.get("PF2E_INDEX")
+    if env:
+        return pathlib.Path(env).expanduser()
+    if sys.platform == "darwin":
+        base = pathlib.Path.home() / "Library" / "Application Support"
+    elif os.name == "nt":
+        base = pathlib.Path(os.environ.get("LOCALAPPDATA", pathlib.Path.home()))
+    else:
+        base = pathlib.Path(os.environ.get("XDG_DATA_HOME",
+                                           pathlib.Path.home() / ".local" / "share"))
+    return base / "pf2etune" / "pf2e-index"
+
+
+DEFAULT_INDEX = default_index()
 
 CATEGORIES = ("action", "condition", "feat", "spell", "equipment", "weapon", "armor",
               "creature", "hazard", "trait", "rules", "class-feature", "ritual",
@@ -140,7 +171,7 @@ class Hit:
 
 
 class Ollama:
-    def __init__(self, base_url: str = DEFAULT_OLLAMA, timeout: float = 180.0) -> None:
+    def __init__(self, base_url: str = DEFAULT_OLLAMA, timeout: float | None = 180.0) -> None:
         self.base_url = base_url.rstrip("/")
         self._client = httpx.Client(timeout=timeout)
 
@@ -182,7 +213,8 @@ class Assistant:
         index_dir = pathlib.Path(index_dir)
         if not (index_dir / "manifest.json").exists():
             raise OllamaError(
-                f"No index at {index_dir}. Build one with scripts/package_index.py, "
+                f"No index at {index_dir}.\n"
+                f"Fetch it with:  pf2e setup\n"
                 f"or point --index at an unpacked pf2e-index directory."
             )
         self.manifest = orjson.loads((index_dir / "manifest.json").read_bytes())

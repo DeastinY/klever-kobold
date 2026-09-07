@@ -61,45 +61,63 @@ ones. The full record, including everything that failed, is in
 
 ## Run it
 
-**Docker** — one command, no Python setup. First run pulls ~6.3 GB of models and
-a 143 MB index into named volumes; later runs start in seconds.
+### uv — recommended everywhere, and the only sensible option on a Mac
 
 ```bash
-docker compose up                              # Linux, Windows
-docker compose -f docker-compose.mac.yml up    # Apple Silicon — see below
+uv tool install git+ssh://git@github.com/DeastinY/pf2etune     # private repo, so ssh
+pf2e setup        # pulls the two Ollama models and fetches the 143 MB index
+pf2e serve        # web UI on http://localhost:8765
 ```
 
-> **Apple Silicon: do not containerise Ollama.** Docker Desktop runs containers
-> inside a Linux VM, and that VM has no path to Metal — Apple's
-> Hypervisor.framework does not pass the GPU through. A containerised Ollama on
-> an M-series Mac falls back to CPU and runs
+`pf2e setup` is idempotent and tells you what it is doing; `pf2e doctor` checks
+each moving part separately if something breaks. Needs [Ollama](https://ollama.com)
+installed and running (`ollama serve`, or Ollama.app).
+
+The index lands in your user data directory — `~/.local/share/pf2etune` on Linux,
+`~/Library/Application Support/pf2etune` on macOS — so it survives tool upgrades.
+Override with `--index` or `PF2E_INDEX`.
+
+From a clone, or to hack on it:
+
+```bash
+uv sync
+uv run pf2e serve
+```
+
+Other commands: `pf2e ask "…"`, `pf2e search "…"`, `pf2e mcp` (stdio MCP server
+for Claude Desktop / Claude Code).
+
+### Docker — Linux and Windows, or when you want it supervised
+
+```bash
+docker compose up          # Ollama + this app, both containerised
+```
+
+First run pulls ~6.3 GB of models and the index into named volumes; later runs
+start in seconds. Uncomment the GPU block in `docker-compose.yml` for an NVIDIA
+card.
+
+> **Not on Apple Silicon.** Docker Desktop runs containers inside a Linux VM with
+> no path to Metal — Apple's Hypervisor.framework does not pass the GPU through —
+> so a containerised Ollama falls back to CPU and runs
 > [2–5× slower](https://chariotsolutions.com/blog/post/apple-silicon-gpus-docker-and-ollama-pick-two/).
-> `docker-compose.mac.yml` keeps Ollama on the host where it can reach the GPU
-> and containerises only this app, which is four pure-Python dependencies
-> anyway. Start Ollama first (`ollama serve` or Ollama.app).
+> Use uv. If you specifically want the app supervised by Docker on a Mac, run
+> Ollama natively and use `docker-compose.mac.yml`, which containerises only the
+> app and points it at the host.
 
-| platform | what to run | GPU |
+| platform | run this | GPU |
 | --- | --- | --- |
-| Apple Silicon | `deploy/install.sh`, or native Ollama + `docker-compose.mac.yml` | **Metal** |
-| Linux + NVIDIA | `docker compose up`, GPU block uncommented | **CUDA** |
-| Linux / Windows, CPU | `docker compose up` | none |
-| Intel Mac | `deploy/install.sh` | none |
+| **Apple Silicon** | **uv** | Metal |
+| Linux + NVIDIA | uv, or `docker compose up` with the GPU block | CUDA |
+| Linux / Windows, CPU | uv, or `docker compose up` | none |
+| Intel Mac | uv | none |
 
-**On a laptop, without Docker** — 6.7 GB resident, ~1.6 s a question, no torch
-and no CUDA. See [`deploy/README.md`](deploy/README.md).
+### In Claude Desktop or Claude Code
 
-```bash
-bash deploy/install.sh
-PYTHONPATH=src .venv/bin/python -m pf2etune serve     # web UI
-PYTHONPATH=src .venv/bin/python -m pf2etune ask "..."  # one-shot
-```
-
-**In Claude Desktop or Claude Code** — an MCP server exposing `pf2e_ask` and
-`pf2e_search`. Prefer `pf2e_search` when the caller is a strong model: hand it
-the rules text and let it reason, since retrieval is the part that carries this
-system. Config in [`deploy/README.md`](deploy/README.md).
-
----
+An MCP server exposing `pf2e_ask` and `pf2e_search`. Prefer `pf2e_search` when
+the caller is a strong model: hand it the rules text and let it reason, since
+retrieval is the part that carries this system. Config in
+[`deploy/README.md`](deploy/README.md).
 
 ## How it works
 

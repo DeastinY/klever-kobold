@@ -1,5 +1,11 @@
 """Command line and MCP entry points.
 
+    pf2e setup                         # pull models, fetch the index
+    pf2e serve                         # web UI on localhost:8765
+    pf2e ask "can my level 4 fighter take Power Attack?"
+
+Equivalently, without installing: uv run --with pf2etune pf2e ...
+
     python -m pf2etune ask "can my level 4 fighter take Power Attack?"
     python -m pf2etune search "a feat that makes falling less dangerous"
     python -m pf2etune serve           # web UI on localhost:8765
@@ -10,7 +16,10 @@
 from __future__ import annotations
 
 import argparse
+import os
 import pathlib
+import shutil
+import subprocess
 import sys
 
 import orjson
@@ -81,6 +90,105 @@ def cmd_doctor(args) -> int:
     return 0 if ok else 1
 
 
+def cmd_setup(args) -> int:
+    """Pull the models and fetch the index, so first run needs nothing else."""
+    import tarfile
+    import tempfile
+
+    import httpx
+
+    from .app import INDEX_URL
+
+    client = Ollama(args.ollama, timeout=None)
+    print(f"ollama    {args.ollama}")
+    try:
+        tags = httpx.get(f"{args.ollama.rstrip('/')}/api/tags", timeout=10.0).json()
+    except httpx.HTTPError:
+        print("  not reachable. Install it (https://ollama.com) and run `ollama serve`.",
+              file=sys.stderr)
+        return 1
+    present = {m["name"] for m in tags.get("models", [])}
+
+    for model in (args.embed_model, args.llm_model):
+        if model in present:
+            print(f"  ok   {model}")
+            continue
+        size = " (~5.7 GB)" if "9b" in model.lower() else " (~0.6 GB)"
+        print(f"  pulling {model}{size} — first run only")
+        with httpx.stream("POST", f"{args.ollama.rstrip('/')}/api/pull",
+                          json={"model": model}, timeout=None) as r:
+            last = ""
+            for line in r.iter_lines():
+                if not line:
+                    continue
+                status = orjson.loads(line).get("status", "")
+                if status != last:
+                    print(f"    {status}")
+                    last = status
+
+    index = pathlib.Path(args.index)
+    print(f"index     {index}")
+    if (index / "manifest.json").exists():
+        print("  ok   already present")
+    else:
+        print("  downloading (~143 MB)")
+        index.parent.mkdir(parents=True, exist_ok=True)
+        # The release lives on a private repository, so an anonymous GET returns
+        # 404 rather than 403. Try a token if one is around, then fall back to the
+        # gh CLI, which already holds the user's credentials.
+        headers = {}
+        token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
+                with httpx.stream("GET", INDEX_URL, follow_redirects=True, timeout=None,
+                                  headers=headers) as r:
+                    r.raise_for_status()
+                    total = int(r.headers.get("content-length") or 0)
+                    done = 0
+                    for chunk in r.iter_bytes(1 << 20):
+                        tmp.write(chunk)
+                        done += len(chunk)
+                        if total:
+                            print(f"\r    {done / 1e6:5.0f} / {total / 1e6:.0f} MB", end="")
+                path = tmp.name
+            print()
+        except httpx.HTTPStatusError as exc:
+            if path:
+                pathlib.Path(path).unlink(missing_ok=True)
+                path = None
+            if exc.response.status_code not in (401, 403, 404):
+                raise
+            print("\n  direct download failed; trying the gh CLI")
+            if not shutil.which("gh"):
+                print("\n  This release is on a private repository, so it cannot be "
+                      "fetched anonymously.\n"
+                      "  Either install the GitHub CLI (`gh auth login`), or set "
+                      "GITHUB_TOKEN,\n"
+                      "  or copy dist/pf2e-index from a machine that has it and pass "
+                      "--index.", file=sys.stderr)
+                return 1
+            target = pathlib.Path(tempfile.gettempdir()) / "pf2e-index.tar.gz"
+            target.unlink(missing_ok=True)
+            code = subprocess.call(["gh", "release", "download", "index-v1",
+                                    "--repo", "DeastinY/pf2etune",
+                                    "--pattern", "pf2e-index.tar.gz",
+                                    "--output", str(target)])
+            if code != 0 or not target.exists():
+                print("  gh could not fetch it either.", file=sys.stderr)
+                return 1
+            path = str(target)
+        with tarfile.open(path) as tar:
+            tar.extractall(index.parent, filter="data")
+        pathlib.Path(path).unlink(missing_ok=True)
+        print("  ok   unpacked")
+
+    print("\nready:  pf2e serve")
+    return 0
+
+
 def cmd_serve(args) -> int:
     from .server import serve
     serve(args.index, args.ollama, args.host, args.port)
@@ -112,6 +220,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("-k", type=int, default=DEFAULT_K)
     p.add_argument("--no-rerank", action="store_true")
     p.set_defaults(func=cmd_search)
+
+    p = sub.add_parser("setup", help="pull the models and fetch the index")
+    p.add_argument("--llm-model", default="qwen3.5:9b")
+    p.add_argument("--embed-model", default="qwen3-embedding:0.6b")
+    p.set_defaults(func=cmd_setup)
 
     p = sub.add_parser("doctor", help="check Ollama, models and index")
     p.set_defaults(func=cmd_doctor)
