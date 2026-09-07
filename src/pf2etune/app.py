@@ -106,6 +106,23 @@ DEFAULT_K = 8
 # than a free win -- pass rerank=False to turn it off.
 DEFAULT_POOL = 24
 
+# One-hop link expansion: off, having been measured and rejected.
+#
+# The hypothesis was good. Judged answerability said retrieval finds the right
+# *topic* and not the specific rule, those questions are about interactions, and a
+# topic page almost always links to the specific rule involved -- the corpus keeps
+# 394,598 resolved outbound links. Tuned to parity on the gate it was still 4.7
+# points *worse* on judged answerability, the metric it was built for. Links are a
+# weaker relevance signal than they look: a rules page cites everything adjacent,
+# so expansion adds the neighbourhood rather than the answer.
+#
+# The code and the packaged graph stay; multi-hop over a *reasoned* path, rather
+# than a blanket one-hop pull, is still untried.
+DEFAULT_EXPAND = 0
+# Link evidence is weaker than direct match: it says "the topic page mentions
+# this", not "this matches the query".
+EXPAND_WEIGHT = 0.25
+
 
 class OllamaError(RuntimeError):
     """Raised with a message a user can act on, not a stack trace."""
@@ -199,6 +216,21 @@ class Assistant:
         )
         self._base_mask = self.index.allowed(exclude_legacy=False)
 
+        # Outbound link graph, if the package carries one. Optional so an older
+        # index still loads.
+        self._links: dict[int, list[int]] = {}
+        graph = index_dir / "links.jsonl"
+        if graph.exists():
+            for line in graph.open("rb"):
+                row = orjson.loads(line)
+                src = self.index.position(row["id"])
+                if src is None:
+                    continue
+                targets = [p for p in (self.index.position(t) for t in row["to"])
+                           if p is not None]
+                if targets:
+                    self._links[src] = targets
+
     def body(self, chunk_id: str) -> str:
         span = self._body_offsets.get(chunk_id)
         if span is None:
@@ -235,7 +267,8 @@ class Assistant:
         return self.ollama.embed([prefix + t for t in texts], self.manifest["ollama_embed"])
 
     def search(self, question: str, k: int = DEFAULT_K, plan: dict | None = None,
-               rerank: bool = True, pool: int | None = None) -> list[Hit]:
+               rerank: bool = True, pool: int | None = None,
+               expand: int = DEFAULT_EXPAND) -> list[Hit]:
         plan = plan if plan is not None else self.rewrite(question)
         queries = [question]
         if plan.get("summary"):
@@ -271,6 +304,22 @@ class Assistant:
         take = (pool or DEFAULT_POOL) if rerank else k
         order = retrieval.rrf(rankings, max(take * 4, k * 4), smoothing=RRF_SMOOTHING,
                               index=self.index)
+
+        if expand and self._links:
+            # Walk one hop out from the best few results and fuse what they point
+            # at as an additional ranking, ordered by the rank of the entry that
+            # referred it. A topic page cites the specific rule; this is how the
+            # specific rule becomes a candidate.
+            referred: list[int] = []
+            for seed in order[:expand]:
+                for target in self._links.get(seed, ()):
+                    if mask[target]:
+                        referred.append(target)
+            if referred:
+                order = retrieval.rrf([order, referred], max(take * 4, k * 4),
+                                      smoothing=RRF_SMOOTHING,
+                                      weights=[1.0, EXPAND_WEIGHT], index=self.index)
+
         order = retrieval.follow_remaster(self.index, order)
         order = retrieval.dedupe(self.index, order)[:take]
 
@@ -335,9 +384,9 @@ class Assistant:
         return "<rules_excerpts>\n" + "\n\n".join(blocks) + "\n</rules_excerpts>"
 
     def ask(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
-            pool: int | None = None) -> dict:
+            pool: int | None = None, expand: int = DEFAULT_EXPAND) -> dict:
         plan = self.rewrite(question)
-        hits = self.search(question, k=k, plan=plan, rerank=rerank, pool=pool)
+        hits = self.search(question, k=k, plan=plan, rerank=rerank, pool=pool, expand=expand)
         prompt = self.context(hits) + "\n\nQuestion: " + question
         answer = self.ollama.chat(ANSWER_SYSTEM, prompt, self.manifest["ollama_llm"])
         return {"question": question, "answer": answer, "plan": plan,

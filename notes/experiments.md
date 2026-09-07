@@ -916,3 +916,52 @@ That is the honest characterisation of the remaining gap, and it is not a
 retrieval-breadth problem. More excerpts, multi-hop retrieval over the entity
 graph, or ranking within a topic are the directions it points at; a better
 embedder is not.
+
+## Tier 1, increment 8 — link expansion, rejected, and a correction to increment 7
+
+Increment 7 said retrieval finds the topic and not the specific rule, and that
+those questions are about interactions. A topic page almost always links to the
+specific rule involved, and the corpus keeps **394,598 resolved outbound links**
+(98% of them, every entry having at least one). So: pull in what the best few
+results point at and fuse it as an extra ranking.
+
+Untuned (6 seeds, weight 0.5) it cost the gate 2.7 points. Tuned (3 seeds, weight
+0.25) it returned to parity — 89.9%, with situational grounding 80% → 85%.
+
+Then the measurement it was built for:
+
+| judged answerable, validated real questions | |
+| --- | ---: |
+| without expansion | **31.8%** |
+| with expansion | 27.1% |
+
+**Rejected.** Flat on the gate and 4.7 points worse where it was supposed to help.
+Links are a weaker relevance signal than they look: a rules page cites everything
+adjacent to it, so a blanket one-hop pull adds the neighbourhood rather than the
+answer. The code and the packaged graph stay, because multi-hop along a
+*reasoned* path is still untried; a blanket walk is not.
+
+### Correcting increment 7
+
+The first expansion measurement looked like a large win — 11.8% → 27.1% — and it
+was an artifact. I had run the earlier baseline at `--excerpt-chars 520` and the
+new one at 1200, so the judge simply saw more text. Controlled at 1200 the
+baseline is **31.8%**, not 11.8%.
+
+That correction lands on increment 7's headline, which used the same mismatched
+settings: holdout at 1200, wild at 520.
+
+| judged answerable, matched settings | |
+| --- | ---: |
+| hand-written holdout | 56.0% |
+| validated real questions | **31.8%** |
+
+**The gap is 24 points, not 44.** And it now agrees with exact-chunk recall
+(84.3% vs 60.0%, a 24.3-point gap) instead of contradicting it — which is
+reassuring about both metrics and was the thing increment 7 got wrong.
+
+What survives from increment 7 is the qualitative finding, which the examples
+still support: the PART bucket is interaction and edge-case questions, my
+hand-written set asks lookups, and real players ask what happens when two rules
+meet. What does not survive is the claim that the two instruments disagreed about
+how large that gap is. They never did; I measured them differently.

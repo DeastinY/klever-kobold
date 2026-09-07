@@ -56,6 +56,7 @@ def main() -> int:
     ap.add_argument("--excerpt-chars", type=int, default=520)
     ap.add_argument("--batch-size", type=int, default=2)
     ap.add_argument("--no-rerank", action="store_true")
+    ap.add_argument("--no-expand", action="store_true", help="disable one-hop link expansion")
     ap.add_argument("--out", type=pathlib.Path,
                     default=ROOT / "eval" / "runs" / "answerable_recall.json")
     args = ap.parse_args()
@@ -68,7 +69,8 @@ def main() -> int:
     a = Assistant(args.index)
     items = [orjson.loads(l) for l in args.benchmark.open("rb")]
     print(f"retrieving for {len(items)} questions")
-    retrieved = [a.search(it["question"], k=args.k, rerank=not args.no_rerank) for it in items]
+    retrieved = [a.search(it["question"], k=args.k, rerank=not args.no_rerank,
+                          expand=0 if args.no_expand else None or 3) for it in items]
     # Ollama keeps models resident server-side after the last call, so the 27B
     # judge cannot fit alongside them. keep_alive=0 unloads immediately.
     import httpx

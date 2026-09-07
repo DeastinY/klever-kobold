@@ -75,6 +75,35 @@ def main() -> int:
         np.save(args.out / dst, vecs)
         print(f"  {dst}: {vecs.shape} float16")
 
+    # The outbound link graph: a topic page cites the specific rule, and
+    # interaction questions need the latter.
+    import re as _re
+    RE_ID = _re.compile(r"/([A-Za-z]+)\.aspx\?ID=(\d+)", _re.I)
+
+    def page_key(url: str) -> str | None:
+        m = RE_ID.search(url or "")
+        return f"{m.group(1).lower()}:{m.group(2)}" if m else None
+
+    by_page: dict[str, str] = {}
+    for r in rows:
+        k = page_key(r.get("url"))
+        if k and (k not in by_page or r["remaster_status"] != "legacy"):
+            by_page[k] = r["id"]
+    edges = 0
+    with (args.out / "links.jsonl").open("wb") as fh:
+        for r in rows:
+            targets = []
+            for link in (r.get("links") or []):
+                k = page_key(link.get("url"))
+                t = by_page.get(k) if k else None
+                if t and t != r["id"] and t not in targets:
+                    targets.append(t)
+            if targets:
+                fh.write(orjson.dumps({"id": r["id"], "to": targets[:24]}))
+                fh.write(b"\n")
+                edges += len(targets[:24])
+    print(f"  links.jsonl: {edges:,} edges")
+
     bm25_path = args.index / "bm25.npz"
     if not bm25_path.exists():
         print("  building bm25...")

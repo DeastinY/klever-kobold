@@ -1,0 +1,351 @@
+{
+  "benchmark": "wild_clean.jsonl",
+  "k": 8,
+  "rerank": true,
+  "counts": {
+    "YES": 23,
+    "PART": 62
+  },
+  "verdicts": [
+    {
+      "id": "wild-179814",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-176831",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-197250",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-199399",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-205554",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-204988",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-180547",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-191084",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-209948",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-167051",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-205296",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-204743",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-196459",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-173890",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-212988",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-180226",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-197033",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-180863",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-159396",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-204146",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-211213",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-180320",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-219468",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-200994",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-190460",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-206595",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-175526",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-171161",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-188649",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-181614",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-159420",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-205451",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-201178",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-208208",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-209204",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-202725",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-202472",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-198982",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-185748",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-174612",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-204523",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-176898",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-201334",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-179828",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-206809",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-205092",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-216773",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-212519",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-204467",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-185833",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-179859",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-166851",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-199626",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-205274",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-209356",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-167658",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-202710",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-198212",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-206400",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-180904",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-212786",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-203210",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-175374",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-205441",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-185432",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-215160",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-205813",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-166092",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-198146",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-210696",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-209469",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-159348",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-215946",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-213811",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-212524",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-210455",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-202802",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-202333",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-216208",
+      "verdict": "YES"
+    },
+    {
+      "id": "wild-214708",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-213006",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-212744",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-179875",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-215949",
+      "verdict": "PART"
+    },
+    {
+      "id": "wild-213188",
+      "verdict": "PART"
+    }
+  ]
+}
