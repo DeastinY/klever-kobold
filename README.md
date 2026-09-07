@@ -103,6 +103,30 @@ command for your platform and stops:
 
 `pf2e doctor` checks each moving part separately if something breaks.
 
+### Smaller machines
+
+The default answering model is `qwen3.5:9b` (6.6 GB resident, 7.2 GB with the
+embedder). If that does not fit, the measured alternative is:
+
+```bash
+pf2e setup --llm-model qwen3.5:4b
+pf2e ask --llm-model qwen3.5:4b "…"      # or --llm-model on serve
+```
+
+| model | resident | holdout | false premises rejected |
+| --- | ---: | ---: | ---: |
+| qwen3.5:9b *(default)* | 6.6 GB | **89.9%** | 19/19 |
+| qwen3.5:4b | 3.4 GB | 84.4% | 17/19 |
+| qwen3.5:2b | 2.7 GB | 78.9% | 15/19 |
+| qwen3.5:0.8b | 1.0 GB | 76.1% | 15/19 |
+
+The 4B costs 5.5 points and roughly doubles decode speed on a laptop, and it
+retrieves exactly as well — the loss is all in answering. But the loss is not
+evenly spread: both of its extra failures are questions built on a D&D 5e rule
+that does not exist in Pathfinder, answered confidently with the 5e rule
+("you get three death saving throws"). Below 4B that gets worse and retrieval
+degrades too. Full record in [`notes/experiments.md`](notes/experiments.md).
+
 The index lands in your user data directory — `~/.local/share/pf2etune` on Linux,
 `~/Library/Application Support/pf2etune` on macOS — so it survives tool upgrades.
 Override with `--index` or `PF2E_INDEX`.

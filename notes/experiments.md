@@ -1045,3 +1045,99 @@ measurement written down, so the trade is the user's to make on their hardware.
 
 **Not taken:** pool 12. It saves the least of the three and cuts rerank depth,
 which is a quality safeguard measured in an earlier increment.
+
+## Model size: how small can the answering model get?
+
+The 9B is the largest single cost in the deployment — 6.6 GB resident and the
+slowest stage by far. If a 4B or a 1B held up, the thing would run on machines
+it currently does not fit on. `qwen3.5` is the only family in the line with
+small variants; 3.6 and 3.8 start at 27B, so this is measured on 3.5 throughout.
+
+### A measurement bug first, because it invalidated the first attempt
+
+The first 4B run took three times as long as the 9B run it was supposed to beat.
+Ollama loads at most three models at once (`OLLAMA_MAX_LOADED_MODELS`, default
+3). Earlier smoke tests had pinned 9b, 2b and the embedder with a two-hour
+keep-alive, so all three slots were taken and the 4B was **loaded and evicted on
+every single call** — 10.5 s of `load_duration` per model call, three calls per
+question. Nothing errored; it was just silently measuring disk.
+
+The rerun evicts every other LLM before each pass and prints what is resident
+before and after, so a repeat announces itself instead of looking like a slow
+model.
+
+### Results, 109-question holdout
+
+| model | size | holdout | false premise | decode tok/s | mean s/question |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| qwen3.5:9b (shipped) | 6.6 GB | **98/109 (89.9%)** | 19/19 | 201 | 2.16 |
+| qwen3.5:4b | 3.4 GB | 92/109 (84.4%) | 17/19 | 276 | 1.81 |
+| qwen3.5:2b | 2.7 GB | 86/109 (78.9%) | 15/19 | 357 | 1.31 |
+| qwen3.5:0.8b | 1.0 GB | 83/109 (76.1%) | 15/19 | 496 | 1.05 |
+
+Decode rates are from a desktop 5090 on the real answer prompt (1440 tokens in,
+400 out), cache-busted so prefill is not measuring a cache hit. **The ratios
+understate the gain on a laptop**: decode there is memory-bandwidth-bound, so it
+tracks weight bytes read per token, and 9b→4b is a 1.9× reduction in bytes
+against the 1.37× seen on a GPU that is not bandwidth-starved.
+
+### Where the loss actually is
+
+Splitting each run into "was the answering entry retrieved" and "was the answer
+right given that" — the same run files carry both:
+
+| model | gold entry retrieved | correct when it was |
+| --- | ---: | ---: |
+| 9b | 31.2% | 94.1% |
+| 4b | 31.2% | 85.3% |
+| 2b | 30.3% | 69.7% |
+| 0.8b | 27.5% | 70.0% |
+
+(The absolute retrieval figure is low because it is exact-URL equality and the
+remaster hop rewrites URLs; only the comparison between rows is meaningful.)
+
+**At 4B retrieval is untouched — identical to the 9B — and the entire loss is in
+answering.** The smaller model rewrites queries and reranks candidates about as
+well; it is worse at reading eight excerpts and writing the answer. Below 4B
+retrieval degrades too.
+
+### The failure that decides it
+
+The false-premise family asks 19 questions whose premise is a D&D 5e rule that
+does not exist in Pathfinder. The 9B gets all 19; the 4B gets 17. Both misses
+are the exact failure this project exists to prevent:
+
+> **How many death saving throws do I get before I die?**
+> 4B: "You get **three** successful recovery checks (death saving throws) before
+> dying."
+
+> **What's my character's proficiency bonus at level 7?**
+> 4B: "At level 7, your character's proficiency bonus is **+9**."
+
+Neither concept exists in PF2e. The 9B says so. So the 5.5-point drop is not
+spread evenly over harmless questions — it concentrates in confidently answering
+a wrong question with the more famous game's rules, which is the worst error a
+rules reference can make.
+
+A note on instruments: the refusal regex rates the 4B as refusing *more* often
+than the 9B (63% vs 47%), which is backwards. It matches hedging language, and
+the 9B mostly does not hedge — it denies flatly ("Pathfinder 2e has no death
+saving throws"), which reads as a confident answer. Family accuracy is the
+honest measure here; the regex is not.
+
+### Taken
+
+The default stays **qwen3.5:9b**. `--llm-model qwen3.5:4b` is documented as the
+real option for a smaller machine — it halves resident memory to 3.4 GB (4.0 GB
+with the embedder, against 7.2 GB), roughly doubles laptop decode, and costs 5.5
+points concentrated in false-premise questions. That is a reasonable trade for
+someone who cannot run the 9B at all, and a bad one for someone who can.
+
+**2B is not worth it.** Its default tag is Q8, so at 2.7 GB it is barely smaller
+than the 4B's 3.4 GB while scoring 5.5 points lower again. If something that
+size is wanted, `qwen3.5:2b-q4` is ~1.4 GB and untested here.
+
+**0.8B is not usable for this.** It answers a third of false premises with
+invented rules and its query rewrites are already fabricating game mechanics
+("off-guard ... allows a creature to move freely without being attacked"). It is
+fast because it is not doing the job.

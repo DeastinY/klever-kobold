@@ -338,7 +338,11 @@ def main(argv: list[str] | None = None) -> int:
                     help="'openai' points at any OpenAI-compatible server "
                          "(mlx-serve, vllm-mlx, LM Studio, llama.cpp)")
     ap.add_argument("--llm-model", dest="llm_override",
-                    help="override the answering model")
+                    help="override the answering model. qwen3.5:4b is the measured "
+                         "lighter option: 84.4%% on the holdout against 89.9%%, half "
+                         "the memory, and roughly twice the decode rate on a laptop. "
+                         "Below 4b it starts answering PF2e questions with D&D 5e "
+                         "rules -- see notes/experiments.md.")
     ap.add_argument("--embed-model", dest="embed_override",
                     help="override the embedding model — must be the one the index "
                          "was built with, and is checked at startup")
@@ -361,7 +365,9 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=cmd_search)
 
     p = sub.add_parser("setup", help="pull the models and fetch the index")
-    p.add_argument("--llm-model", default="qwen3.5:9b")
+    p.add_argument("--llm-model", default="qwen3.5:9b",
+                   help="answering model to pull (default qwen3.5:9b; "
+                        "qwen3.5:4b for a smaller machine)")
     p.add_argument("--embed-model", default="qwen3-embedding:0.6b")
     p.add_argument("--install-ollama", action="store_true",
                    help="install Ollama too (brew on macOS, the official script on Linux)")
