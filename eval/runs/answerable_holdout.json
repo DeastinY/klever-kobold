@@ -1,0 +1,448 @@
+{
+  "benchmark": "holdout.jsonl",
+  "k": 8,
+  "rerank": true,
+  "counts": {
+    "YES": 61,
+    "PART": 44,
+    "NO": 4
+  },
+  "verdicts": [
+    {
+      "id": "nl_descriptive-000",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-001",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-002",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_descriptive-003",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_descriptive-004",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-005",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-006",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-007",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_descriptive-008",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-009",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-010",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-011",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-012",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-013",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-014",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-015",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-016",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-017",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-018",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-019",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-020",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-021",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-022",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-023",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-024",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-025",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-026",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-027",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-028",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-029",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-030",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-031",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_comparative-032",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_comparative-033",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_comparative-034",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_comparative-035",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_comparative-036",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_comparative-037",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-038",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_false_premise-039",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-040",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_false_premise-041",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-042",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-043",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-044",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-045",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-046",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-047",
+      "verdict": "NO"
+    },
+    {
+      "id": "nl_false_premise-048",
+      "verdict": "NO"
+    },
+    {
+      "id": "nl_legacy-049",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_legacy-050",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_legacy-051",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_legacy-052",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_legacy-053",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_legacy-054",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_legacy-055",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_legacy-056",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-057",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-058",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-059",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-060",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-061",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-062",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-063",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-064",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-065",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-066",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-067",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-068",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-069",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-070",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-071",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-072",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_situational-073",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_situational-074",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_descriptive-075",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-076",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_descriptive-077",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-078",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-079",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-080",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-081",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-082",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-083",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-084",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-085",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_descriptive-086",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_descriptive-087",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_descriptive-088",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_descriptive-089",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_comparative-090",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_comparative-091",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_comparative-092",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_comparative-093",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_comparative-094",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-095",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-096",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_false_premise-097",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_false_premise-098",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_false_premise-099",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_false_premise-100",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_false_premise-101",
+      "verdict": "NO"
+    },
+    {
+      "id": "nl_false_premise-102",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_legacy-103",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_legacy-104",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_legacy-105",
+      "verdict": "YES"
+    },
+    {
+      "id": "nl_legacy-106",
+      "verdict": "NO"
+    },
+    {
+      "id": "nl_legacy-107",
+      "verdict": "PART"
+    },
+    {
+      "id": "nl_legacy-108",
+      "verdict": "PART"
+    }
+  ]
+}

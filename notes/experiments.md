@@ -859,3 +859,60 @@ player questions**, which differ from summaries in register as well as surface
 form, plus hard negatives mined from the retriever's own confusions. That remains
 the version worth trying, and it now has to beat 87.2% end to end rather than a
 recall number.
+
+## Tier 0, increment 7 — what a retrieval "miss" actually is
+
+Increment 6 showed exact-chunk recall can move opposite to answer quality. This
+one shows it also miscounts. Reading the 34 misses on validated real questions:
+
+| question | label | retrieved |
+| --- | --- | --- |
+| Can I have just a striking weapon? | Runes | **Fundamental Runes** |
+| Action cost of drawing a weapon? | Wielding Items | **Drawing and Stowing Items** |
+| Will uneven speed round up or down? | General Rules | Speed, Round |
+| Anything preventing a wizard using a staff of healing? | Casting Spells from a Staff | Staves, Staff of Healing |
+
+Each counts as a miss and each retrieved a page at least as good as the label.
+Archives of Nethys rules chapters nest, humans cite whichever level they had
+open, and an id match cannot distinguish a failure from a difference of
+granularity.
+
+### Asking the question the system is judged on
+
+`eval/answerable_recall.py` shows a judge the question and the excerpts actually
+retrieved — never which one was the label — and asks whether they can be answered
+from.
+
+| | exact-chunk R@8 | judged YES | judged PART | judged NO |
+| --- | ---: | ---: | ---: | ---: |
+| hand-written holdout | 84.3% | **56.0%** | 40.4% | 3.7% |
+| validated real questions | 60.0% | **11.8%** | 88.2% | 0% |
+
+Two things follow, and the second is the one that matters.
+
+**The judged metric is much stricter than either chunk recall or the end-to-end
+score.** The deployed system answers 89.9% of holdout questions while only 56% of
+its excerpt sets are judged to contain the answer outright — the model fills the
+rest from reasoning and parametric knowledge, and the answer grader accepts a
+correct key fact rather than demanding completeness. So 56% and 89.9% are not in
+conflict; they measure different things.
+
+**The gap between my questions and real ones is far larger than chunk recall
+said: 44 points, not 24.** And it is not explained by question type — a keyword
+split finds only 3 of 85 wild questions asking for judgement rather than fact.
+The PART bucket is full of ordinary rules lookups:
+
+- "Can I move diagonally across the corner of enemy spaces without tumbling through?"
+- "If a player casts a spell of unlimited duration and retrains out of it, does it end?"
+- "If trapped by a web lurker, can I only use Acrobatics to Escape?"
+
+These are **interaction and edge-case questions**. Retrieval finds the right
+topic and not the specific rule, which is what PART means. My hand-written set
+asks almost none of them, because when I sat down to write questions I wrote
+lookups — "what level is this feat", "what does this condition do" — and real
+players ask what happens when two rules meet.
+
+That is the honest characterisation of the remaining gap, and it is not a
+retrieval-breadth problem. More excerpts, multi-hop retrieval over the entity
+graph, or ranking within a topic are the directions it points at; a better
+embedder is not.
