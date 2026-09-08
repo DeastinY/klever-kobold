@@ -1160,3 +1160,47 @@ size is wanted, `qwen3.5:2b-q4` is ~1.4 GB and untested here.
 invented rules and its query rewrites are already fabricating game mechanics
 ("off-guard ... allows a creature to move freely without being attacked"). It is
 fast because it is not doing the job.
+
+## Dedupe was serving the oldest printing
+
+Found from one question: "what things can players do during dungeon
+exploration". The excerpt shown was the Core Rulebook *Exploration Activities*
+page, cut off in the skill sidebar, and it never named an activity.
+
+Three things stacked. The Player Core page's text on AoN does not contain the
+activity list at all -- the site renders it from the actions table, and the
+search index this mirrors only has the prose and the sidebar. The GM Core page
+of the same name does list them, and it ranked third after fusion. Then
+`dedupe` removed it: entities are collapsed to one row per (name, category),
+the canonical row is whichever is first in the file, and the code returned the
+*canonical* row rather than the retrieved one. For a rules chapter printed in
+three books the first row is the legacy Core Rulebook text, so the GM Core page,
+the Player Core page and the legacy page all became the legacy page -- after
+`follow_remaster` had already run, so the hop never saw it.
+
+Measured on the 89 holdout questions that carry a gold entity, retrieval only
+(no rewrite, no rerank, top 8):
+
+| | gold entity named in top 8 | legacy rows served |
+| --- | ---: | ---: |
+| before | 54/89 (60.7%) | 374/712 (**52.5%**) |
+| after | 54/89 (60.7%) | 23/712 (3.2%) |
+
+Half of every excerpt set the deployed runtime has been handing the model was
+pre-Remaster text. The holdout did not see it because its graders look for the
+entity name, and the legacy printing names the same entities; the rename family
+is protected by `follow_remaster`, which hops the legacy row when it is the one
+that ranks. It is the *content* that differed -- old numbers, old terms -- and
+none of the 109 questions happens to depend on a passage that changed.
+
+The fix keeps the evidence pooling (scores are still summed per entity inside
+`rrf`) but hands back the best-ranked row that was actually retrieved. The
+remaining 3.2% are legacy rows with no `remaster_id` to hop to. The exploration
+question now gets the GM Core page at rank two and the answer names Avoid
+Notice, Detect Magic, Hustle, Search, Scout, Investigate. Not yet re-scored end
+to end on the holdout; `eval/retrieval_eval.py` compares by canonical key, so
+its numbers are unaffected by which row is served.
+
+Still open from the same question: pages whose lists AoN renders from tables
+have no list in the index. Appending the child entries' names at index time
+would fix the Player Core page and its kin.

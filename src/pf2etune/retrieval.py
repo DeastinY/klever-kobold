@@ -160,15 +160,30 @@ def rrf(rankings: Iterable[Sequence[int]], k: int, smoothing: int = 60,
         # Collapse duplicates inside each ranking first, so an entity accumulates
         # all of its evidence instead of splitting it across identical rows.
         rankings = [dedupe(index, r) for r in rankings]
+    # Evidence is pooled per entity (the canonical key), but the row handed back
+    # is the best-ranked row that was actually retrieved -- not the canonical
+    # row, which is merely the first in the file and for a rules chapter that
+    # exists in three books is the legacy Core Rulebook text.
     fused: dict[int, float] = {}
+    best: dict[int, tuple[int, int]] = {}
     for ranking, weight in zip(rankings, weights):
         for rank, idx in enumerate(ranking):
-            fused[idx] = fused.get(idx, 0.0) + weight / (smoothing + rank + 1)
-    return [i for i, _ in sorted(fused.items(), key=lambda kv: -kv[1])[:k]]
+            key = index.canonical[idx] if index is not None and index.canonical else idx
+            fused[key] = fused.get(key, 0.0) + weight / (smoothing + rank + 1)
+            if rank < best.get(key, (rank + 1, idx))[0]:
+                best[key] = (rank, idx)
+    return [best[key][1] for key, _ in sorted(fused.items(), key=lambda kv: -kv[1])[:k]]
 
 
 def dedupe(index: "Index", order: Sequence[int]) -> list[int]:
-    """Collapse an ordering to one row per entity, keeping the best-ranked."""
+    """Collapse an ordering to one row per entity, keeping the best-ranked.
+
+    The row kept is the one that was retrieved, not the entity's canonical row.
+    Returning the canonical row served the legacy Core Rulebook "Exploration
+    Activities" in place of the GM Core page that ranked third and actually
+    lists the activities: the canonical is the first row in the file, and for
+    anything printed in more than one book that is the oldest printing.
+    """
     seen: set[int] = set()
     out: list[int] = []
     for i in order:
@@ -176,7 +191,7 @@ def dedupe(index: "Index", order: Sequence[int]) -> list[int]:
         if c in seen:
             continue
         seen.add(c)
-        out.append(c)
+        out.append(i)
     return out
 
 
