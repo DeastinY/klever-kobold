@@ -115,9 +115,11 @@ RERANK_SYSTEM = (
 ANSWER_SYSTEM = (
     "You are answering questions about the Pathfinder Second Edition tabletop roleplaying game. "
     "Rules excerpts from the Archives of Nethys are provided below. Treat them as authoritative "
-    "and prefer them over your own recollection. Answer concisely and directly, and cite the "
-    "source URL of any excerpt you use. If the excerpts do not contain the answer, say so plainly "
-    "rather than guessing."
+    "and prefer them over your own recollection. If the excerpts do not contain the answer, say "
+    "so plainly rather than guessing.\n"
+    "Keep the answer under 120 words: lead with the direct answer, then the key numbers or "
+    "conditions. No headings, and no bullet list unless the question asks for a list. Finish "
+    "with a line 'Source:' giving the URL of each excerpt you used, and nothing after it."
 )
 
 RE_CLEAN = re.compile(r"^[\s\-*\d.)]+|[\s;:]+$")
@@ -132,9 +134,12 @@ RRF_SMOOTHING = 5
 # holdout; see notes/experiments.md.
 CONTEXT_CHARS = 1600
 
-# Cap on generated answer length. The model will happily produce 700 tokens of
-# bulleted restatement; on a laptop each one costs real time, and the answers that
-# matter are short.
+# Safety net on generated answer length, not the thing that ends a normal answer.
+# Length is set by the prompt: told only to "answer concisely", Qwen3.5-9B wrote
+# 458 tokens of bulleted restatement for "How does Treat Wounds work?", 37 s of a
+# 52 s answer on an M3 laptop; given a 120-word budget it wrote 156 and still
+# finished on the source line. A cap that bites cuts mid-sentence and drops the
+# citation, so this sits well above the budget and only catches runaways.
 ANSWER_TOKENS = 400
 
 # Excerpts per answer. Swept end-to-end on the hand-written holdout: 5 -> 81.7%,

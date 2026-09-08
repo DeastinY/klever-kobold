@@ -1,0 +1,1279 @@
+{
+  "report": {
+    "items": 109,
+    "correct": 98,
+    "accuracy": 0.8990825688073395,
+    "families": {
+      "nl_comparative": {
+        "n": 11,
+        "correct": 11,
+        "accuracy": 1.0,
+        "mean_grounding": 0.9090909090909091
+      },
+      "nl_descriptive": {
+        "n": 33,
+        "correct": 27,
+        "accuracy": 0.8181818181818182
+      },
+      "nl_false_premise": {
+        "n": 19,
+        "correct": 18,
+        "accuracy": 0.9473684210526315,
+        "fabricated": 0,
+        "mean_grounding": 0.2631578947368421
+      },
+      "nl_legacy": {
+        "n": 14,
+        "correct": 11,
+        "accuracy": 0.7857142857142857,
+        "mean_grounding": 0.35714285714285715
+      },
+      "nl_situational": {
+        "n": 32,
+        "correct": 31,
+        "accuracy": 0.96875,
+        "mean_grounding": 0.8645833333333334
+      }
+    },
+    "run": "merge_9b",
+    "benchmark_items": 109,
+    "excluded_items": 0,
+    "partial": false,
+    "trait_vocab": 569
+  },
+  "verdicts": [
+    {
+      "id": "nl_descriptive-000",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-001",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-002",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "nl_descriptive-003",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-004",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-005",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-006",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-007",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "nl_descriptive-008",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-009",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-010",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-011",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "nl_descriptive-012",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-013",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-014",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-015",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-016",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-017",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_situational-018",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-019",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.6666666666666666,
+      "missing": [
+        "athletics"
+      ]
+    },
+    {
+      "id": "nl_situational-020",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-021",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-022",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-023",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-024",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [
+        "no penalty"
+      ],
+      "forbidden_mentioned": [
+        "no penalty"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-025",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-026",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-027",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.5,
+      "missing": [
+        "seek"
+      ]
+    },
+    {
+      "id": "nl_situational-028",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-029",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "demoralize",
+        "intimidation",
+        "frightened"
+      ]
+    },
+    {
+      "id": "nl_situational-030",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-031",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_comparative-032",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_comparative-033",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_comparative-034",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_comparative-035",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_comparative-036",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.6666666666666666,
+      "missing": [
+        "athletics"
+      ]
+    },
+    {
+      "id": "nl_comparative-037",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.3333333333333333,
+      "missing": [
+        "raise a shield",
+        "reaction"
+      ]
+    },
+    {
+      "id": "nl_false_premise-038",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_false_premise-039",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_false_premise-040",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "removed"
+      ]
+    },
+    {
+      "id": "nl_false_premise-041",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "removed"
+      ]
+    },
+    {
+      "id": "nl_false_premise-042",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_false_premise-043",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "sustain"
+      ]
+    },
+    {
+      "id": "nl_false_premise-044",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "multiple attack penalty"
+      ]
+    },
+    {
+      "id": "nl_false_premise-045",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "ki point"
+      ],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "focus point"
+      ]
+    },
+    {
+      "id": "nl_false_premise-046",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "nl_false_premise-047",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "nl_false_premise-048",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "nl_legacy-049",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_legacy-050",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_legacy-051",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_legacy-052",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_legacy-053",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "nl_legacy-054",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "nl_legacy-055",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_legacy-056",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "rank"
+      ]
+    },
+    {
+      "id": "nl_situational-057",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-058",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-059",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "dexterity"
+      ]
+    },
+    {
+      "id": "nl_situational-060",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "off-guard"
+      ]
+    },
+    {
+      "id": "nl_situational-061",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-062",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-063",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-064",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.5,
+      "missing": [
+        "stealth"
+      ]
+    },
+    {
+      "id": "nl_situational-065",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-066",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-067",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-068",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-069",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-070",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-071",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-072",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-073",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_situational-074",
+      "family": "nl_situational",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_descriptive-075",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-076",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "nl_descriptive-077",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-078",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-079",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-080",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-081",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-082",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-083",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "nl_descriptive-084",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-085",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-086",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-087",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": false
+    },
+    {
+      "id": "nl_descriptive-088",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_descriptive-089",
+      "family": "nl_descriptive",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_comparative-090",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_comparative-091",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_comparative-092",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_comparative-093",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_comparative-094",
+      "family": "nl_comparative",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_false_premise-095",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "spell point"
+      ],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "focus point"
+      ]
+    },
+    {
+      "id": "nl_false_premise-096",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [
+        "proficiency bonus is"
+      ],
+      "forbidden_mentioned": [
+        "proficiency bonus is"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_false_premise-097",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [
+        "wisdom save"
+      ],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "will"
+      ]
+    },
+    {
+      "id": "nl_false_premise-098",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 0.0,
+      "missing": [
+        "10 +"
+      ]
+    },
+    {
+      "id": "nl_false_premise-099",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true
+    },
+    {
+      "id": "nl_false_premise-100",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_false_premise-101",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "nl_false_premise-102",
+      "family": "nl_false_premise",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "fabricated": false
+    },
+    {
+      "id": "nl_legacy-103",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_legacy-104",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_legacy-105",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [
+        "yes, evocation"
+      ],
+      "forbidden_mentioned": [
+        "yes, evocation"
+      ],
+      "forbidden_echoed_from_question": [],
+      "correct": false,
+      "clean": false,
+      "grounding": 0.0,
+      "missing": [
+        "removed"
+      ]
+    },
+    {
+      "id": "nl_legacy-106",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true
+    },
+    {
+      "id": "nl_legacy-107",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    },
+    {
+      "id": "nl_legacy-108",
+      "family": "nl_legacy",
+      "empty": false,
+      "forbidden_hits": [],
+      "forbidden_mentioned": [],
+      "forbidden_echoed_from_question": [],
+      "correct": true,
+      "clean": true,
+      "grounding": 1.0,
+      "missing": []
+    }
+  ]
+}

@@ -1036,6 +1036,25 @@ separate them, not that the differences are zero.
 **Taken:** 400 answer tokens. It caps the model's habit of restating the
 excerpts as bullets, and costs nothing measurable.
 
+**Then corrected, in use:** a cap does not shorten an answer, it truncates one.
+On the M3 laptop the shipped runtime hit the 700 cap on 2 of 30 answers, and at
+400 the cut lands mid-sentence and usually before the citation, which is the one
+part of the answer a reader can check. "Answer concisely" on its own is ignored
+by both 9B and 4B. A concrete budget in the system prompt is not:
+
+| answer prompt | 9B tokens (decode s) | 4B tokens (decode s) | ends on |
+| --- | ---: | ---: | --- |
+| "answer concisely" (was shipped) | 458 (36.2) | 286 (13.5) | a Source line, after bullets |
+| + "under 120 words, answer first, no headings, Source line last" | 156 (11.9) | 155 (7.3) | the Source line |
+| + "at most four sentences, then Source" | 139 (10.5) | 111 (5.1) | the Source line |
+
+One question ("How does Treat Wounds work?"), Ollama 0.33.3 on an M3 with 16 GB,
+same excerpts each time. The 120-word variant is now the prompt; the four-sentence
+one was rejected because it forbids lists, and "list every trait of X" is a real
+question shape. The 400 cap stays as a safety net only. Not re-scored on the
+holdout yet; the earlier proxy — grading the 4B's answers truncated to 200 tokens
+changed no verdict on 31 items — says the graded fact arrives early.
+
 **Not taken:** 1000 context chars, though it scored identically and would cut
 prompt processing by a third. 45% of corpus entries are longer than 1000
 characters (23% are longer than 1600), so it truncates nearly half the corpus
@@ -1142,6 +1161,65 @@ invented rules and its query rewrites are already fabricating game mechanics
 ("off-guard ... allows a creature to move freely without being attacked"). It is
 fast because it is not doing the job.
 
+## Dedupe was serving the oldest printing
+
+Found from one question: "what things can players do during dungeon
+exploration". The excerpt shown was the Core Rulebook *Exploration Activities*
+page, cut off in the skill sidebar, and it never named an activity.
+
+Three things stacked. The Player Core page's text on AoN does not contain the
+activity list at all -- the site renders it from the actions table, and the
+search index this mirrors only has the prose and the sidebar. The GM Core page
+of the same name does list them, and it ranked third after fusion. Then
+`dedupe` removed it: entities are collapsed to one row per (name, category),
+the canonical row is whichever is first in the file, and the code returned the
+*canonical* row rather than the retrieved one. For a rules chapter printed in
+three books the first row is the legacy Core Rulebook text, so the GM Core page,
+the Player Core page and the legacy page all became the legacy page -- after
+`follow_remaster` had already run, so the hop never saw it.
+
+Measured on the 89 holdout questions that carry a gold entity, retrieval only
+(no rewrite, no rerank, top 8):
+
+| | gold entity named in top 8 | legacy rows served |
+| --- | ---: | ---: |
+| before | 54/89 (60.7%) | 374/712 (**52.5%**) |
+| after | 54/89 (60.7%) | 23/712 (3.2%) |
+
+Half of every excerpt set the deployed runtime has been handing the model was
+pre-Remaster text. The holdout did not see it because its graders look for the
+entity name, and the legacy printing names the same entities; the rename family
+is protected by `follow_remaster`, which hops the legacy row when it is the one
+that ranks. It is the *content* that differed -- old numbers, old terms -- and
+none of the 109 questions happens to depend on a passage that changed.
+
+The fix keeps the evidence pooling (scores are still summed per entity inside
+`rrf`) but hands back the best-ranked row that was actually retrieved. The
+remaining 3.2% are legacy rows with no `remaster_id` to hop to. The exploration
+question now gets the GM Core page at rank two and the answer names Avoid
+Notice, Detect Magic, Hustle, Search, Scout, Investigate. Not yet re-scored end
+to end on the holdout; `eval/retrieval_eval.py` compares by canonical key, so
+its numbers are unaffected by which row is served.
+
+### Pages that embed other entries had their lists stripped
+
+The Player Core page is missing its list for a different reason. AoN's markdown
+embeds one entry inside another -- ``<document level="2" id="action-2629" />``
+-- and renders the child in place on the site. The child's text is not in the
+parent's markdown, and `to_markdown` dropped the tag along with the other layout
+tags. 5,229 entries embed others: 2,711 creatures (their abilities and family
+entry), 1,029 rules pages (a chapter's key terms, a page's activities), 614
+weapons, 346 archetypes.
+
+`normalize.py` now keeps each embed as a placeholder and `build_chunks.py`
+resolves it in a second pass to one `**Name:** first sentence` line, the shape
+AoN uses for its own sidebar lists, and adds the child to the parent's links.
+The child stays its own chunk for the detail; the parent now names it. Checked
+on Exploration Activities (nine activities, 2,196 -> 3,686 chars), Key Terms
+(29 terms) and Goblin Warrior; an entry with no embeds renders byte-identical
+to the shipped index. **Needs an index rebuild** -- dump, chunks, embeddings,
+package -- before it reaches the runtime.
+
 ## Getting a 16 GB M3 MacBook under 30 seconds
 
 Target set from the field: answers in 30 s or better on a 16 GB MacBook Pro M3.
@@ -1163,6 +1241,12 @@ Per question, from the deployed pipeline on the real prompts:
 
 The 400-token answer cap is not the operative number: real answers come in at
 219 tokens mean for the 9B and 238 for the 4B.
+
+**Superseded in part.** These counts predate the 120-word budget added to the
+answer prompt (see "Answer length belongs in the prompt"), which takes the 9B's
+answer to ~156 tokens. The decode total per question is therefore closer to 216
+than the 280 below, and every projected second in this section is correspondingly
+pessimistic — the direction of the error is safe, but the numbers are stale.
 
 ### What the cuts cost, measured
 
