@@ -1201,6 +1201,21 @@ Notice, Detect Magic, Hustle, Search, Scout, Investigate. Not yet re-scored end
 to end on the holdout; `eval/retrieval_eval.py` compares by canonical key, so
 its numbers are unaffected by which row is served.
 
-Still open from the same question: pages whose lists AoN renders from tables
-have no list in the index. Appending the child entries' names at index time
-would fix the Player Core page and its kin.
+### Pages that embed other entries had their lists stripped
+
+The Player Core page is missing its list for a different reason. AoN's markdown
+embeds one entry inside another -- ``<document level="2" id="action-2629" />``
+-- and renders the child in place on the site. The child's text is not in the
+parent's markdown, and `to_markdown` dropped the tag along with the other layout
+tags. 5,229 entries embed others: 2,711 creatures (their abilities and family
+entry), 1,029 rules pages (a chapter's key terms, a page's activities), 614
+weapons, 346 archetypes.
+
+`normalize.py` now keeps each embed as a placeholder and `build_chunks.py`
+resolves it in a second pass to one `**Name:** first sentence` line, the shape
+AoN uses for its own sidebar lists, and adds the child to the parent's links.
+The child stays its own chunk for the detail; the parent now names it. Checked
+on Exploration Activities (nine activities, 2,196 -> 3,686 chars), Key Terms
+(29 terms) and Goblin Warrior; an entry with no embeds renders byte-identical
+to the shipped index. **Needs an index rebuild** -- dump, chunks, embeddings,
+package -- before it reaches the runtime.

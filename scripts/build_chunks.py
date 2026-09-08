@@ -29,10 +29,19 @@ def main() -> int:
     by_status: collections.Counter[str] = collections.Counter()
     by_cat: collections.Counter[str] = collections.Counter()
 
+    # First pass: what every entry is called, so a parent can name the entries
+    # AoN embeds in it (a rules page's activities, a creature's abilities).
+    lookup: dict[str, dict] = {}
+    for path in sorted(args.raw.glob("*.jsonl")):
+        for line in path.open("rb"):
+            doc = orjson.loads(line)
+            if doc.get("id"):
+                lookup[doc["id"]] = normalize.embed_lookup_entry(doc)
+
     with args.out.open("wb") as fh:
         for path in sorted(args.raw.glob("*.jsonl")):
             for line in path.open("rb"):
-                chunk = normalize.to_chunk(orjson.loads(line))
+                chunk = normalize.resolve_embeds(normalize.to_chunk(orjson.loads(line)), lookup)
                 if chunk["hidden"] and not args.keep_hidden:
                     skipped += 1
                     continue

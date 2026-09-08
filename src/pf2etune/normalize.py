@@ -27,6 +27,12 @@ RE_ACTIONS = re.compile(r'<actions\b[^>]*string="([^"]*)"[^>]*/?>')
 RE_ATTR = re.compile(r'(\w+)="([^"]*)"')
 RE_LINK = re.compile(r"\[([^\]]*)\]\(([^)]*)\)")
 RE_SELFCLOSING = re.compile(r"<(?:actions|image|date)\b[^>]*/?>")
+# AoN embeds one entry inside another: a rules page lists its activities as
+# ``<document level="2" id="action-2629" />`` and renders the child in place.
+# The child's text is not in the parent's markdown, so stripping the tag leaves
+# "These are most common exploration activities." followed by nothing.
+RE_DOCUMENT = re.compile(r'<document\b[^>]*\bid="([^"]+)"[^>]*/?>')
+RE_EMBED = re.compile(r"\{\{document:([^}]+)\}\}")
 RE_BLOCK = re.compile(r"</?(?:column|row|document|aside|spoilers|center|span|details)\b[^>]*>")
 RE_BR = re.compile(r"<br\s*/?>", re.I)
 RE_LI = re.compile(r"<li\b[^>]*>(.*?)</li>", re.S)
@@ -52,11 +58,18 @@ def _render_row(match: re.Match[str]) -> str:
     return " | ".join(cells) + "\n"
 
 
-def to_markdown(raw: str) -> str:
-    """Render AoN pseudo-XML markdown down to plain markdown."""
+def to_markdown(raw: str, keep_embeds: bool = False) -> str:
+    """Render AoN pseudo-XML markdown down to plain markdown.
+
+    With ``keep_embeds`` each embedded ``<document id=... />`` becomes a
+    ``{{document:id}}`` placeholder for :func:`resolve_embeds` to fill once every
+    entry has been read; otherwise the tag is dropped as before.
+    """
     if not raw:
         return ""
     text = raw
+    if keep_embeds:
+        text = RE_DOCUMENT.sub(lambda m: f"\n{{{{document:{m.group(1)}}}}}\n", text)
     text = RE_TRAITS.sub(lambda m: "**Traits** " + ", ".join(RE_TRAIT.findall(m.group(1))), text)
     text = RE_ACTIONS.sub(lambda m: f"[{m.group(1)}]", text)
     text = RE_TITLE.sub(_render_title, text)
@@ -111,7 +124,7 @@ def remaster_status(doc: dict) -> str:
 
 def to_chunk(doc: dict) -> dict:
     raw_md = doc.get("markdown") or ""
-    body = to_markdown(raw_md) or to_markdown(doc.get("text") or "")
+    body = to_markdown(raw_md, keep_embeds=True) or to_markdown(doc.get("text") or "")
     url = doc.get("url") or ""
     return {
         "id": f"aon:{doc['category']}:{doc.get('id') or doc.get('_es_id')}",
@@ -134,8 +147,56 @@ def to_chunk(doc: dict) -> dict:
         "summary": doc.get("summary"),
         "text": body,
         "links": extract_links(raw_md),
+        "embeds": RE_DOCUMENT.findall(raw_md),
         "n_chars": len(body),
     }
+
+
+def _one_line(text: str, limit: int = 240) -> str:
+    text = " ".join((text or "").split())
+    if len(text) <= limit:
+        return text
+    cut = text[:limit]
+    end = max(cut.rfind(". "), cut.rfind("; "))
+    return (cut[:end + 1] if end > limit // 2 else cut.rstrip() + "…")
+
+
+def resolve_embeds(chunk: dict, lookup: dict[str, dict]) -> dict:
+    """Fill a chunk's ``{{document:id}}`` placeholders from the entries they name.
+
+    Each becomes one ``**Name:** summary`` line, the same shape AoN uses for
+    its own sidebar lists, so a page that says "these are the most common
+    exploration activities" is followed by the nine activities. The child
+    entries stay separate chunks for the detail; the parent just names them.
+    Children not in ``lookup`` (hidden entries, or a dump that predates them)
+    are dropped silently, which is what happened to all of them before.
+    """
+    if not chunk.get("embeds"):
+        return chunk
+    linked = {f"{l['name']}|{l['url']}" for l in chunk.get("links") or []}
+
+    def render(match: re.Match[str]) -> str:
+        child = lookup.get(match.group(1))
+        if not child or not child.get("name"):
+            return ""
+        url = child.get("url") or ""
+        if url and f"{child['name']}|{url}" not in linked:
+            chunk["links"].append({"name": child["name"], "url": url})
+            linked.add(f"{child['name']}|{url}")
+        line = _one_line(child.get("summary") or "")
+        return f"**{child['name']}:** {line}" if line else f"**{child['name']}**"
+
+    text = RE_EMBED.sub(render, chunk["text"])
+    chunk["text"] = RE_BLANKS.sub("\n\n", text).strip()
+    chunk["n_chars"] = len(chunk["text"])
+    return chunk
+
+
+def embed_lookup_entry(doc: dict) -> dict:
+    """The little a parent needs to name an embedded child."""
+    url = doc.get("url") or ""
+    return {"name": doc.get("name"), "summary": doc.get("summary"),
+            "url": f"https://2e.aonprd.com{url}" if url.startswith("/") else url}
 
 
 # --- PathfinderWiki ---------------------------------------------------------
