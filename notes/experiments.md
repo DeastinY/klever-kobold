@@ -1036,6 +1036,25 @@ separate them, not that the differences are zero.
 **Taken:** 400 answer tokens. It caps the model's habit of restating the
 excerpts as bullets, and costs nothing measurable.
 
+**Then corrected, in use:** a cap does not shorten an answer, it truncates one.
+On the M3 laptop the shipped runtime hit the 700 cap on 2 of 30 answers, and at
+400 the cut lands mid-sentence and usually before the citation, which is the one
+part of the answer a reader can check. "Answer concisely" on its own is ignored
+by both 9B and 4B. A concrete budget in the system prompt is not:
+
+| answer prompt | 9B tokens (decode s) | 4B tokens (decode s) | ends on |
+| --- | ---: | ---: | --- |
+| "answer concisely" (was shipped) | 458 (36.2) | 286 (13.5) | a Source line, after bullets |
+| + "under 120 words, answer first, no headings, Source line last" | 156 (11.9) | 155 (7.3) | the Source line |
+| + "at most four sentences, then Source" | 139 (10.5) | 111 (5.1) | the Source line |
+
+One question ("How does Treat Wounds work?"), Ollama 0.33.3 on an M3 with 16 GB,
+same excerpts each time. The 120-word variant is now the prompt; the four-sentence
+one was rejected because it forbids lists, and "list every trait of X" is a real
+question shape. The 400 cap stays as a safety net only. Not re-scored on the
+holdout yet; the earlier proxy — grading the 4B's answers truncated to 200 tokens
+changed no verdict on 31 items — says the graded fact arrives early.
+
 **Not taken:** 1000 context chars, though it scored identically and would cut
 prompt processing by a third. 45% of corpus entries are longer than 1000
 characters (23% are longer than 1600), so it truncates nearly half the corpus
