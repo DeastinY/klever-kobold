@@ -181,9 +181,9 @@ good for straight lookups, unreliable for rule interactions. Check the citation.
 <p class="set-h">Preset</p>
 <div class="presets">
  <button type="button" class="preset" id="p-better"><b>Better</b>
-  <span>qwen3.5:9b · 98/109 on the holdout · ~6.6 GB</span></button>
+  <span>qwen3.5:9b · 100/109 on the holdout · ~6.6 GB</span></button>
  <button type="button" class="preset" id="p-faster"><b>Faster</b>
-  <span>qwen3.5:4b · 92–95/109 on the holdout · ~3.4 GB</span></button>
+  <span>qwen3.5:4b · 93/109 on the holdout · ~3.4 GB</span></button>
 </div>
 <p class="note" id="p-note"></p>
 
@@ -462,9 +462,9 @@ function settingsHeaders(){
 }
 
 /* Measured on eval/holdout.jsonl, the 109 hand-written questions:
-     9b + rerank    98/109
-     4b + rerank    92/109
-     4b, no rerank  95, 93, 92/109 over three identical runs
+     9b + rerank    100/109   (on index-v2)
+     4b + rerank     93/109   (on index-v2)
+     4b, no rerank   95, 93, 92/109 over three identical runs on index-v1
 
    That last row is the important one. The pipeline is not deterministic across
    processes even at temperature 0, and one configuration re-run three times
@@ -483,8 +483,8 @@ const PRESETS={
  better:{model:'qwen3.5:9b',rerank:true,k:8,ctx:1600,tokens:400},
  faster:{model:'qwen3.5:4b',rerank:false,k:8,ctx:1600,tokens:400}};
 const PRESET_NOTE={
- better:'The shipped configuration — 98/109 on the hand-written holdout.',
- faster:'92–95/109 on the same holdout, against 98 for Better: a few items worse, and that '
+ better:'The shipped configuration — 100/109 on the hand-written holdout.',
+ faster:'93/109 on the same holdout, against 100 for Better: seven items worse, and that '
   +'gap is the trade. Rerank is off because it removes a whole model call at no measurable '
   +'cost — the 4B scores the same with it and without it, once the same configuration is run '
   +'more than once. Half the weights should mean roughly twice the decode rate; that is '

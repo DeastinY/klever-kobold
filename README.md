@@ -2,34 +2,34 @@
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Runs offline](https://img.shields.io/badge/runs-fully%20offline-2f6b4f)
-![No torch](https://img.shields.io/badge/runtime%20deps-4-2f6b4f)
-![Memory](https://img.shields.io/badge/RAM-6.7%20GB-informational)
+![Runtime deps](https://img.shields.io/badge/runtime%20deps-4%20(no%20torch)-2f6b4f)
+![Memory](https://img.shields.io/badge/RAM-7.2%20GB-informational)
 ![Model](https://img.shields.io/badge/model-Qwen3.5--9B%20Q4-8a1b2e)
 ![Corpus](https://img.shields.io/badge/corpus-41%2C743%20AoN%20entries-8a1b2e)
-![Benchmark](https://img.shields.io/badge/hand--written%20lookups-89.9%25-2f6b4f)
+![Index](https://img.shields.io/badge/index-v2-8a1b2e)
+![Lookups](https://img.shields.io/badge/hand--written%20lookups-91.7%25-2f6b4f)
 ![Real questions](https://img.shields.io/badge/real%20questions-31.8%25-8a5a12)
 ![License](https://img.shields.io/badge/content-ORC%20%2F%20Paizo%20CUP-lightgrey)
 
-A Pathfinder 2e rules reference that runs on your own machine, searches the
-Archives of Nethys, and cites its sources.
+A Pathfinder 2e rules reference that runs entirely on your own machine, searches
+the Archives of Nethys, and cites every answer.
 
-```bash
-docker compose up          # then open http://localhost:8765
-```
+**Python 3.11+.** Two models via [Ollama](https://ollama.com): `qwen3.5:9b` (Q4,
+6.6 GB) answers, `qwen3-embedding:0.6b` retrieves. 7.2 GB resident, four runtime
+dependencies, no torch, no network after setup.
 
 ---
 
 ## Read this before you trust it
 
-This is a **lookup tool**, not a rules adjudicator. The distinction is not
-modesty — it is measured, and it matters most exactly where you would want help.
+It is a **lookup tool, not a rules adjudicator** — and that distinction is
+measured, not modest.
 
 | Ask it | How it does |
 | --- | --- |
 | "What level is Battle Medicine?" | **Reliable.** |
 | "How does Treat Wounds work?" | **Reliable**, with a citation you can check. |
 | "Is there a feat that makes falling less dangerous?" | **Mostly** — about three times in four. |
-| "Was Magic Missile renamed?" | **Mostly** — about five times in six. |
 | **"Does X interact with Y?"** | **Do not trust it.** |
 | "Tell me about Cheliax" | **Thin.** Lore is not indexed yet. |
 
@@ -37,328 +37,139 @@ A real failure, verbatim, asked whether a rogue gets sneak attack on the
 *fighter's* Reactive Strike:
 
 > **Yes, she gets Sneak Attack damage.** … a creature is flat-footed if they are
-> flanked by at least two enemies and have not yet acted in the current round (or
-> are otherwise denied their Dexterity bonus).
+> flanked by at least two enemies and have not yet acted in the current round.
 
-That answer is wrong three times over. Sneak attack applies to the rogue's own
-Strikes. *Flat-footed* is the pre-Remaster name for *off-guard*. And "denied
-their Dexterity bonus" is Pathfinder 1e language for a rule 2e does not have. It
-cited two real Archives of Nethys pages while doing it.
+Wrong three times over: sneak attack applies to the rogue's own Strikes,
+*flat-footed* is the pre-Remaster name for *off-guard*, and "denied their
+Dexterity bonus" is Pathfinder 1e language. It cited two real AoN pages while
+doing it.
 
 **Interaction questions are where it fails and where a table most wants an
-answer.** Use it to find the rule fast; read the rule yourself before settling an
-argument. Every answer carries its source URL precisely so that is a one-click
-check — the web UI puts the rules entries first and the generated answer behind a
-button for the same reason.
+answer.** Use it to find the rule fast; read the rule before settling an
+argument. Every answer carries its source URL so that is a one-click check —
+which is why the UI puts the rules entries first and the generated answer behind
+a button.
 
-Measured: **89.9%** on 109 hand-written questions, but those are lookups. On 85
-real questions mined from RPG StackExchange, only **31.8%** of retrieved excerpt
-sets are judged to contain the answer outright, against 56% for the hand-written
-ones. The full record, including everything that failed, is in
-[`notes/experiments.md`](notes/experiments.md).
+**91.7%** on 109 hand-written questions — but those are lookups. On real
+questions mined from RPG StackExchange, only **31.8%** of retrieved excerpt sets
+are judged to contain the answer at all.
 
 ---
 
-## The table view
-
-`pf2e serve` puts a search box and the rules behind it on `localhost:8765`.
-Entries render as Pathfinder stat blocks — action glyphs, trait pills, the four
-degrees of success — and every one links back to its Archives of Nethys page.
-The generated answer is opt-in, marked as generated, and its `[1]`-style
-citations become links to the entries it drew on. Light, dark and system themes.
+## Screenshots
 
 | light | dark |
 | --- | --- |
 | ![Light theme](docs/img/ui-light.png) | ![Dark theme](docs/img/ui-dark.png) |
 
-Answers stream, so the sources appear as soon as retrieval finishes and the text
-follows at reading speed rather than after a silent wait. `pf2e ask --timings`
-prints the per-stage seconds if you want to know where the time goes on your
-hardware.
+Entries render as stat blocks — action glyphs, trait pills, degrees of success —
+and link back to AoN. Answers stream, so sources appear as soon as retrieval
+finishes. Settings let you point the answering model at any OpenAI-compatible
+provider, or attach the retrieval to any model over MCP:
+
+![Settings](docs/img/ui-settings.png)
 
 ---
 
 ## Run it
 
-### uv — recommended everywhere, and the only sensible option on a Mac
-
 ```bash
-uv tool install git+ssh://git@github.com/DeastinY/pf2etune     # private repo, so ssh
-pf2e setup --install-ollama                                    # everything, once
-pf2e serve                                                     # localhost:8765
+uv tool install git+ssh://git@github.com/DeastinY/pf2etune
+pf2e setup --install-ollama     # installs Ollama, pulls both models, fetches the index
+pf2e serve                      # http://localhost:8765
 ```
 
-`pf2e setup` does the lot: installs [Ollama](https://ollama.com) if you pass
-`--install-ollama`, starts it if it is installed but not running, pulls the two
-models, and fetches the 143 MB index. It is idempotent — re-run it any time.
+`pf2e setup` is idempotent. Without `--install-ollama` it prints the one command
+for your platform and stops. `pf2e doctor` checks each moving part separately.
 
-Without `--install-ollama` it will not touch your system; it prints the one
-command for your platform and stops:
+Also: `pf2e ask "…"`, `pf2e search "…"`, `pf2e mcp` (stdio MCP server for Claude
+Desktop / Claude Code). Docker for Linux and Windows is in
+[`deploy/README.md`](deploy/README.md) — on a Mac use uv, since a container
+cannot reach Metal.
 
-| | |
-| --- | --- |
-| macOS | `brew install ollama` — or the app from [ollama.com/download](https://ollama.com/download) |
-| Linux | `curl -fsSL https://ollama.com/install.sh \| sh` |
-| Windows | `winget install Ollama.Ollama` |
+**Smaller machines:** `--llm-model qwen3.5:4b` halves memory to 3.4 GB and costs
+seven items (93/109). Below 4B it starts answering PF2e questions with D&D 5e
+rules. The UI's **Faster** preset sets this for you.
 
-`pf2e doctor` checks each moving part separately if something breaks.
+---
 
-### Smaller machines
+## How it works, and what it cost to find out
 
-The default answering model is `qwen3.5:9b` (6.6 GB resident, 7.2 GB with the
-embedder). If that does not fit, the measured alternative is:
+**RAG, not a fine-tune.** That was the first finding and it survived every
+attempt to overturn it. A QLoRA/RAFT fine-tune scored +10.1 on the generated
+benchmark and **−7.0 on hand-written questions** — better at the benchmark's
+tics, worse at the job. Fine-tuning the embedder was tried twice and rejected
+twice; the second attempt improved recall at every *k* while end-to-end accuracy
+fell, which is the single most useful thing this project learned about metrics.
 
-```bash
-pf2e setup --llm-model qwen3.5:4b
-pf2e ask --llm-model qwen3.5:4b "…"      # or --llm-model on serve
-```
+**Retrieval** is BM25 + dense over full text + dense over a summary index, fused
+by reciprocal rank fusion (smoothing 5, not the TREC default 60 — swept). On top:
+a rewrite step that generates the one-line summary an answering entry *would*
+have and matches that against the summary index; category routing fused with the
+unrouted ranking rather than replacing it; a legacy→Remaster hop; canonical
+collapse before fusion; and a listwise rerank of 24 candidates down to 8 using
+the answering model, so no cross-encoder and no torch. Natural-phrasing recall
+went 47.2% → 76.4% R@5; situational questions 7.7% → 77.4%.
 
-| model | resident | holdout | false premises rejected |
-| --- | ---: | ---: | ---: |
-| qwen3.5:9b *(default)* | 6.6 GB | **89.9%** | 19/19 |
-| qwen3.5:4b | 3.4 GB | 84.4% | 17/19 |
-| qwen3.5:2b | 2.7 GB | 78.9% | 15/19 |
-| qwen3.5:0.8b | 1.0 GB | 76.1% | 15/19 |
+**Model choice**, all on the 109-question holdout through the deployed runtime:
 
-The 4B costs 5.5 points and roughly doubles decode speed on a laptop, and it
-retrieves exactly as well — the loss is all in answering. But the loss is not
-evenly spread: both of its extra failures are questions built on a D&D 5e rule
-that does not exist in Pathfinder, answered confidently with the 5e rule
-("you get three death saving throws"). Below 4B that gets worse and retrieval
-degrades too. Full record in [`notes/experiments.md`](notes/experiments.md).
+| model | resident | holdout |
+| --- | ---: | ---: |
+| **qwen3.5:9b** *(default)* | 6.6 GB | **100/109 (91.7%)** |
+| qwen3.8:27b | 17.7 GB | 98/109 (89.9%) |
+| qwen3.5:4b | 3.4 GB | 93/109 (85.3%) |
+| qwen3.5:2b | 2.7 GB | 86/109 (78.9%) |
+| qwen3.5:0.8b | 1.0 GB | 83/109 (76.1%) |
 
-The index lands in your user data directory — `~/.local/share/pf2etune` on Linux,
-`~/Library/Application Support/pf2etune` on macOS — so it survives tool upgrades.
-Override with `--index` or `PF2E_INDEX`.
+Nothing above 9B is worth its memory — 27B is 2.8× the weights for no gain. The
+ceiling is retrieval, not the answering model.
 
-From a clone, or to hack on it:
+**Against frontier models**, same retrieval, on the generated benchmark:
+qwen3.5:9b **89.5%**, gpt-5 **88.0%**, gpt-4.1-mini 82.4%. Closed-book, gpt-5
+scores **27.9%** — the corpus is doing nearly all the work, which is the point.
 
-```bash
-uv sync
-uv run pf2e serve
-```
+The full record, including everything that failed and several measurement bugs
+found in our own favour, is in [`notes/experiments.md`](notes/experiments.md).
 
-Other commands: `pf2e ask "…"`, `pf2e search "…"`, `pf2e mcp` (stdio MCP server
-for Claude Desktop / Claude Code).
-
-### Docker — Linux and Windows, or when you want it supervised
-
-```bash
-docker compose up          # Ollama + this app, both containerised
-```
-
-First run pulls ~6.3 GB of models and the index into named volumes; later runs
-start in seconds. Uncomment the GPU block in `docker-compose.yml` for an NVIDIA
-card.
-
-> **Not on Apple Silicon.** Docker Desktop runs containers inside a Linux VM with
-> no path to Metal — Apple's Hypervisor.framework does not pass the GPU through —
-> so a containerised Ollama falls back to CPU and runs
-> [2–5× slower](https://chariotsolutions.com/blog/post/apple-silicon-gpus-docker-and-ollama-pick-two/).
-> Use uv. If you specifically want the app supervised by Docker on a Mac, run
-> Ollama natively and use `docker-compose.mac.yml`, which containerises only the
-> app and points it at the host.
-
-| platform | run this | GPU |
-| --- | --- | --- |
-| **Apple Silicon** | **uv** | Metal via MLX (Ollama ≥ 0.19) |
-| Linux + NVIDIA | uv, or `docker compose up` with the GPU block | CUDA |
-| Linux / Windows, CPU | uv, or `docker compose up` | none |
-| Intel Mac | uv | none |
-
-### In Claude Desktop or Claude Code
-
-An MCP server exposing `pf2e_ask` and `pf2e_search`. Prefer `pf2e_search` when
-the caller is a strong model: hand it the rules text and let it reason, since
-retrieval is the part that carries this system. Config in
-[`deploy/README.md`](deploy/README.md).
-
-## How it works
-
-Players describe situations; a rules database holds entities, and the two share
-almost no vocabulary. "An ogre has grabbed my monk" originally retrieved the
-`Escape` action **7.7%** of the time. The pipeline exists to close that gap.
-
-```
-question
-   │
-   ├─▶ 1. Rewrite ─────── the model writes the one-line summary the answering
-   │                      entry would have, plus up to 3 likely entry kinds
-   │
-   ├─▶ 2. Retrieve ────── seven rankings fused by reciprocal rank:
-   │                      BM25 · dense(full) · dense(summary)
-   │                      × {whole corpus, narrowed to those kinds}
-   │                      + dense(hypothetical summary) against the summary index
-   │
-   ├─▶ 3. Hop ─────────── pre-Remaster entries replaced by what superseded them
-   │
-   ├─▶ 4. Rerank ──────── the same model picks 8 of 24 candidates listwise
-   │
-   └─▶ 5. Answer ─────── excerpts are authoritative; cite the URL; say so when
-                          the answer is not among them
-```
-
-**Techniques, and why each is there.**
-
-| | what it is | worth |
-| --- | --- | --- |
-| **Entity chunking** | one chunk per game object, never token windows | metadata filters become possible |
-| **Hybrid retrieval** | BM25 + dense, fused by reciprocal rank | names and descriptions fail differently |
-| **Summary index** | a second embedding over name + one-line summary | +12.4 R@5 |
-| **HyDE, narrowed** | generate the *summary* an answer would have, not its name | +4.4 R@5 |
-| **Kind routing** | rewriter names entry kinds; search both narrowed and not, fused | +12.4 R@5 |
-| **Remaster hop** | legacy entries rewritten to their replacements | legacy questions 71% → 100% |
-| **Listwise rerank** | the answering model reorders 24 → 8 | +9.4 R@8 on real questions |
-| **Canonical collapse** | duplicate entries merged *before* fusion | evidence stops splitting |
-| **Compact BM25** | flat inverted index in numpy | 36 MB pickle → 8 MB, no dependency |
-| **float16 + mmap, blocked scoring** | index loads in 0.25 s | 583 MB → 395 MB resident |
-
-Everything heavy is delegated to Ollama over HTTP, so the package itself needs
-only `httpx`, `numpy` and `orjson` — no torch, no transformers, no CUDA.
-
-## What we tried
-
-Twenty-odd experiments, roughly half of which failed. The failures produced more
-durable knowledge than the wins, so they are listed too. Full record with numbers
-and diagnoses in [`notes/experiments.md`](notes/experiments.md).
-
-**Shipped**
-
-| | result |
-| --- | --- |
-| Retrieval over closed-book | 18% → 89.5% on the generated benchmark. The whole project in one line. |
-| Query understanding (summary index, HyDE, kind routing) | recall@5 on real phrasing 47.2% → 76.4%; situational questions 7.7% → 77.4% |
-| Fused narrowed + unnarrowed search | R@8 +1.1 on the gate, +17.7 on validated real questions |
-| Listwise reranking | +9.4 R@8 on real questions; false-premise questions to 19/19 |
-| 8 excerpts rather than 5 | 81.7% → 85.3% end to end; 12 excerpts is worse again |
-
-**Rejected**
-
-| | result |
-| --- | --- |
-| **RAFT LoRA** | **+10.1** on the generated benchmark, **−3.0** on hand-written. It learned a question shape, not the domain. |
-| Abstention adapter | abandoned mid-build: the weakness it targeted was 73.7% measured and 94.7% real |
-| Embedder fine-tune v1 | −12.3 R@8. Positives contained the anchor verbatim, so it learned separation without alignment |
-| Embedder fine-tune v2 | recall *up* on the gate, end-to-end **down** 87.2% → 84.4% |
-| One-hop link expansion | parity on the gate, −4.7 on judged answerability. A rules page cites its whole neighbourhood |
-| Never excluding the `rules` category | +9 on real questions, −4.5 on the gate |
-
-**Comparisons**
-
-| model, with the same retrieval | generated benchmark |
-| --- | ---: |
-| Qwen3.5-9B (shipped, on a laptop) | **89.5%** |
-| gpt-5 | 88.0% |
-| Qwen3.8-27B | 85.2% |
-| gpt-4.1-mini | 82.4% |
-| best closed-book, any model (gpt-6-astra) | 32.5% |
-
-Retrieval, not scale, is what closed the gap. Closed-book, everything scores
-18–32%.
+---
 
 ## Shortcomings
 
-Stated plainly, worst first.
+- **Rule interactions are unreliable.** The headline number is lookups.
+- **Lore is not indexed.** 22,604 PathfinderWiki chunks are built and unused.
+- **No multi-turn.** Every question starts cold.
+- **The benchmark has a noise floor of ±3 items.** One configuration run three
+  times scored 95, 93, 92 — Ollama is not reproducible across processes even at
+  `temperature: 0`. Differences under about four items are not results, and two
+  claims in the notes were retracted for exactly this.
+- **"Was Magic Missile renamed?" fails.** The legacy→Remaster hop serves Force
+  Barrage correctly but drops the old name, so the model never sees the string it
+  was asked about.
+- **`follow_remaster` resolves hop targets under the wrong category**, so class
+  feature hops fail silently. Left unfixed on purpose: the targets are class
+  pages, so a working hop may be worse than the legacy row.
+- **No auth on the web UI.** `--host 0.0.0.0` is for your LAN, not the internet.
 
-1. **Rule interactions are unreliable and confidently wrong.** The failure quoted
-   at the top of this file cited two real pages while importing a Pathfinder 1e
-   rule. This is the single largest gap and it is where a table most wants help.
-2. **Real questions are much harder than the benchmark suggests.** 89.9% on
-   hand-written lookups; 31.8% of retrieved excerpt sets judged to contain the
-   answer on questions mined from RPG StackExchange.
-3. **Lore is not indexed.** 22,604 PathfinderWiki chunks are built and unused, so
-   Golarion questions are answered from Archives of Nethys article fragments.
-4. **No conversation.** Every question is independent; "what about if she's
-   prone?" starts from nothing.
-5. **The benchmark is small and partly self-authored.** 109 hand-written items
-   means one item is 0.9%, and the author's blind spots are in it by
-   construction — the mined set exists because of that and is itself only 85
-   validated items.
-6. **The generated benchmark flatters everything.** It names its target entity in
-   88% of questions. Kept for continuity; it decides nothing.
-7. **No auth on the web UI.** `--host 0.0.0.0` is documented for reaching it from
-   a tablet; do not expose it beyond a home network.
-8. **Structured queries go through semantic search.** "Level 4 fighter feats with
-   the flourish trait" is a `WHERE` clause wearing a question's clothes.
+## Corpus and layout
 
-## Future work
-
-Ordered by where the errors actually are, not by what is interesting to build.
-
-**Retrieval — two thirds of remaining gate failures**
-
-- A cross-encoder reranker over a wider pool. The current reranker is the
-  answering model, chosen to avoid a torch dependency; a real one would be better
-  if the deployment can afford it.
-- Multi-hop along a *reasoned* path. A blanket one-hop walk failed; asking the
-  model which link to follow has not been tried.
-- Embedder fine-tuning on **teacher-written player questions** with mined hard
-  negatives. Two cheaper variants failed for diagnosed reasons; this is the
-  version the evidence still supports.
-- A structured query path for filterable questions, bypassing embeddings.
-
-**Platform**
-
-- Publish the image to a registry so `docker compose up` needs no local build.
-- A native MLX embedding path, so an Apple Silicon user could run one server
-  rather than relying on Ollama for the encoder.
-
-**Coverage**
-
-- Index the lore with a source filter so it never answers a rules question.
-- Monthly re-dump for errata, gated on the holdout before publishing.
-
-**Product**
-
-- Multi-turn follow-ups — the largest gap between this and something usable.
-- Character context: import a Pathbuilder JSON, filter to what *this* character
-  can take.
-- A Foundry VTT module. `foundryvtt/pf2e` is Apache-2.0 and Paizo-partnered.
-- Streaming output; 1.6 s to first token feels slower than it is.
-
-**Measurement**
-
-- Grow the holdout past 300 and split dev from test. Everything so far has been
-  tuned on the set it is reported on.
-- Mine questions from more sources; one forum is one community's blind spots.
-- Cross-check the grader against a judge on a sample and read every
-  disagreement — that is how bug sixteen gets found.
-
-## Layout
-
-```
-src/pf2etune/    app.py (runtime) · retrieval.py · bm25.py · mcp_server.py · __main__.py
-                 aon.py · wiki.py · normalize.py (corpus build)
-scripts/         corpus pipeline, index build, packaging, query rewriting, LoRA training
-eval/            two benchmarks, deterministic scorer, 25 pinned regression tests
-deploy/          MacBook install, requirements, install.sh
-notes/           research, prior art, experiment log, roadmap
-docs/            the dossier, licensing
-```
-
-## Corpus
-
-| Source | Chunks | Tokens | License |
-| --- | ---: | ---: | --- |
-| [Archives of Nethys](https://2e.aonprd.com/) | 41,743 | 13.5 M | ORC / Paizo CUP |
-| [PathfinderWiki](https://pathfinderwiki.com/) | 22,604 | 5.6 M | Paizo CUP |
+| Source | Chunks | License |
+| --- | ---: | --- |
+| [Archives of Nethys](https://2e.aonprd.com/) | 41,743 | ORC / Paizo CUP |
+| [PathfinderWiki](https://pathfinderwiki.com/) | 22,604 *(unused)* | Paizo CUP |
 
 Rebuilt from scratch by four scripts; nothing derived is committed. The packaged
-retrieval index ships as a [release asset](https://github.com/DeastinY/pf2etune/releases).
-
-## A note on the scorer
-
-Ten measurement bugs were found over this project's life, every one by reading
-model outputs rather than model scores, and the largest ran in the flattering
-direction for hours. `eval/test_score.py` pins 25 cases taken verbatim from real
-runs. If you change the grader, run it.
+index ships as a [release asset](https://github.com/DeastinY/pf2etune/releases).
+`src/pf2etune` is the runtime, `scripts/` builds the corpus, `eval/` is the
+measurement harness, `notes/` is the record.
 
 ## Contributing
 
-[`CONTRIBUTING.md`](CONTRIBUTING.md) — mostly the measurement discipline, which is
-the part of this project worth copying. Short version: the gate is 109
-hand-written questions, run it before and after, record the number when your
-change loses, and treat an implausible number as a bug until proven otherwise.
+[`CONTRIBUTING.md`](CONTRIBUTING.md) — mostly measurement discipline, which is the
+part worth copying. The gate is 109 hand-written questions: run it before and
+after, record the number when your change loses, run it more than once before
+believing a small difference, and treat an implausible number as a bug until
+proven otherwise. `eval/test_score.py` pins 43 grader cases; run it if you touch
+the scorer.
 
 ## Attribution
 
@@ -367,15 +178,14 @@ Paizo's Community Use Policy. We are expressly prohibited from charging you to
 use or access this content. This work is not published, endorsed, or specifically
 approved by Paizo.**
 
-The rules corpus is [Archives of Nethys](https://2e.aonprd.com/) — a free,
-complete reference maintained by volunteers through an edition remaster. Every
-answer here is really theirs. Please use and support the site directly.
-Acknowledgements for every source, and exactly how each was collected, are in
-[`NOTICE.md`](NOTICE.md).
+The rules corpus is [Archives of Nethys](https://2e.aonprd.com/) — free, complete,
+and maintained by volunteers through an edition remaster. Every answer here is
+really theirs; please use and support the site directly. Full acknowledgements,
+and exactly how each source was collected, are in [`NOTICE.md`](NOTICE.md).
 
 ## Licensing
 
 Rules mechanics are ORC-licensed; Golarion lore and PathfinderWiki are under
-Paizo's Community Use Policy — non-commercial, freely available use only. See
+Paizo's Community Use Policy — non-commercial use only. See
 [`docs/LICENSING.md`](docs/LICENSING.md). This repository is for personal,
 non-commercial research.
