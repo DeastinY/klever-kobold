@@ -1489,3 +1489,31 @@ never reaches the model, and it correctly reports that the excerpts do not
 mention it. The hop is right and the citation is right; what is missing is that
 the served row does not say what it used to be called. Carrying `legacy_name`
 onto the remaster row is the obvious fix and needs its own gate run.
+
+
+## Small models on index-v2, and why 31 items said the opposite
+
+Same runtime, same new index, rerank on:
+
+| model | holdout | mean s/question (5090) |
+| --- | ---: | ---: |
+| qwen3.5:9b | **100/109 (91.7%)** | 1.87 |
+| qwen3.5:4b | 93/109 (85.3%) | 1.60 |
+| qwen3.5:2b | 86/109 (78.9%) | 1.17 |
+
+The MacBook run saw the 4B at 27/31 against the 9B's 26/31 on the first 31 items
+and read that as parity at half the latency. On the new index that subset
+reproduces — **9b 28/31, 4b 27/31** — and it is still the wrong conclusion. Over
+all 109 the 9B wins by seven items, which is well outside the ±3 run-to-run
+spread. Thirty-one items could not have shown this; the subset is not a small
+version of the benchmark, it is a different one.
+
+The 4B's losses are 3 descriptive, 2 false-premise, 2 legacy, 1 comparative. The
+descriptive ones are near-misses of exactly the shape the rewrite-step bug
+predicts — confident, fluent, and naming the wrong entity ("Heartless
+Debilitations", "Untamed Form" for the wrong reason, a "thieves' toolkit" answer
+that misses what the item wanted).
+
+**Default stays qwen3.5:9b.** The Faster preset already offers the 4B to anyone
+who needs it, and this is the full number that the instruction asked for before
+changing anything.
