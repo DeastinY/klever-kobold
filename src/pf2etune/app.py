@@ -25,6 +25,7 @@ The pipeline is the one the benchmark measured, in order:
 
 from __future__ import annotations
 
+import copy
 import os
 import pathlib
 import re
@@ -202,8 +203,17 @@ class OpenAICompatible:
     def __init__(self, base_url: str, api_key: str = "not-needed",
                  timeout: float | None = 180.0) -> None:
         self.base_url = base_url.rstrip("/")
+        # Every published OpenAI-compatible base URL ends in /v1 and every path
+        # here starts with it, so the obvious paste produces /v1/v1/chat. Nobody
+        # serves a real endpoint under a second /v1, so strip it rather than
+        # returning a 404 the user has to decode.
+        if self.base_url.endswith("/v1"):
+            self.base_url = self.base_url[:-3]
         self._client = httpx.Client(timeout=timeout,
                                     headers={"Authorization": f"Bearer {api_key}"})
+
+    def close(self) -> None:
+        self._client.close()
 
     def _post(self, path: str, body: dict) -> dict:
         try:
@@ -266,6 +276,9 @@ class Ollama:
     def __init__(self, base_url: str = DEFAULT_OLLAMA, timeout: float | None = 180.0) -> None:
         self.base_url = base_url.rstrip("/")
         self._client = httpx.Client(timeout=timeout)
+
+    def close(self) -> None:
+        self._client.close()
 
     def _post(self, path: str, body: dict) -> dict:
         try:
@@ -339,12 +352,59 @@ class Ollama:
             ) from exc
 
 
+def client_for(backend: str, base_url: str, api_key: str | None = None,
+               timeout: float | None = 180.0):
+    """The HTTP client for a backend name. One place, so overrides agree with startup."""
+    if backend == "openai":
+        return OpenAICompatible(base_url, api_key or "not-needed", timeout=timeout)
+    return Ollama(base_url, timeout=timeout)
+
+
+def probe_backend(backend: str, base_url: str, api_key: str | None = None,
+                  timeout: float = 8.0) -> list[str]:
+    """The model names a backend is currently serving, sorted.
+
+    Two callers: "test connection", and the settings panel's model list, so a
+    model can be picked rather than typed from memory. The key is used for the
+    one request and discarded -- it is never returned, stored or logged, and
+    response bodies are deliberately left out of error messages so a provider
+    that echoes credentials back in an error cannot leak them onward.
+    """
+    base = base_url.rstrip("/")
+    headers: dict[str, str] = {}
+    if backend == "openai":
+        if base.endswith("/v1"):
+            base = base[:-3]
+        url = f"{base}/v1/models"
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+    else:
+        url = f"{base}/api/tags"
+    try:
+        r = httpx.get(url, headers=headers, timeout=timeout)
+    except httpx.HTTPError as exc:
+        raise OllamaError(f"Cannot reach {url} ({type(exc).__name__}).") from exc
+    if r.status_code >= 400:
+        detail = " — check the API key" if r.status_code in (401, 403) else ""
+        raise OllamaError(f"{url} returned {r.status_code}{detail}.")
+    try:
+        data = orjson.loads(r.content)
+    except orjson.JSONDecodeError as exc:
+        raise OllamaError(f"{url} did not return JSON; is that the right base URL?") from exc
+    if backend == "openai":
+        rows = data.get("data") or []
+        return sorted({str(m.get("id")) for m in rows if isinstance(m, dict) and m.get("id")})
+    rows = data.get("models") or []
+    return sorted({str(m.get("name")) for m in rows if isinstance(m, dict) and m.get("name")})
+
+
 class Assistant:
     def __init__(self, index_dir: pathlib.Path = DEFAULT_INDEX,
                  ollama_url: str = DEFAULT_OLLAMA, backend: str = "ollama",
                  llm_model: str | None = None, embed_model: str | None = None,
                  context_chars: int = CONTEXT_CHARS,
-                 answer_tokens: int = ANSWER_TOKENS) -> None:
+                 answer_tokens: int = ANSWER_TOKENS,
+                 api_key: str | None = None) -> None:
         index_dir = pathlib.Path(index_dir)
         if not (index_dir / "manifest.json").exists():
             raise OllamaError(
@@ -353,13 +413,17 @@ class Assistant:
                 f"or point --index at an unpacked pf2e-index directory."
             )
         self.manifest = orjson.loads((index_dir / "manifest.json").read_bytes())
-        if backend == "openai":
-            self.ollama = OpenAICompatible(ollama_url)
-        else:
-            self.ollama = Ollama(ollama_url)
+        self.ollama = client_for(backend, ollama_url, api_key)
+        # Answering and embedding are separable: a variant can send the answer to
+        # someone else's model while retrieval keeps talking to the encoder that
+        # built the index. They start as the same client, which is the single-
+        # backend case and costs nothing.
+        self.embed_client = self.ollama
         self.backend = backend
+        self.base_url = self.ollama.base_url
         self.context_chars = context_chars
         self.answer_tokens = answer_tokens
+        self._verified = False
         if llm_model:
             self.manifest["ollama_llm"] = llm_model
         if embed_model:
@@ -408,6 +472,50 @@ class Assistant:
                 if targets:
                     self._links[src] = targets
 
+    def variant(self, backend: str, base_url: str, llm_model: str = "",
+                api_key: str | None = None, context_chars: int | None = None,
+                answer_tokens: int | None = None,
+                remote_embedder: bool = False) -> "Assistant":
+        """A second Assistant over the *same* loaded index, answering elsewhere.
+
+        The index is 250 MB of memory-mapped arrays, a BM25 matrix and 41,743
+        metadata rows; rebuilding that because someone changed a model name in
+        the settings panel would cost a second and the memory twice over. A
+        shallow copy shares all of it by reference -- every shared attribute is
+        read-only once ``__init__`` has run -- and only the HTTP client, the
+        model names and the two length caps differ.
+
+        ``remote_embedder`` is the dangerous switch and defaults off. Retrieval
+        normally keeps using the encoder this server started with and already
+        verified against the index fingerprint, so pointing the answer at
+        someone else's model cannot quietly change what is retrieved. Turned on,
+        ``require_embedder`` gates the first request instead.
+        """
+        clone = copy.copy(self)
+        clone.manifest = dict(self.manifest)   # so an override does not leak into the base
+        if llm_model:
+            clone.manifest["ollama_llm"] = llm_model
+        clone.ollama = client_for(backend, base_url, api_key)
+        clone.backend = backend
+        clone.base_url = clone.ollama.base_url
+        clone.embed_client = clone.ollama if remote_embedder else self.embed_client
+        if context_chars:
+            clone.context_chars = context_chars
+        if answer_tokens:
+            clone.answer_tokens = answer_tokens
+        # A shared embedder is whatever the base already proved at startup; a
+        # remote one has proved nothing yet.
+        clone._verified = self._verified and not remote_embedder
+        return clone
+
+    def close(self) -> None:
+        """Release this configuration's HTTP client. The shared index is untouched.
+
+        Only ever called on a variant: closing the client of the Assistant the
+        server started with would take the whole page down with it.
+        """
+        self.ollama.close()
+
     def body(self, chunk_id: str) -> str:
         span = self._body_offsets.get(chunk_id)
         if span is None:
@@ -437,6 +545,43 @@ class Assistant:
             return False, 0.0
         return float(vec @ expected) >= 0.95, float(vec @ expected)
 
+    def _mismatch_message(self, similarity: float) -> str:
+        detail = ("dimensions differ" if similarity == 0.0
+                  else f"similarity {similarity:.2f}, expected ~1.00")
+        return (f"The embedding model does not match the one this index was built "
+                f"with ({detail}).\n"
+                f"  Index built with: {self.manifest['embed_model']}\n"
+                f"  Serving now:      {self.manifest['ollama_embed']} at {self.embed_client.base_url}\n"
+                f"Retrieval would return plausible but unrelated entries.")
+
+    def require_embedder(self) -> None:
+        """Refuse to retrieve through an encoder that has not been checked.
+
+        Idempotent and cached: the fingerprint probe is a model call, and paying
+        it on every question would be absurd. A configuration that fails stays
+        unverified and fails the same way on the next request, which is what the
+        settings panel needs in order to keep showing the error.
+        """
+        if self._verified:
+            return
+        try:
+            ok, similarity = self.verify_embedder()
+        except OllamaError:
+            raise
+        except Exception as exc:
+            # A backend that answers but cannot embed -- an OpenAI-compatible
+            # server with only chat models, or Ollama handed a chat model as an
+            # encoder -- fails somewhere inside httpx. Name the thing that is
+            # missing instead of showing the page a status code.
+            raise OllamaError(
+                f"{self.embed_client.base_url} could not embed with "
+                f"{self.manifest['ollama_embed']!r} ({type(exc).__name__}).\n"
+                f"That backend has to serve the encoder this index was built with, "
+                f"or leave the embedder set to this server's own.") from exc
+        if not ok:
+            raise OllamaError(self._mismatch_message(similarity))
+        self._verified = True
+
     def warmup(self, progress=None) -> dict:
         """Make both models resident before anyone asks a question.
 
@@ -446,8 +591,8 @@ class Assistant:
         """
         timings = {}
         for label, call in (
-            ("embedding model", lambda: self.ollama.embed(["warmup"],
-                                                          self.manifest["ollama_embed"])),
+            ("embedding model", lambda: self.embed_client.embed(
+                ["warmup"], self.manifest["ollama_embed"])),
             ("language model", lambda: self.ollama.chat("Reply with: ok", "ok",
                                                         self.manifest["ollama_llm"],
                                                         max_tokens=4)),
@@ -462,14 +607,8 @@ class Assistant:
 
         ok, similarity = self.verify_embedder()
         if not ok:
-            detail = (f"dimensions differ" if similarity == 0.0
-                      else f"similarity {similarity:.2f}, expected ~1.00")
-            raise OllamaError(
-                f"The embedding model does not match the one this index was built "
-                f"with ({detail}).\n"
-                f"  Index built with: {self.manifest['embed_model']}\n"
-                f"  Serving now:      {self.manifest['ollama_embed']}\n"
-                f"Retrieval would return plausible but unrelated entries.")
+            raise OllamaError(self._mismatch_message(similarity))
+        self._verified = True
         return timings
 
     # --- pipeline ------------------------------------------------------------
@@ -496,7 +635,8 @@ class Assistant:
 
     def _embed_queries(self, texts: list[str]) -> np.ndarray:
         prefix = self.manifest["query_prefix"]
-        return self.ollama.embed([prefix + t for t in texts], self.manifest["ollama_embed"])
+        return self.embed_client.embed([prefix + t for t in texts],
+                                       self.manifest["ollama_embed"])
 
     def search(self, question: str, k: int = DEFAULT_K, plan: dict | None = None,
                rerank: bool = True, pool: int | None = None,

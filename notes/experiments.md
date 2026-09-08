@@ -1141,3 +1141,153 @@ size is wanted, `qwen3.5:2b-q4` is ~1.4 GB and untested here.
 invented rules and its query rewrites are already fabricating game mechanics
 ("off-guard ... allows a creature to move freely without being attacked"). It is
 fast because it is not doing the job.
+
+## Getting a 16 GB M3 MacBook under 30 seconds
+
+Target set from the field: answers in 30 s or better on a 16 GB MacBook Pro M3.
+None of this is measured on that machine — there is no Apple Silicon here — so
+the split below is deliberate: **token counts are measured exactly** (they are
+hardware-independent), **quality is measured exactly** on the holdout, and only
+the seconds are projected, from published M3 rates.
+
+### The measured token budget
+
+Per question, from the deployed pipeline on the real prompts:
+
+| stage | prefill tokens | decode tokens (actual, not the cap) |
+| --- | ---: | ---: |
+| rewrite | 284 | ~40 |
+| rerank | 430 | ~20 |
+| answer | 1362 | ~220 |
+| **total** | **2076** | **~280** |
+
+The 400-token answer cap is not the operative number: real answers come in at
+219 tokens mean for the 9B and 238 for the 4B.
+
+### What the cuts cost, measured
+
+| configuration | holdout |
+| --- | ---: |
+| 9b + rerank *(shipped default)* | 98/109 (89.9%) |
+| 9b, no rerank | 96/109 (88.1%) |
+| 4b + rerank | 92/109 (84.4%) |
+| **4b, no rerank** | **95/109 (87.2%)** |
+| 4b, no rerank, 250 answer tokens, 1200 context chars | 94/109 (86.2%) |
+
+**Retracted within the hour.** The line that stood here said the listwise rerank
+was actively harmful on the 4B and that removing it was worth +2.8 points. It was
+a three-item difference between two single runs, and three items is noise — see
+"The noise floor" below. What survives is weaker and still sufficient: removing
+the rerank costs nothing measurable on the 4B and removes a whole model call.
+
+So the laptop configuration is still **4b with reranking off**, but for the
+boring reason rather than the interesting one.
+
+### Projection, and why it is suspicious
+
+Published figure for the exact default model on this class of machine: Qwen3.5
+9B at **~16 tok/s** on an M3 16 GB. Decode is bandwidth-bound, so the 4B's
+3.4 GB against the 9B's 6.6 GB implies roughly 28 tok/s. Prefill rate on a base
+M3 is the weakest assumption here — taken as ~200 tok/s for the 9B and ~400 for
+the 4B, and not sourced.
+
+| configuration | projected | holdout |
+| --- | ---: | ---: |
+| 9b + rerank *(default)* | ~29 s | 89.9% |
+| 9b, no rerank | ~26 s | 88.1% |
+| 4b + rerank | ~17 s | 84.4% |
+| **4b, no rerank** | **~16 s** | **87.2%** |
+| 4b, no rerank, 250 tok, 1200 chars | ~14 s | 86.2% |
+
+**The projection says the current default should already run in ~29 s, and the
+field reports 60.** A 2× gap that size is not explained by the token budget, so
+something else on that machine is the dominant cost. The most likely candidate
+is model thrashing: every question embeds and then chats, and on 16 GB the 9B
+(6.6 GB) plus the embedder (0.64 GB) sit close enough to what macOS will commit
+to the GPU that Ollama may be evicting one for the other on every question. A
+full reload is seconds, and the exact same failure — silent, no error, looks
+like a slow model — cost this project a whole measurement round on the desktop
+when Ollama's three-model limit was full.
+
+That is checkable on the machine itself rather than guessed at:
+`ollama ps` during a question should show both models resident, and
+`load_duration` in an `/api/chat` response should be ~0 on the second question.
+If it is not, no amount of shrinking the token budget fixes it — though a 4B,
+being half the size, makes the thrash stop by fitting.
+
+### MLX, corrected
+
+An earlier note in this session had the MLX trade-off backwards. llama.cpp's
+FlashAttention overtakes MLX on prefill only **above roughly 30,000 tokens** of
+context; this pipeline's prompt is 2,076. So MLX is the faster engine for this
+workload, not the slower one.
+
+Worth more than the engine choice: on an M3 Max at 4-bit, native `mlx-lm`
+measured 163 tok/s against Ollama-with-MLX at 65 and stock Ollama at 51 — the
+runtime mattered about 3× on that benchmark, against 2× for halving the model.
+That was a mixture-of-experts model, where MLX's advantage is largest; for dense
+models the reported spread is 1.4–1.8×. Either way the cheapest untried win on
+Apple Silicon is pointing at `mlx-lm.server` instead of Ollama, which needs no
+new code — `--backend openai --ollama http://localhost:8080/v1` already exists.
+
+No MoE model helps here: the smallest in the Qwen line is 35B-A3B at ~20 GB,
+which does not fit 16 GB.
+
+
+## The noise floor, and a retraction
+
+The settings-panel work ran the gate and scored 3 items *above* the recorded
+baseline for its configuration. CONTRIBUTING says an implausible number is a bug
+until proven otherwise, so it was chased rather than banked — and the bug turned
+out to be in every single-run comparison in this file, including several made
+earlier the same day.
+
+**One configuration, three identical runs: 95, 93, 92 out of 109.**
+
+That is `qwen3.5:4b`, no rerank, 400 answer tokens, 1600 context chars, run three
+times against the same holdout with the same code. Between two of those runs,
+90/109 responses were byte-identical and 108/109 verdicts agreed; between runs
+made under different machine conditions only 47/109 responses matched. Ollama at
+`temperature: 0` is not reproducible across processes — batching and GPU
+scheduling move enough logits to change a decision on roughly one question in
+ten, and occasionally that changes a verdict.
+
+**A single-run difference of three items on this holdout is not a result.**
+
+What that retracts, from this session:
+
+| claim | status |
+| --- | --- |
+| "removing the rerank is worth +2.8 points on the 4B" (3 items) | **retracted** — the with-rerank score of 92 sits inside the 92–95 spread |
+| "the rerank is worth ~1.8 points on the 9B" (2 items) | **retracted** — not measurable |
+| 9B (98) against 4B (92, mean ~93) | ~5 items, larger than the spread; probably real, but not to a decimal |
+| the 0.8b→9b trend, 83 → 98 | 15 items; safe |
+| 27B against 9B, 98 against 98 | a null result, and nulls are the safe direction |
+
+What it does *not* retract: the token counts, which are exact; the memory
+figures; and the qualitative false-premise failures, which are specific answers
+that were read rather than scores that were compared.
+
+The cheap fix is to stop drawing conclusions from single runs of a 109-item
+benchmark. Three runs of a configuration cost twelve minutes and would have
+prevented both retractions above.
+
+## 27B: three times the model, no gain
+
+`qwen3.8:27b` against the same holdout, same retrieval, rerank on:
+
+| model | holdout | mean s/question (5090) |
+| --- | ---: | ---: |
+| qwen3.5:9b | 98/109 (89.9%) | 2.16 |
+| **qwen3.8:27b** | **98/109 (89.9%)** | 3.83 |
+
+Identical, at 2.8× the weights and 1.8× the wall clock. The family split moved
+around inside that total — 27B took false premises 18/19 against 19/19 and
+descriptive questions 25/33 against 24/33 — but those are one-item moves, which
+the section above says to ignore.
+
+This is the most useful negative result in the file. **The ceiling is not the
+answering model.** Nothing above 9B is worth its memory here, which also means
+the remaining headroom is in retrieval, not generation — the same conclusion the
+answerability measurement reached from the other side, where only 31.8% of
+retrieved excerpt sets on real questions were judged to contain the answer.
