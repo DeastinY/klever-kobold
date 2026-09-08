@@ -1243,7 +1243,8 @@ The 400-token answer cap is not the operative number: real answers come in at
 219 tokens mean for the 9B and 238 for the 4B.
 
 **Superseded in part.** These counts predate the 120-word budget added to the
-answer prompt (see "Answer length belongs in the prompt"), which takes the 9B's
+answer prompt (see "Swept, and what the holdout could not see" above, under
+"Then corrected, in use"), which takes the 9B's
 answer to ~156 tokens. The decode total per question is therefore closer to 216
 than the 280 below, and every projected second in this section is correspondingly
 pessimistic — the direction of the error is safe, but the numbers are stale.
@@ -1282,6 +1283,29 @@ the 4B, and not sourced.
 | 4b + rerank | ~17 s | 84.4% |
 | **4b, no rerank** | **~16 s** | **87.2%** |
 | 4b, no rerank, 250 tok, 1200 chars | ~14 s | 86.2% |
+
+**Replaced by measurement.** The answer-length work timed decode on the actual
+M3, which retires the guessed rates above: **9B decodes at ~12.6 tok/s and 4B at
+~21 tok/s** (458 tokens in 36.2 s; 286 in 13.5 s). Both are slower than the
+~16 tok/s the published figure suggested for the 9B, which is why the field saw
+60 s and this table said 29.
+
+Decode per question, using the 120-word prompt now in use — answer plus the ~60
+tokens the rewrite and rerank spend between them:
+
+| configuration | answer decode | + rewrite/rerank | decode total |
+| --- | ---: | ---: | ---: |
+| 9b + rerank | 11.9 s | ~4.7 s | **~16.6 s** |
+| 9b, no rerank | 11.9 s | ~3.2 s | ~15.1 s |
+| 4b + rerank | 7.3 s | ~2.8 s | ~10.1 s |
+| 4b, no rerank | 7.3 s | ~1.9 s | **~9.2 s** |
+
+Prefill is the one term still unmeasured on that machine: 2076 tokens at an
+unknown rate, plus ~1–2 s of retrieval. **The 30-second target is met by the
+shipped 9B** as long as prefill runs at 150 tok/s or better, and the 4B has
+about 7 seconds more headroom. Which means the answer-length fix, not the model
+swap, was the thing that mattered — and the remaining question for that laptop is
+prefill throughput, not which model to run.
 
 **The projection says the current default should already run in ~29 s, and the
 field reports 60.** A 2× gap that size is not explained by the token budget, so
