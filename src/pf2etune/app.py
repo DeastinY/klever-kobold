@@ -49,7 +49,7 @@ DEFAULT_OLLAMA = "http://localhost:11434"
 KEEP_ALIVE = "2h"
 
 INDEX_URL = ("https://github.com/DeastinY/pf2etune/releases/download/"
-             "index-v1/pf2e-index.tar.gz")
+             "index-v2/pf2e-index.tar.gz")
 
 
 def default_index() -> pathlib.Path:

@@ -1399,3 +1399,93 @@ answering model.** Nothing above 9B is worth its memory here, which also means
 the remaining headroom is in retrieval, not generation — the same conclusion the
 answerability measurement reached from the other side, where only 31.8% of
 retrieved excerpt sets on real questions were judged to contain the answer.
+
+
+## index-v2: measuring the embed resolution and the dedupe fix separately
+
+Both changes landed the same morning, so they were scored apart. Runtime is the
+deployed one (`--backend app --rerank --pool 24`, qwen3.5:9b), grader unchanged.
+
+`dump_aon.py` was re-run first and diffed against the previous dump: 45,547 docs,
+0 added, 0 removed, 0 changed. So the whole chunk delta is the normalizer's.
+
+### The rebuild
+
+5,149 chunks changed text (12.3% of 41,743), every one longer, +1,617,624 chars —
+creature 2,687, rules 1,029, weapon 566, archetype 344. Checks: rules-2442 carries
+all nine exploration activities (2196 → 3686 chars), rules-15 lists its 29 key
+terms (264 → 4807), and Scout is byte-identical, so resolution did not leak into
+entries that embed nothing.
+
+Two silent build hazards, both worth a guard next time. `build_index.py` OOMs at
+`--batch-size 256` if Ollama still holds memory and the chunks have grown. And
+**both** `bm25.pkl` and `bm25.npz` are skipped when they already exist — the
+package would have shipped a lexical index built on the old text, blind to all
+1.6M new characters, with nothing printed to say so.
+
+### Three runs
+
+| | holdout | grounding |
+| --- | ---: | ---: |
+| (a) old index, code at 6ceb5a2 | 99/109 (90.8%) | 74.9% |
+| (b) old index, current code | 98/109 (89.9%) | 77.8% |
+| (c) new index, current code | **100/109 (91.7%)** | 76.5% |
+
+Per item, (b) → (c) is **+2 / −0**: the new index recovers exactly the two
+situational questions the code change had cost. (a) → (c) is +2 descriptive,
+−1 legacy.
+
+That one legacy "loss" is an artifact and not a regression. Both runs answer
+"yes, evocation is still a thing", which is wrong; (a) scores correct only
+because it phrased the wrong answer without the exact string in
+`must_not_contain`, and neither contains the required word "removed". For
+free-form items `correct` is deliberately only the negative check, with
+`must_contain` feeding `grounding` — so grounding is the better column here, and
+legacy grounding goes **50% → 71% → 86%**.
+
+### What did not move
+
+Retrieval-only recall, by canonical key, is unchanged:
+
+| mode | old R@5 / R@8 | new R@5 / R@8 |
+| --- | ---: | ---: |
+| bm25 | 16.7 / 21.4 | 19.0 / 20.2 |
+| dense | 48.8 / 53.6 | 50.0 / 53.6 |
+| hybrid | 36.9 / 41.7 | 36.9 / 41.7 |
+| hybrid+hop | 50.6 / 57.3 | 50.6 / 57.3 |
+
+Gold-entity recall with no rewrite and no rerank is **54/89 on both**, which
+reproduces the MacBook figure exactly.
+
+**This is the honest shape of the change: it improves what the served rows say,
+not which rows are selected.** Retrieval moved on 90 of 109 questions between (b)
+and (c) and the score moved by two, because the win is a page that now contains
+its own activity list rather than a different page being chosen.
+
+### Legacy rows, and a bug in the hop
+
+Served legacy rows are 21/712 on the old index and 19/712 on the new — the
+earlier 374/712 was the pre-dedupe-fix code, not the index. The note that the
+survivors "have no remaster_id" is not what the data says: **all of them have
+one, and none of the targets resolve.**
+
+`follow_remaster` looks the target up as `aon:{source category}:{target}`, using
+the *source* row's category. The targets live under their own: a class feature's
+`remaster_id` of `class-36` is `aon:class:class-36`, not
+`aon:class-feature:class-36`. Every such hop fails silently.
+
+Do not fix this without measuring it. Those targets are class *pages* — Sneak
+Attack's remaster_id points at Rogue — so a working hop would replace a specific
+feature with a whole class entry, which is plausibly worse than serving the
+legacy feature. The rest are `remaster_id = ['0']`, a sentinel for "removed, no
+replacement", which correctly cannot hop.
+
+### A known defect this release does not fix
+
+"Was Magic Missile renamed?" fails, identically on both indexes. Retrieval finds
+Force Barrage at rank 2, but `follow_remaster` hops the legacy Magic Missile row
+away, and Force Barrage carries no `legacy_name` — so the string "Magic Missile"
+never reaches the model, and it correctly reports that the excerpts do not
+mention it. The hop is right and the citation is right; what is missing is that
+the served row does not say what it used to be called. Carrying `legacy_name`
+onto the remaster row is the obvious fix and needs its own gate run.
