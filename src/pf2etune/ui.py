@@ -355,9 +355,12 @@ kbd{font:inherit;font-size:.75rem;background:var(--chip);border:1px solid var(--
  color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:.45rem .8rem;
  margin:.2rem 0 .6rem}
 .from button{padding:.25rem .6rem;font-size:.78rem}
-.answer .flag .report{margin-left:auto;padding:.2rem .55rem;font-size:.74rem;white-space:nowrap;
- border-color:var(--warn-line);background:var(--warn-bg);color:var(--warn)}
-.answer .flag .report:hover{border-color:var(--warn)}
+.answer .foot{display:flex;align-items:center;gap:.6rem;margin-top:.7rem}
+.answer .foot .timing{margin:0}
+.answer .foot .fun{font-style:italic}
+.answer .foot .report{margin-left:auto;padding:.2rem .55rem;font-size:.74rem;white-space:nowrap;
+ border-color:var(--line);background:var(--card);color:var(--muted)}
+.answer .foot .report:hover{border-color:var(--warn);color:var(--warn)}
 .r-label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:.7rem 0 .2rem}
 .r-quote{margin:0;font-size:.88rem;color:var(--soft);background:var(--code);border:1px solid var(--line);
  border-radius:6px;padding:.45rem .6rem;white-space:pre-wrap}
@@ -414,9 +417,8 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 <form id="f"><input id="q" placeholder="ask what happens, name it, or describe it…" autofocus
  autocomplete="off" disabled><button class="primary" id="askbtn" disabled>Ask</button>
 <button id="lookbtn" type="button" disabled>Look up</button></form>
-<p class="hint"><kbd>Enter</kbd> asks and writes an answer from the rules — good for straight
-lookups, unreliable for rule interactions; check the citation. <kbd>Shift</kbd>+<kbd>Enter</kbd>
-just shows the entries. <kbd>↑</kbd> brings back an earlier question.</p>
+<p class="hint"><kbd>Enter</kbd> asks · <kbd>Shift</kbd>+<kbd>Enter</kbd> shows only the entries
+· <kbd>↑</kbd> earlier questions</p>
 
 <div id="history-wrap" class="ov" hidden><div class="pop" role="dialog" aria-modal="true" aria-label="Asked before">
 <button type="button" class="x" data-close="history-wrap" title="Close (Esc)" aria-label="Close">×</button>
@@ -782,7 +784,7 @@ const KIND_ICON={
  action:'<svg viewBox="0 0 16 16"><path d="M8 1l7 7-7 7-7-7z"/></svg>',
  skill:'<svg viewBox="0 0 16 16"><path d="M2 2h5.2c.7 0 1.3.3 1.8.8.5-.5 1.1-.8 1.8-.8H14v10h-4.4c-.6 0-1.1.3-1.6.8-.5-.5-1-.8-1.6-.8H2zm1.4 1.4v7.2H6c.6 0 1.1.1 1.3.4V4.4c-.3-.6-.8-1-1.3-1zm5.3 1v6.6c.2-.3.7-.4 1.3-.4h2.6V3.4H10c-.5 0-1 .4-1.3 1z"/></svg>',
  rules:'<svg viewBox="0 0 16 16"><path d="M3 1h8.5A1.5 1.5 0 0113 2.5V13H4.3a1 1 0 000 2H13v-1H4.3a2.3 2.3 0 010-4.6H11.5V2.4H3.5c-.3 0-.5.2-.5.5V11h-1V2.9A1.9 1.9 0 013 1z"/></svg>',
- item:'<svg viewBox="0 0 16 16"><path d="M5 4V3a3 3 0 016 0v1h2.2l.8 10H2l.8-10zm1.4 0h3.2V3a1.6 1.6 0 00-3.2 0z"/></svg>',
+ item:'<svg viewBox="0 0 16 16"><path d="M13.6 1.2 14.8 2.4 7.9 9.3l-1.2-1.2z"/><path d="M5.4 9.4l1.2 1.2-1 1-.9.1-.3-.3.1-.9z"/><path d="M4.2 8.6l3.2 3.2-1.1 1.1-3.2-3.2z" opacity=".55"/><path d="M3.3 11.6l1.1 1.1-1.6 1.6a.8.8 0 01-1.1-1.1z"/></svg>',
  creature:'<svg viewBox="0 0 16 16"><circle cx="4" cy="5" r="1.7"/><circle cx="12" cy="5" r="1.7"/><circle cx="7" cy="2.6" r="1.5"/><circle cx="9.6" cy="2.6" r="1.5"/><path d="M8 7c2.6 0 4.5 2.1 4.5 4.2 0 1.7-1.4 2.6-2.6 2.1-.9-.4-2.9-.4-3.8 0-1.2.5-2.6-.4-2.6-2.1C3.5 9.1 5.4 7 8 7z"/></svg>',
  condition:'<svg viewBox="0 0 16 16"><path d="M8 14.5S1.5 10.2 1.5 5.6A3.4 3.4 0 018 3.7a3.4 3.4 0 016.5 1.9c0 4.6-6.5 8.9-6.5 8.9z"/></svg>',
  class:'<svg viewBox="0 0 16 16"><path d="M8 1.2l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.5l-4 2.1.8-4.5L1.5 5.9 6 5.3z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
@@ -1171,7 +1173,9 @@ for(const name of ['better','faster'])
 let EXPERT=false;try{EXPERT=localStorage.getItem('pf2e-expert')==='1'}catch(e){}
 function paintExpert(){EL('expert').hidden=!EXPERT;EL('s-expert').checked=EXPERT}
 EL('s-expert').addEventListener('change',()=>{EXPERT=EL('s-expert').checked;
-  try{localStorage.setItem('pf2e-expert',EXPERT?'1':'0')}catch(e){};paintExpert()});
+  try{localStorage.setItem('pf2e-expert',EXPERT?'1':'0')}catch(e){};paintExpert();
+  const tm=document.querySelector('.answer .foot .timing:not(.fun)');
+  if(tm&&CURRENT&&CURRENT.timings)tm.outerHTML=stamp(CURRENT.timings,false)});
 paintExpert();
 /* ---------- fetching a model the first time it is chosen ----------
    Ollama pulls on request, not on use: picking Better on a machine that only
@@ -1417,8 +1421,22 @@ if(!seen)openHelp();
 const LINES={
  search:['Consulting the Archives','Thumbing through the index','Searching the stacks'],
  find:['Consulting the Archives','Rolling Recall Knowledge','Finding the right page',
-       'Asking the librarian','Checking the errata'],
- write:['The scribe is writing','Putting it in plain words','Citing the sources']};
+       'Asking the librarian','Checking the errata','Pondering the orb','Waking the archivist'],
+ write:['The scribe is writing','Pondering the orb','Questioning the dead','Consulting the oracle',
+        'Leafing through the Player Core','Arguing with the GM','Sharpening the quill',
+        'Casting Read Aura','Counting the action icons','Rolling a secret check'],
+ fun:['Pondering the orb','Questioning the dead','Consulting the oracle','Arguing with the GM',
+      'Leafing through the Player Core','Sharpening the quill','Casting Read Aura',
+      'Rolling a secret check','Bribing the librarian','Checking the errata',
+      'Asking Nethys nicely','Reading the fine print']};
+let funTimer=null;
+function funStart(){
+  const t0=Date.now(),pool=LINES.fun.slice().sort(()=>Math.random()-.5);
+  clearInterval(funTimer);
+  funTimer=setInterval(()=>{const el=document.getElementById('fun');
+    if(el)el.textContent=pool[Math.floor((Date.now()-t0)/2600)%pool.length]+'…'},250);
+}
+function funStop(){clearInterval(funTimer);funTimer=null}
 let timer=null;
 function rolling(on){d20.classList.toggle('rolling',on)}
 function busy(kind){
@@ -1429,27 +1447,27 @@ function busy(kind){
     el.textContent=label+'… '+((Date.now()-t0)/1000).toFixed(1)+'s'};
   tick();clearInterval(timer);timer=setInterval(tick,250);rolling(true);
 }
-function stamp(t){
-  // The per-stage split is the answer to "why is this slow on my laptop".
+function stamp(t,live){
+  // While writing: something to read. Done: the total. Expert mode: the
+  // per-stage split, which is the answer to "why is this slow on my laptop".
+  if(live)return '<span class="timing fun" id="fun">'+LINES.fun[0]+'…</span>';
+  if(!t||t.total===undefined)return '<span class="timing"></span>';
+  if(!EXPERT)return '<span class="timing">'+t.total.toFixed(1)+' s</span>';
   const parts=[];
   for(const k of ['rewrite','retrieve','rerank','first_token','answer'])
     if(t[k]!==undefined)parts.push(k.replace('_',' ')+' '+t[k].toFixed(1)+'s');
-  if(!parts.length)return '';
-  return '<div class="timing">'+parts.join(' · ')+
-    (t.total?' · total '+t.total.toFixed(1)+'s':'')+'</div>';
+  return '<span class="timing">'+parts.join(' · ')+' · total '+t.total.toFixed(1)+'s</span>';
 }
 function setCites(hits){
   CITES=hits||[];AON_LABEL={};CITES.forEach(h=>{if(h.url)AON_LABEL[h.url]=h.name});
 }
 function answerCard(answer,timings,live){
-  return '<div class="card answer"><div class="flag"><span>⚠</span>'+
-    '<span>Generated from the entries below — verify against the citations, '+
-    'especially for rule interactions.</span>'+
-    (live?'':'<button type="button" class="report" id="report-btn">Wrong? Report it</button>')+
-    '</div>'+
+  return '<div class="card answer">'+
     '<div class="body">'+(answer?md(answer,true)+(live?'<span class="caret"></span>':'')
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>')+'</div>'+
-    stamp(timings||{})+'</div>';
+    '<div class="foot">'+stamp(timings||{},live)+
+    (live?'':'<button type="button" class="report" id="report-btn">Wrong? Report it</button>')+
+    '</div></div>';
 }
 /* ---------- reporting a wrong answer ----------
    The one place this page sends anything anywhere: a form, filled in by hand,
@@ -1517,7 +1535,7 @@ function fromBanner(r){
 }
 function replay(r){
   showHome(false);setCites(r.hits);EXTRA=r.mentions||[];
-  CURRENT=r.mode==='ask'?{q:r.q,answer:r.answer,sources:r.hits,model:r.model}:null;
+  CURRENT=r.mode==='ask'?{q:r.q,answer:r.answer,sources:r.hits,model:r.model,timings:r.timings}:null;
   out.innerHTML=fromBanner(r)+(r.mode==='ask'?answerCard(r.answer,r.timings,false):'')+
     cards(r.hits);
   const b=out.querySelector('.answer .body');if(b)b.innerHTML=linkNames(b.innerHTML);
@@ -1560,13 +1578,10 @@ async function ask(text){
     const body=ans.querySelector('.body');
     body.innerHTML=answer?(live?md(answer,true)+'<span class="caret"></span>':linkNames(md(answer,true)))
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>';
-    const t=ans.querySelector('.timing');const fresh=stamp(timings||{});
-    if(t)t.outerHTML=fresh;else ans.querySelector('.card').insertAdjacentHTML('beforeend',fresh);
-    // The report button belongs to a finished answer; the flag line is drawn
-    // once, so it is added here when the stream ends.
-    if(!live&&!ans.querySelector('#report-btn'))
-      ans.querySelector('.flag').insertAdjacentHTML('beforeend',
-        '<button type="button" class="report" id="report-btn">Wrong? Report it</button>');
+    if(!live){
+      ans.querySelector('.foot').innerHTML=stamp(timings||{},false)+
+        '<button type="button" class="report" id="report-btn">Wrong? Report it</button>';
+    }
   };
   const pending=()=>{const t0=Date.now();clearInterval(timer);
     timer=setInterval(()=>{const el=document.getElementById('pend');
@@ -1583,21 +1598,21 @@ async function ask(text){
         clearInterval(timer);timings=ev.timings;hits=ev.hits||[];srcHtml=cards(hits);
         setCites(hits);frame();EL('src').innerHTML=srcHtml;paint();pending();
       }else if(ev.event==='token'){
-        if(!started){started=true;clearInterval(timer)}
+        if(!started){started=true;clearInterval(timer);funStart()}
         answer+=ev.text;
         // One repaint per frame, however many chunks arrived: markdown over the
         // whole answer per token is what made the page stutter while writing.
         if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;paint()})}
-      }else if(ev.event==='done'){clearInterval(timer);rolling(false);timings=ev.timings;
+      }else if(ev.event==='done'){clearInterval(timer);funStop();rolling(false);timings=ev.timings;
         EXTRA=ev.mentions||[];answer=answer.trimEnd();
-        CURRENT={q:text,answer,sources:hits,model:SET.model||SDEF.model};paint(false);
+        CURRENT={q:text,answer,sources:hits,model:SET.model||SDEF.model,timings};paint(false);
         addHist({id:String(Date.now()),q:text,mode:'ask',ts:Date.now(),
           model:SET.model||SDEF.model,answer,hits,timings,mentions:EXTRA});
-      }else if(ev.event==='error'){clearInterval(timer);rolling(false);
+      }else if(ev.event==='error'){clearInterval(timer);funStop();rolling(false);
         out.innerHTML='<p class="err">'+esc(ev.error)+'</p>';return}
     }
   }
-  clearInterval(timer);rolling(false);
+  clearInterval(timer);funStop();rolling(false);
 }
 async function go(mode,force){
   const text=q.value.trim(); if(!text)return;

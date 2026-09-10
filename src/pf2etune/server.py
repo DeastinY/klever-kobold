@@ -2,13 +2,13 @@
 
 Built on the standard library so the runtime keeps its four dependencies.
 
-**Enter asks; the answer is labelled, and the entries are always underneath.**
-The evaluation says the generated answer is reliable for lookups and unreliable
-for rule interactions -- exactly the question a table is most likely to ask --
-so the answer carries a standing caution and every claim links to the Archives
-of Nethys entry it came from. Shift+Enter skips the answer and shows only the
-entries. Questions and their answers are kept in the browser, so repeating one
-is free.
+**Enter asks; the entries are always underneath.** The evaluation says the
+generated answer is reliable for lookups and unreliable for rule interactions
+-- exactly the question a table is most likely to ask -- so every claim links
+to the Archives of Nethys entry it came from, the entries sit under the answer,
+the onboarding card says what to trust, and every answer has a report button.
+Shift+Enter skips the answer and shows only the entries. Questions and their
+answers are kept in the browser, so repeating one is free.
 """
 
 from __future__ import annotations
