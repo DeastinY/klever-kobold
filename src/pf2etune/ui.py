@@ -18,6 +18,7 @@ PAGE = r"""<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PF2e Rules</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 3 9.5v13L16 30l13-7.5v-13z' fill='%238a1b2e'/%3E%3Cpath d='M16 2v10.5L3 9.5M16 12.5 29 9.5M16 12.5 8 22.5h16L16 12.5M3 22.5l5 0M29 22.5l-5 0M8 22.5 16 30l8-7.5' fill='none' stroke='%23fff' stroke-width='1.3' stroke-linejoin='round'/%3E%3Ctext x='16' y='21.5' font-size='8' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23fff'%3E20%3C/text%3E%3C/svg%3E">
 <style>
 /* Light is the base palette; the two blocks after it redefine only the tokens,
    so an un-stamped document (the default "system" setting) still resolves. */
@@ -166,16 +167,129 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
  background:var(--warn);animation:blink 1s steps(2,start) infinite}
 @keyframes blink{to{visibility:hidden}}
 @media(prefers-reduced-motion:reduce){.caret,.dot.pulse{animation:none}}
+
+/* ---- a little more life ----
+   The d20 in the header rolls while a question is in flight; the busy line
+   speaks in the game's own terms. Neither touches the caution flag on the
+   answer, which is the one bit of this page that must stay plain. */
+.d20{width:1.35rem;height:1.35rem;flex:none;align-self:center;color:var(--accent)}
+.d20 svg{width:100%;height:100%;display:block}
+.d20.rolling svg{animation:roll 1.4s cubic-bezier(.4,.1,.3,1) infinite}
+@keyframes roll{0%{transform:rotate(0)}70%{transform:rotate(360deg)}100%{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.d20.rolling svg{animation:none}}
+#help,#hist{padding:.35rem .65rem;font-size:.8rem;border:1px solid var(--line);
+ background:var(--card);color:var(--soft);border-radius:6px;cursor:pointer;
+ display:flex;align-items:center;gap:.35rem}
+#help{width:2rem;justify-content:center;font-family:ui-serif,Georgia,serif;font-weight:700}
+#hist[aria-expanded=true],#help[aria-expanded=true]{border-color:var(--accent);color:var(--accent)}
+#hist b{font-weight:600;background:var(--chip);border-radius:999px;padding:0 .4rem;
+ font-size:.72rem;color:var(--accent)}
+kbd{font:inherit;font-size:.75rem;background:var(--chip);border:1px solid var(--line);
+ border-bottom-width:2px;border-radius:4px;padding:0 .35rem;color:var(--soft)}
+.hint kbd{font-size:.72rem}
+
+/* ---- empty state: example questions + the last few asked ---- */
+#home{margin:.4rem 0 1rem}
+#home[hidden]{display:none}
+.tryh{font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);
+ margin:.9rem 0 .35rem}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{font-size:.83rem;padding:.35rem .7rem;border:1px solid var(--line);background:var(--card);
+ color:var(--ink);border-radius:999px;cursor:pointer;text-align:left;line-height:1.3}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip .m{color:var(--muted);font-size:.72rem;margin-left:.35rem}
+.recent{list-style:none;margin:0;padding:0}
+.recent li{display:flex;gap:.5rem;align-items:baseline}
+.recent li button.qq{flex:1;text-align:left;background:none;border:0;padding:.28rem 0;
+ color:var(--ink);font-size:.9rem;cursor:pointer;border-radius:4px}
+.recent li button.qq:hover{color:var(--accent)}
+.recent .m{color:var(--muted);font-size:.72rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.recent .x{background:none;border:0;color:var(--muted);cursor:pointer;padding:0 .3rem;
+ font-size:.9rem;border-radius:4px}
+.recent .x:hover{color:var(--accent)}
+
+/* ---- history panel ---- */
+#history{background:var(--card);border:1px solid var(--line);border-radius:8px;
+ padding:.85rem 1rem;margin:0 0 .9rem}
+#history[hidden]{display:none}
+#history .top{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.4rem}
+#history .top .set-h{margin:0;border:0;padding:0;flex:1}
+#history .top button{padding:.3rem .6rem;font-size:.78rem}
+#history .empty{color:var(--muted);font-size:.85rem;margin:.3rem 0}
+.from{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;font-size:.8rem;
+ color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:.45rem .8rem;
+ margin:.2rem 0 .6rem}
+.from button{padding:.25rem .6rem;font-size:.78rem}
+.from .ok{color:var(--ok)}
+
+/* ---- onboarding ---- */
+#onboard{position:fixed;inset:0;background:rgba(20,17,19,.55);display:flex;
+ align-items:center;justify-content:center;padding:1rem;z-index:20}
+#onboard[hidden]{display:none}
+.ob{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:12px;
+ max-width:32rem;width:100%;padding:1.4rem 1.5rem 1.2rem;box-shadow:0 20px 60px rgba(0,0,0,.35);
+ max-height:92vh;overflow:auto}
+.ob h2{font-family:ui-serif,Georgia,"Iowan Old Style",serif;font-size:1.35rem;margin:0 0 .2rem;
+ display:flex;align-items:center;gap:.6rem}
+.ob .lead{color:var(--soft);margin:.2rem 0 .9rem}
+.ob ol{margin:0 0 .9rem;padding-left:1.25rem}
+.ob li{margin:.45rem 0;color:var(--soft)}
+.ob li b{color:var(--ink)}
+.ob .trust{display:grid;grid-template-columns:auto 1fr;gap:.25rem .7rem;font-size:.86rem;
+ margin:.4rem 0 1rem;align-items:baseline}
+.ob .trust .ok{color:var(--ok);font-weight:600}.ob .trust .no{color:var(--crit-fail);font-weight:600}
+.ob .trust .so{color:var(--warn);font-weight:600}
+.ob .row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.6rem}
+.ob .row .note{margin:0;flex:1;grid-column:auto}
 </style></head><body><div class="wrap">
-<header><h1>Pathfinder 2e rules <small>— Archives of Nethys, offline</small></h1>
+<header><span class="d20" id="d20" aria-hidden="true"></span>
+<h1>Pathfinder 2e rules <small>— Archives of Nethys, offline</small></h1>
+<button id="hist" title="Questions you have asked" aria-expanded="false" aria-controls="history"></button>
 <button id="gear" title="Settings" aria-expanded="false" aria-controls="settings"></button>
+<button id="help" title="How this works" aria-expanded="false">?</button>
 <button id="theme" title="Theme"></button></header>
 <div id="status"><span class="dot pulse"></span><span id="statustext">starting…</span></div>
-<form id="f"><input id="q" placeholder="describe it, name it, or ask what happens…" autofocus
- autocomplete="off" disabled><button class="primary" id="lookbtn" disabled>Look up</button>
-<button id="askbtn" type="button" disabled>Ask</button></form>
-<p class="hint">Look up shows the rules entries themselves. <b>Ask</b> writes an answer from them —
-good for straight lookups, unreliable for rule interactions. Check the citation.</p>
+<form id="f"><input id="q" placeholder="ask what happens, name it, or describe it…" autofocus
+ autocomplete="off" disabled><button class="primary" id="askbtn" disabled>Ask</button>
+<button id="lookbtn" type="button" disabled>Look up</button></form>
+<p class="hint"><kbd>Enter</kbd> asks and writes an answer from the rules — good for straight
+lookups, unreliable for rule interactions; check the citation. <kbd>Shift</kbd>+<kbd>Enter</kbd>
+just shows the entries. <kbd>↑</kbd> brings back an earlier question.</p>
+
+<div id="history" hidden>
+<div class="top"><p class="set-h">Asked before</p>
+ <button type="button" id="h-clear">Forget all</button></div>
+<p class="note" style="margin:0 0 .5rem">Answers are kept in this browser, so asking the same
+thing again is instant — until you press <b>Ask again</b>.</p>
+<ul class="recent" id="h-list"></ul>
+</div>
+
+<div id="onboard" hidden>
+<div class="ob" role="dialog" aria-modal="true" aria-labelledby="ob-h">
+<h2 id="ob-h"><span class="d20" aria-hidden="true"></span>Well met, adventurer.</h2>
+<p class="lead">This is a Pathfinder 2e rules reference that runs on this machine, searches the
+Archives of Nethys, and cites its sources. No account, no cloud, no dice tax.</p>
+<ol>
+ <li><b>Type a question and press Enter.</b> It finds the relevant entries and writes a short
+  answer with links back to the Archives.</li>
+ <li><b>Shift+Enter shows only the entries</b> — faster, and often all you need.</li>
+ <li><b>Everything you ask is kept in this browser.</b> The history button brings it back
+  instantly; the same question twice costs nothing.</li>
+</ol>
+<div class="trust">
+ <span class="ok">Trust it</span><span>“What level is Battle Medicine?” · “How does Treat Wounds work?”</span>
+ <span class="so">Mostly</span><span>“Is there a feat that makes falling less dangerous?”</span>
+ <span class="no">Read the rule</span><span>“Does X interact with Y?” — it finds the rule fast; you settle the argument.</span>
+</div>
+<div class="row"><button class="primary" type="button" id="ob-go">Roll for initiative</button>
+<p class="note">Press <kbd>?</kbd> any time to see this again.</p></div>
+</div></div>
+
+<div id="home" hidden>
+<p class="tryh">Try one</p>
+<div class="chips" id="examples"></div>
+<div id="recent-wrap" hidden><p class="tryh">Asked before</p><ul class="recent" id="recent"></ul></div>
+</div>
 
 <div id="settings" hidden>
 <p class="set-h">Preset</p>
@@ -257,7 +371,9 @@ settings do not travel to it — the MCP server uses its own command-line flags.
 const out=document.getElementById('out'),q=document.getElementById('q'),
  st=document.getElementById('status'),stt=document.getElementById('statustext'),
  look=document.getElementById('lookbtn'),askBtn=document.getElementById('askbtn'),
- themeBtn=document.getElementById('theme');
+ themeBtn=document.getElementById('theme'),d20=document.getElementById('d20');
+const D20='<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 3 9.5v13L16 30l13-7.5v-13z" fill="currentColor" opacity=".18"/><path d="M16 2 3 9.5v13L16 30l13-7.5v-13zM16 2v10.5L3 9.5M16 12.5 29 9.5M16 12.5 8 22.5h16L16 12.5M3 22.5h5M29 22.5h-5M8 22.5 16 30l8-7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><text x="16" y="21" font-size="7.5" font-family="Georgia,serif" font-weight="700" text-anchor="middle" fill="currentColor">20</text></svg>';
+d20.innerHTML=D20;document.querySelector('.ob .d20').innerHTML=D20;
 
 /* ---------- theme: auto / light / dark, remembered per browser ---------- */
 const ICON={
@@ -393,6 +509,8 @@ function statblock(h){
   if(head){
     text=text.slice(head[0].length).replace(/^\n+/,'');
     let t=head[1].replace(/\n/g,' ');
+    // An action with no cost is written "[]" in the corpus; drop the empty brackets.
+    t=t.replace(/\[\s*\]/,'');
     const c=t.match(/\[([^\]]+)\]/); if(c){cost=c[1];t=t.replace(c[0],'')}
     const k=t.match(/\(([^)]+)\)\s*$/); if(k){kind=k[1];t=t.replace(k[0],'')}
     title=t.trim()||h.name;
@@ -654,12 +772,115 @@ async function poll(){
 }
 poll();
 
+/* ---------- history ----------
+   Kept in this browser: a table has one laptop, and what it asked last week is
+   worth more than a login. Each record carries the answer, the entries and the
+   timings, so replaying one draws exactly what was drawn the first time and
+   costs no model call. Bounded, and trimmed further if the browser says no. */
+const HKEY='pf2e-history',HMAX=80;
+let HIST=[];
+try{HIST=JSON.parse(localStorage.getItem(HKEY)||'[]');if(!Array.isArray(HIST))HIST=[]}catch(e){HIST=[]}
+function saveHist(){
+  for(let tries=0;tries<6;tries++){
+    try{localStorage.setItem(HKEY,JSON.stringify(HIST));return}
+    catch(e){HIST=HIST.slice(0,Math.max(0,Math.floor(HIST.length/2)))}
+  }
+}
+const norm=t=>t.trim().toLowerCase().replace(/\s+/g,' ');
+function findHist(text,mode){
+  const key=norm(text),model=SET.model||SDEF.model;
+  return HIST.find(r=>r.mode===mode&&norm(r.q)===key&&r.model===model);
+}
+function addHist(rec){
+  HIST=HIST.filter(r=>!(r.mode===rec.mode&&norm(r.q)===norm(rec.q)&&r.model===rec.model));
+  HIST.unshift(rec);
+  if(HIST.length>HMAX)HIST.length=HMAX;
+  saveHist();paintHist();
+}
+function ago(ts){
+  const s=Math.max(0,(Date.now()-ts)/1000);
+  if(s<60)return 'just now';
+  if(s<3600)return Math.round(s/60)+' min ago';
+  if(s<86400)return Math.round(s/3600)+' h ago';
+  const d=Math.round(s/86400);return d===1?'yesterday':d+' days ago';
+}
+function histRow(r){
+  return '<li><button type="button" class="qq" data-id="'+r.id+'">'+esc(r.q)+'</button>'+
+    '<span class="m">'+(r.mode==='ask'?'asked':'looked up')+' · '+ago(r.ts)+'</span>'+
+    '<button type="button" class="x" data-del="'+r.id+'" title="Forget this one">×</button></li>';
+}
+function paintHist(){
+  const list=EL('h-list'),n=HIST.length;
+  EL('hist').innerHTML='<span>History</span>'+(n?'<b>'+n+'</b>':'');
+  list.innerHTML=n?HIST.map(histRow).join(''):'';
+  list.insertAdjacentHTML('beforebegin','');
+  let empty=document.querySelector('#history .empty');
+  if(!n){if(!empty){list.insertAdjacentHTML('afterend','<p class="empty">Nothing yet. The first question goes here.</p>')}}
+  else if(empty)empty.remove();
+  const rw=EL('recent-wrap');rw.hidden=!n;
+  EL('recent').innerHTML=HIST.slice(0,5).map(histRow).join('');
+}
+for(const id of ['h-list','recent'])EL(id).addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.del){HIST=HIST.filter(r=>r.id!==b.dataset.del);saveHist();paintHist();return}
+  const r=HIST.find(x=>x.id===b.dataset.id);if(!r)return;
+  q.value=r.q;replay(r);
+});
+EL('h-clear').addEventListener('click',()=>{
+  if(!HIST.length||confirm('Forget all '+HIST.length+' questions kept in this browser?')){
+    HIST=[];saveHist();paintHist();}
+});
+const histBtn=EL('hist'),histPanel=EL('history');
+histBtn.addEventListener('click',()=>{
+  const open=histPanel.hidden;histPanel.hidden=!open;
+  histBtn.setAttribute('aria-expanded',String(open));
+  if(open){panel.hidden=true;gear.setAttribute('aria-expanded','false')}
+});
+
+/* ---------- empty state ---------- */
+const EXAMPLES=[
+ ['How does Treat Wounds work?','ask'],
+ ['What level is Battle Medicine?','ask'],
+ ['Is there a feat that makes falling less dangerous?','ask'],
+ ['What can players do during exploration?','ask'],
+ ['Was Magic Missile renamed?','ask'],
+ ['grabbed','search']];
+EL('examples').innerHTML=EXAMPLES.map(([t,m],i)=>
+  '<button type="button" class="chip" data-i="'+i+'">'+esc(t)+
+  (m==='search'?'<span class="m">look up</span>':'')+'</button>').join('');
+EL('examples').addEventListener('click',e=>{
+  const b=e.target.closest('.chip');if(!b)return;
+  const [t,m]=EXAMPLES[+b.dataset.i];q.value=t;go(m);
+});
+function showHome(on){EL('home').hidden=!on}
+paintHist();showHome(true);
+
+/* ---------- onboarding ---------- */
+const ob=EL('onboard');
+function openHelp(){ob.hidden=false;EL('help').setAttribute('aria-expanded','true');
+  EL('ob-go').focus()}
+function closeHelp(){ob.hidden=true;EL('help').setAttribute('aria-expanded','false');
+  try{localStorage.setItem('pf2e-onboarded','1')}catch(e){}
+  if(ready)q.focus()}
+EL('ob-go').addEventListener('click',closeHelp);
+EL('help').addEventListener('click',()=>ob.hidden?openHelp():closeHelp());
+ob.addEventListener('click',e=>{if(e.target===ob)closeHelp()});
+let seen=false;try{seen=!!localStorage.getItem('pf2e-onboarded')}catch(e){}
+if(!seen)openHelp();
+
+/* ---------- asking ---------- */
+const LINES={
+ search:['Consulting the Archives','Thumbing through the index','Searching the stacks'],
+ find:['Consulting the Archives','Rolling Recall Knowledge','Finding the right page',
+       'Asking the librarian','Checking the errata'],
+ write:['The scribe is writing','Putting it in plain words','Citing the sources']};
 let timer=null;
-function busy(label){
-  const t0=Date.now();
-  const tick=()=>{out.innerHTML='<p class="spin">'+label+' — '+
-    ((Date.now()-t0)/1000).toFixed(1)+'s</p>'};
-  tick();clearInterval(timer);timer=setInterval(tick,100);
+function rolling(on){d20.classList.toggle('rolling',on)}
+function busy(kind){
+  const t0=Date.now(),pool=LINES[kind];
+  const tick=()=>{const label=pool[Math.floor((Date.now()-t0)/2600)%pool.length];
+    out.innerHTML='<p class="spin">'+label+'… '+((Date.now()-t0)/1000).toFixed(1)+'s</p>'};
+  tick();clearInterval(timer);timer=setInterval(tick,100);rolling(true);
 }
 function stamp(t){
   // The per-stage split is the answer to "why is this slow on my laptop".
@@ -670,37 +891,59 @@ function stamp(t){
   return '<div class="timing">'+parts.join(' · ')+
     (t.total?' · total '+t.total.toFixed(1)+'s':'')+'</div>';
 }
+function setCites(hits){
+  CITES=hits||[];AON_LABEL={};CITES.forEach(h=>{if(h.url)AON_LABEL[h.url]=h.name});
+}
+function answerCard(answer,timings,live){
+  return '<div class="card answer"><div class="flag"><span>⚠</span>'+
+    '<span>Generated from the entries below — verify against the citations, '+
+    'especially for rule interactions.</span></div>'+
+    '<div class="body">'+(answer?md(answer,true)+(live?'<span class="caret"></span>':'')
+      :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>')+'</div>'+
+    stamp(timings||{})+'</div>';
+}
+function fromBanner(r){
+  return '<div class="from"><span><span class="ok">✓</span> From your history — '+
+    (r.mode==='ask'?'asked ':'looked up ')+ago(r.ts)+(r.model?' with '+esc(r.model):'')+
+    ', no model call.</span><button type="button" id="again">'+
+    (r.mode==='ask'?'Ask again':'Look up again')+'</button></div>';
+}
+function replay(r){
+  showHome(false);setCites(r.hits);
+  out.innerHTML=fromBanner(r)+(r.mode==='ask'?answerCard(r.answer,r.timings,false):'')+
+    cards(r.hits);
+  EL('again').addEventListener('click',()=>go(r.mode,true));
+  histPanel.hidden=true;histBtn.setAttribute('aria-expanded','false');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 async function search(text){
-  busy('searching');
+  busy('search');
   const d=await (await fetch('/api/search?'+settingsQuery({q:text}),
     {headers:settingsHeaders()})).json();
-  clearInterval(timer);
-  out.innerHTML=d.error?'<p class="err">'+esc(d.error)+'</p>'
-    :(cards(d.hits)||'<p class="spin">Nothing matched.</p>');
+  clearInterval(timer);rolling(false);
+  if(d.error){out.innerHTML='<p class="err">'+esc(d.error)+'</p>';return}
+  setCites(d.hits);
+  out.innerHTML=cards(d.hits)||'<p class="spin">Nothing matched.</p>';
+  addHist({id:String(Date.now()),q:text,mode:'search',ts:Date.now(),
+    model:SET.model||SDEF.model,hits:d.hits||[],timings:{}});
 }
 async function ask(text){
-  busy('finding the relevant rules');
+  busy('find');
   const res=await fetch('/api/ask?'+settingsQuery({q:text}),{headers:settingsHeaders()});
   if(!res.ok){
     // A refusal (still loading, or a rejected configuration) is plain JSON, not
     // an event stream, and reading it as one would spin forever.
-    clearInterval(timer);
+    clearInterval(timer);rolling(false);
     let msg='';try{msg=(await res.json()).error}catch(e){}
     out.innerHTML='<p class="err">'+esc(msg||('server said '+res.status))+'</p>';return;
   }
   const reader=res.body.getReader(),dec=new TextDecoder();
-  let buf='',answer='',timings={},srcHtml='',started=false;
-  const paint=()=>{
-    out.innerHTML='<div class="card answer"><div class="flag"><span>⚠</span>'+
-      '<span>Generated from the entries below — verify against the citations, '+
-      'especially for rule interactions.</span></div>'+
-      '<div class="body">'+(answer?md(answer,true)+'<span class="caret"></span>'
-        :'<span class="spin" id="pend">writing the answer…</span>')+'</div>'+
-      stamp(timings)+'</div>'+srcHtml;
-  };
+  let buf='',answer='',timings={},hits=[],srcHtml='',started=false;
+  const paint=()=>{out.innerHTML=answerCard(answer,timings,true)+srcHtml};
   const pending=()=>{const t0=Date.now();clearInterval(timer);
     timer=setInterval(()=>{const el=document.getElementById('pend');
-      if(el)el.textContent='writing the answer — '+((Date.now()-t0)/1000).toFixed(1)+'s'},100)};
+      if(el){const l=LINES.write[Math.floor((Date.now()-t0)/2600)%LINES.write.length];
+        el.textContent=l+'… '+((Date.now()-t0)/1000).toFixed(1)+'s'}},100)};
   for(;;){
     const {done,value}=await reader.read(); if(done)break;
     buf+=dec.decode(value,{stream:true});
@@ -709,31 +952,48 @@ async function ask(text){
       if(!line.startsWith('data: '))continue;
       const ev=JSON.parse(line.slice(6));
       if(ev.event==='sources'){
-        clearInterval(timer);timings=ev.timings;srcHtml=cards(ev.hits);
-        CITES=ev.hits||[];
-        AON_LABEL={};CITES.forEach(h=>{if(h.url)AON_LABEL[h.url]=h.name});
-        paint();pending();
+        clearInterval(timer);timings=ev.timings;hits=ev.hits||[];srcHtml=cards(hits);
+        setCites(hits);paint();pending();
       }else if(ev.event==='token'){
         if(!started){started=true;clearInterval(timer)}
         answer+=ev.text;paint();
-      }else if(ev.event==='done'){clearInterval(timer);timings=ev.timings;
-        answer=answer.trimEnd();paint();
-        const c=document.querySelector('.caret');if(c)c.remove();
-      }else if(ev.event==='error'){clearInterval(timer);
+      }else if(ev.event==='done'){clearInterval(timer);rolling(false);timings=ev.timings;
+        answer=answer.trimEnd();out.innerHTML=answerCard(answer,timings,false)+srcHtml;
+        addHist({id:String(Date.now()),q:text,mode:'ask',ts:Date.now(),
+          model:SET.model||SDEF.model,answer,hits,timings});
+      }else if(ev.event==='error'){clearInterval(timer);rolling(false);
         out.innerHTML='<p class="err">'+esc(ev.error)+'</p>';return}
     }
   }
-  clearInterval(timer);
+  clearInterval(timer);rolling(false);
 }
-async function go(mode){
-  const text=q.value.trim(); if(!text||!ready)return;
-  enable(false);
+async function go(mode,force){
+  const text=q.value.trim(); if(!text)return;
+  const cached=!force&&findHist(text,mode);
+  if(cached){replay(cached);return}
+  if(!ready)return;
+  showHome(false);enable(false);
   try{ mode==='ask'?await ask(text):await search(text) }
-  catch(e){clearInterval(timer);out.innerHTML='<p class="err">'+esc(String(e))+'</p>'}
+  catch(e){clearInterval(timer);rolling(false);
+    out.innerHTML='<p class="err">'+esc(String(e))+'</p>'}
   enable(true);
 }
-document.getElementById('f').addEventListener('submit',e=>{e.preventDefault();go('search')});
-askBtn.addEventListener('click',()=>go('ask'));
-document.addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==q){
-  e.preventDefault();q.focus();q.select()}});
+document.getElementById('f').addEventListener('submit',e=>{e.preventDefault();go('ask')});
+look.addEventListener('click',()=>go('search'));
+let hpos=-1;   // where ↑/↓ are in the history, from the input
+q.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.shiftKey){e.preventDefault();go('search');return}
+  if(e.key==='ArrowUp'&&HIST.length){e.preventDefault();
+    hpos=Math.min(hpos+1,HIST.length-1);q.value=HIST[hpos].q;
+    q.setSelectionRange(q.value.length,q.value.length);return}
+  if(e.key==='ArrowDown'&&hpos>=0){e.preventDefault();
+    hpos-=1;q.value=hpos<0?'':HIST[hpos].q;return}
+  if(e.key.length===1)hpos=-1;
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){if(!ob.hidden)closeHelp();return}
+  if(document.activeElement===q||e.metaKey||e.ctrlKey||e.altKey)return;
+  if(e.key==='/'){e.preventDefault();q.focus();q.select()}
+  else if(e.key==='?'){e.preventDefault();ob.hidden?openHelp():closeHelp()}
+});
 </script></body></html>"""

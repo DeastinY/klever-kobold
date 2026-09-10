@@ -47,8 +47,8 @@ doing it.
 **Interaction questions are where it fails and where a table most wants an
 answer.** Use it to find the rule fast; read the rule before settling an
 argument. Every answer carries its source URL so that is a one-click check —
-which is why the UI puts the rules entries first and the generated answer behind
-a button.
+which is why the UI labels the answer, links every claim, and keeps the rules
+entries right underneath it.
 
 **91.7%** on 109 hand-written questions — but those are lookups. On real
 questions mined from RPG StackExchange, only **31.8%** of retrieved excerpt sets

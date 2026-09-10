@@ -2,14 +2,13 @@
 
 Built on the standard library so the runtime keeps its four dependencies.
 
-**The layout follows the evaluation, not the demo instinct.** Retrieved rules
-excerpts are shown first and by default, because that is the part that measures
-well: the entries come straight from Archives of Nethys and carry their own
-links. The generated answer is opt-in, behind a button, and labelled — because
-the same evaluation says it is reliable for lookups and unreliable for rule
-interactions, which is exactly the question a table is most likely to ask.
-
-Serving the answer first would look better and mislead more.
+**Enter asks; the answer is labelled, and the entries are always underneath.**
+The evaluation says the generated answer is reliable for lookups and unreliable
+for rule interactions -- exactly the question a table is most likely to ask --
+so the answer carries a standing caution and every claim links to the Archives
+of Nethys entry it came from. Shift+Enter skips the answer and shows only the
+entries. Questions and their answers are kept in the browser, so repeating one
+is free.
 """
 
 from __future__ import annotations
