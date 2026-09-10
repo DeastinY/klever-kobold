@@ -97,6 +97,12 @@ This work is not published, endorsed, or specifically approved by Paizo. For
 more information about Paizo Inc. and Paizo products, visit [paizo.com](https://paizo.com).**
 
 The rules corpus is [Archives of Nethys](https://2e.aonprd.com/), free, complete,
-and maintained by volunteers. Every answer here is really theirs; please use and
-support the site directly. Full acknowledgements, including the fonts and the
-models, are in [NOTICE.md](NOTICE.md). Non-commercial use only.
+and kept current through an edition remaster by a small team. Every answer here
+is really theirs. **If the kobold earns its keep at your table, please
+[support the Archives on Patreon](https://www.patreon.com/nethys)** — that is
+what keeps the site free for everyone, this tool included. Lore comes from
+[PathfinderWiki](https://pathfinderwiki.com/), written by volunteers; the way to
+support a wiki is to [help write it](https://pathfinderwiki.com/wiki/Help:Contents).
+
+Full acknowledgements, including the fonts and the models, are in
+[NOTICE.md](NOTICE.md). Non-commercial use only.

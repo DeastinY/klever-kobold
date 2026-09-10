@@ -39,8 +39,9 @@ include this notice.
 **[Archives of Nethys](https://2e.aonprd.com/)** — the entire rules corpus. A
 free, complete, meticulously maintained reference that a volunteer team has kept
 current through an edition remaster. Every answer this project gives is really
-theirs; all it adds is a way to search them. Please
-[support them](https://2e.aonprd.com/) and use the site directly.
+theirs; all it adds is a way to search them. Please use the site directly and
+[support them on Patreon](https://www.patreon.com/nethys) — the Archives have
+never charged for access or run intrusive ads, and the Patreon is how that stays true.
 
 **Pathfinder-Icons font** — the action symbols (one, two and three actions, free
 action, reaction) are drawn with Paizo's icon font, © Paizo Inc. 2019, the same

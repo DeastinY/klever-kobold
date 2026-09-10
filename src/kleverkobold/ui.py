@@ -138,6 +138,10 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--soft)}
 .tools{font-size:.78rem;color:var(--muted);margin:.5rem 0 0}
 .tools code{background:var(--chip);border-radius:3px;padding:.05rem .3rem;color:var(--accent)}
+footer.thanks{margin:3rem 0 0;padding-top:1rem;border-top:1px solid var(--line);font-size:.8rem;
+ color:var(--muted);line-height:1.6}
+footer.thanks a{color:var(--accent)}
+footer.thanks .sep{margin:0 .4rem}
 
 /* ---- stat block ---- */
 .card{background:var(--card);border:1px solid var(--line);border-radius:8px;
@@ -450,6 +454,10 @@ type leaves your computer, and it works without a connection. Each entry links t
 the live Archives, should you want to check. No account, no cloud, no dice tax.</p>
 <p class="lead">It is a kobold: quick, keen, and wrong more often than it would like to admit —
 which is why every answer shows the entries it was read from.</p>
+<p class="lead">Everything it knows, it dug out of the
+<a href="https://2e.aonprd.com/" target="_blank" rel="noreferrer">Archives of Nethys</a>, which a small
+team keeps free. If the kobold earns its keep at your table, please
+<a href="https://www.patreon.com/nethys" target="_blank" rel="noreferrer">support the Archives</a>.</p>
 <ol>
  <li><b>Type a question and press Enter.</b> It finds the relevant entries in the local copy
   and a local model writes a short answer that cites them.</li>
@@ -579,6 +587,10 @@ the MCP setup for Claude Desktop and Claude Code: Settings →
 </div></div></div>
 
 <div id="out"></div>
+<footer class="thanks">The kobold digs in the <a href="https://2e.aonprd.com/" target="_blank" rel="noreferrer">Archives of Nethys</a>,
+which a small team keeps free for everyone. If it helps you, <a href="https://www.patreon.com/nethys" target="_blank" rel="noreferrer">support them</a>
+<span class="sep">·</span> Lore comes from <a href="https://pathfinderwiki.com/" target="_blank" rel="noreferrer">PathfinderWiki</a>, written by volunteers —
+<a href="https://pathfinderwiki.com/wiki/Help:Contents" target="_blank" rel="noreferrer">help write it</a>.</footer>
 </div><script>
 const EL=id=>document.getElementById(id);
 // Settings, history and favourites saved under the old name carry over once.

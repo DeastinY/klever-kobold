@@ -41,3 +41,6 @@ eval/runs/*.log
 
 # Local Claude Code launch configuration
 .claude/
+
+# wrangler local cache
+.wrangler/
