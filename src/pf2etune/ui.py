@@ -183,7 +183,9 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
  padding:0 .3rem;vertical-align:.1em}
 .dc{font-weight:700;color:var(--accent);white-space:nowrap}
 .dice{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;
- background:var(--chip);border-radius:3px;padding:0 .28em;white-space:nowrap}
+ background:var(--chip);border-radius:3px;padding:0 .3em 0 .2em;white-space:nowrap;
+ display:inline-flex;align-items:center;gap:.18em}
+.dice .die{width:.95em;height:.95em;color:var(--accent);flex:none}
 .deg{display:block;margin-top:.3rem}
 .deg .field{color:var(--ok)}
 .deg.f .field{color:var(--fail)}
@@ -595,10 +597,11 @@ function inline(t,cites){
   // Only in text nodes: a URL or an attribute must not be rewritten.
   t=t.split(/(<[^>]+>)/).map(seg=>seg.startsWith('<')?seg:seg
      .replace(/\bDC\s?(\d{1,2})\b/g,'<span class="dc">DC $1</span>')
-     .replace(/\b(\d{1,3}d\d{1,3}(?:\s?[+\u2212\-]\s?\d{1,3})?)\b/g,'<span class="dice">$1</span>')
+     .replace(/\b(\d{1,3}d\d{1,3}(?:\s?[+\u2212\-]\s?\d{1,3})?)\b/g,'<span class="dice">'+DIE+'$1</span>')
   ).join('');
   return t;
 }
+const DIE='<svg class="die" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1 1.8 4.6v6.8L8 15l6.2-3.6V4.6z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 1v5.3L1.8 4.6M8 6.3l6.2-1.7M8 6.3 4.3 11.6h7.4z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>';
 let AON_LABEL={};   // url -> entry name, so a cited link reads as the thing it cites
 let CITES=[];       // the excerpts as numbered for the model, so "[3]" can link
 function md(src,cites){
@@ -690,7 +693,8 @@ function statblock(h){
     title=t.trim()||h.name;
   }
   let traits=[];
-  const tr=text.match(/^\*\*Traits\*\*\s*([^\n]+)\n?/m);
+  // [ \t]* not \s*: an empty Traits line (archetypes) must not swallow the Source line after it.
+  const tr=text.match(/^\*\*Traits\*\*[ \t]*([^\n]*)\n?/m);
   if(tr){traits=tr[1].split(',').map(s=>s.trim()).filter(Boolean);
          text=text.replace(tr[0],'')}
   // The kind badge above already says "Action" or "Spell"; the corner is for
@@ -744,7 +748,7 @@ function parseHead(h){
     const c=t.match(/\[([^\]]+)\]/);if(c){cost=c[1];t=t.replace(c[0],'')}
     const k=t.match(/\(([^)]+)\)\s*$/);if(k){kind=k[1];t=t.replace(k[0],'')}
     title=t.trim()||h.name}
-  const tr=text.match(/^\*\*Traits\*\*\s*([^\n]+)/m);
+  const tr=text.match(/^\*\*Traits\*\*[ \t]*([^\n]*)/m);
   const traits=tr?tr[1].split(',').map(x=>x.trim()).filter(Boolean):[];
   const rarity=traits.map(t=>t.toLowerCase()).find(t=>RARITY.includes(t)&&t!=='common')||'';
   return {title,cost,kind,traits,rarity,text};
@@ -1339,7 +1343,21 @@ async function ask(text){
   }
   const reader=res.body.getReader(),dec=new TextDecoder();
   let buf='',answer='',timings={},hits=[],srcHtml='',started=false;
-  const paint=()=>{out.innerHTML=answerCard(answer,timings,true)+srcHtml};
+  // Two containers: the entries are drawn once, and each token repaints only
+  // the answer's body. Replacing the whole output per token tore the tiles out
+  // from under a click.
+  // The containers are made when the sources arrive: until then the busy
+  // ticker owns the output and would overwrite them.
+  const frame=()=>{if(!EL('ans'))out.innerHTML='<div id="ans"></div><div id="src"></div>'};
+  const paint=(live=true)=>{
+    frame();const ans=EL('ans');
+    if(!ans.firstChild){ans.innerHTML=answerCard(answer,timings,live);return}
+    const body=ans.querySelector('.body');
+    body.innerHTML=answer?md(answer,true)+(live?'<span class="caret"></span>':'')
+      :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>';
+    const t=ans.querySelector('.timing');const fresh=stamp(timings||{});
+    if(t)t.outerHTML=fresh;else ans.querySelector('.card').insertAdjacentHTML('beforeend',fresh);
+  };
   const pending=()=>{const t0=Date.now();clearInterval(timer);
     timer=setInterval(()=>{const el=document.getElementById('pend');
       if(el){const l=LINES.write[Math.floor((Date.now()-t0)/2600)%LINES.write.length];
@@ -1353,12 +1371,12 @@ async function ask(text){
       const ev=JSON.parse(line.slice(6));
       if(ev.event==='sources'){
         clearInterval(timer);timings=ev.timings;hits=ev.hits||[];srcHtml=cards(hits);
-        setCites(hits);paint();pending();
+        setCites(hits);frame();EL('src').innerHTML=srcHtml;paint();pending();
       }else if(ev.event==='token'){
         if(!started){started=true;clearInterval(timer)}
         answer+=ev.text;paint();
       }else if(ev.event==='done'){clearInterval(timer);rolling(false);timings=ev.timings;
-        answer=answer.trimEnd();out.innerHTML=answerCard(answer,timings,false)+srcHtml;
+        answer=answer.trimEnd();paint(false);
         addHist({id:String(Date.now()),q:text,mode:'ask',ts:Date.now(),
           model:SET.model||SDEF.model,answer,hits,timings});
       }else if(ev.event==='error'){clearInterval(timer);rolling(false);
