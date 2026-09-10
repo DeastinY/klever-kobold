@@ -1,0 +1,30 @@
+{"id": "la-01", "question": "Who rules Cheliax?", "page": "Cheliax", "must_contain": ["Abrogail"]}
+{"id": "la-02", "question": "What is the capital of Cheliax?", "page": "Cheliax", "must_contain": ["Egorian"]}
+{"id": "la-03", "question": "Which god did House Thrune make its pact with?", "page": "Cheliax", "must_contain": ["Asmodeus"]}
+{"id": "la-04", "question": "Who is the Whispering Tyrant?", "page": "Tar-Baphon", "must_contain": ["Tar-Baphon"]}
+{"id": "la-05", "question": "Which god judges the souls of the dead?", "page": "Pharasma", "must_contain": ["Pharasma"]}
+{"id": "la-06", "question": "Which goddess do travellers, dreamers and gamblers pray to?", "page": "Desna", "must_contain": ["Desna"]}
+{"id": "la-07", "question": "Which runelord ruled Shalast?", "page": "Shalast", "must_contain": ["Karzoug"]}
+{"id": "la-08", "question": "Who founded Absalom?", "page": "Absalom", "must_contain": ["Aroden"]}
+{"id": "la-09", "question": "Who is Shelyn's brother?", "page": "Shelyn", "must_contain": ["Zon-Kuthon"]}
+{"id": "la-10", "question": "Which god does the nation of Nidal serve?", "page": "Nidal", "must_contain": ["Zon-Kuthon"]}
+{"id": "la-11", "question": "Which god do the Red Mantis assassins serve?", "page": "Red Mantis", "must_contain": ["Achaekek"]}
+{"id": "la-12", "question": "In which region of Avistan is Sandpoint?", "page": "Sandpoint", "must_contain": ["Varisia"]}
+{"id": "la-13", "question": "In what year did Aroden die?", "page": "Aroden", "must_contain": ["4606"]}
+{"id": "la-14", "question": "What is the capital of Andoran?", "page": "Andoran", "must_contain": ["Almas"]}
+{"id": "la-15", "question": "What is the capital of Taldor?", "page": "Taldor", "must_contain": ["Oppara"]}
+{"id": "la-16", "question": "What is the capital of Osirion?", "page": "Osirion", "must_contain": ["Sothis"]}
+{"id": "la-17", "question": "Where is the Starstone kept?", "page": "Starstone", "must_contain": ["Absalom"]}
+{"id": "la-18", "question": "Who leads the Pathfinder Society?", "page": "Pathfinder Society", "must_contain": ["Decemvirate"]}
+{"id": "la-19", "question": "Which organisation is the Pathfinder Society's main rival, trading in relics for profit?", "page": "Aspis Consortium", "must_contain": ["Aspis"]}
+{"id": "la-20", "question": "What is Katapesh's most famous export?", "page": "Katapesh", "must_contain": ["pesh"]}
+{"id": "la-21", "question": "Which nation is ruled by the Kalistocracy?", "page": "Druma", "must_contain": ["Druma"]}
+{"id": "la-22", "question": "Which god did Iomedae serve before she became a goddess?", "page": "Iomedae", "must_contain": ["Aroden"]}
+{"id": "la-23", "question": "Which city in the Mana Wastes manufactures firearms?", "page": "Alkenstar", "must_contain": ["Alkenstar"]}
+{"id": "la-24", "question": "Which god's death caused the Godsrain?", "page": "Godsrain (event)", "must_contain": ["Gorum"]}
+{"id": "la-25", "question": "Which city was Cheliax's capital before Egorian?", "page": "Egorian", "must_contain": ["Westcrown"]}
+{"id": "la-26", "question": "In which city is the Pathfinder Society's Grand Lodge?", "page": "Grand Lodge", "must_contain": ["Absalom"]}
+{"id": "la-27", "question": "What is the nation ruled by Razmir called?", "page": "Razmiran", "must_contain": ["Razmiran"]}
+{"id": "la-28", "question": "What kind of creature rules the nation of Geb?", "page": "Geb", "must_contain": ["ghost"]}
+{"id": "la-29", "question": "Who created Irrisen's line of winter witch queens?", "page": "Irrisen", "must_contain": ["Baba Yaga"]}
+{"id": "la-30", "question": "Which plane did the demons of the Worldwound pour in from?", "page": "Worldwound", "must_contain": ["Abyss", "demon"]}

@@ -1,0 +1,11 @@
+{
+  "model": "qwen3.5:9b",
+  "scope": "auto",
+  "k": 8,
+  "n": 30,
+  "correct": 29,
+  "sent_to_lore": 29,
+  "cites_wiki": 29,
+  "mean_total_seconds": 1.94,
+  "seconds": 58
+}

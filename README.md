@@ -83,7 +83,7 @@ It is a lookup tool, not a rules judge. This is measured, not modest:
 | "How does Treat Wounds work?" | **Reliable**, with a citation you can check. |
 | "Is there a feat that makes falling less dangerous?" | **Mostly** — about three times in four. |
 | **"Does X interact with Y?"** | **Do not trust it.** Find the rule here; read it yourself. |
-| "Who rules Cheliax?" | **Mostly.** 47 of 50 hand-written lore questions bring up the right PathfinderWiki page; the wiki is thorough on the older books and thin on the newest. |
+| "Who rules Cheliax?" | **Reliable for lookups**, with the PathfinderWiki page underneath: 29 of 30 checkable lore facts right, and the miss says "not in the excerpts" rather than guessing. Thin on the newest books. |
 
 On 109 hand-written questions the default model gets 93 right; on questions real
 tables ask, retrieval finds the answer outright only about a third of the time.

@@ -1603,9 +1603,27 @@ recorded number is index-v3's other changes — resolved embeds and filled legac
 names, promised in the last release and landing in this one — and was not
 separated out. Family tables are in `eval/runs/lore-v3-*.scores.json`.
 
-Two things this does not measure: answer *quality* on lore questions (only
-whether the page reaches the model), and the wiki's coverage of the newest
-books, which is thin by inspection.
+### Lore answers, end to end
+
+`eval/lore_answers.py`: thirty hand-written Golarion questions with one
+checkable fact each ("Who rules Cheliax?" must say Abrogail), every expectation
+verified to appear on the wiki page it names before anything was run. Graded by
+string match, scope `auto`, k=8.
+
+| model | correct | sent to lore | cites PathfinderWiki | mean s/question |
+| --- | ---: | ---: | ---: | ---: |
+| qwen3.5:4b | **29/30** | 30/30 | 29/30 | 1.7 |
+| qwen3.5:9b | **29/30** | 29/30 | 29/30 | 1.9 |
+
+The same item misses on both: "the Pathfinder Society's main rival, trading in
+relics for profit" — the Aspis Consortium's page never reaches the eight, and
+both models say so rather than name one. That is the failure mode this project
+wants when retrieval fails. Thirty items is a smoke test with a name; one item
+is 3.3%, and these are lookups, not the "what is the political situation in
+Cheliax" questions a GM actually asks.
+
+What is still unmeasured: the wiki's coverage of the newest books, which is
+thin by inspection.
 
 One more thing found by reading outputs, not scores: on this machine the 4B
 gave the same 99/109 three times in three processes, item for item. The
