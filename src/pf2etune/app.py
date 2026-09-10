@@ -865,7 +865,8 @@ class Assistant:
         much prose to be worth a wrong link.
         """
         names = self._name_table()
-        words = re.findall(r"[A-Za-z][A-Za-z'’\-]*", text)
+        # URLs are not prose: "…/Feats.aspx" is not a mention of the Feats page.
+        words = re.findall(r"[A-Za-z][A-Za-z'’\-]*", re.sub(r"https?://\S+", " ", text))
         found: dict[str, int] = {}
         for n in range(5, 0, -1):
             for i in range(len(words) - n + 1):

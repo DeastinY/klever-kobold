@@ -832,19 +832,21 @@ function linkNames(html){
     list.forEach((h,i)=>{if(h.name&&h.name.length>=4)pool.push({name:h.name,url:h.url,src,i})});
   if(!pool.length)return html;
   pool.sort((a,b)=>b.name.length-a.name.length);
+  // One pass with every name in one alternation, longest first: a replacement
+  // never sees the markup another replacement just inserted, which is how
+  // "Feats" once matched inside a freshly made href.
+  const byKey={};for(const p of pool)byKey[p.name.toLowerCase()]=byKey[p.name.toLowerCase()]||p;
+  const alt=Object.values(byKey).map(p=>p.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+  const re=new RegExp('(^|[^\\w])('+alt+')(?![\\w])','gi');
   const seen=new Set();
-  return html.split(/(<[^>]+>)/).map((seg,n)=>{
+  return html.split(/(<[^>]+>)/).map(seg=>{
     if(seg.startsWith('<'))return seg;
-    for(const p of pool){
-      const re=new RegExp('(^|[^\\w>])('+p.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+
-        ')(?![\\w])','i');
-      seg=seg.replace(re,(m,pre,txt)=>{
-        // one link per name: two "Falling" pages must not each claim an occurrence
-        const key=p.name.toLowerCase();if(seen.has(key))return m;seen.add(key);
-        return pre+'<a class="lnk ent" href="'+esc(p.url)+'" data-src="'+p.src+'" data-i="'+p.i+
-          '" target="_blank" rel="noreferrer">'+txt+'</a>'});
-    }
-    return seg;
+    return seg.replace(re,(m,pre,txt)=>{
+      const key=txt.toLowerCase(),p=byKey[key];
+      // one link per name: two "Falling" pages must not each claim an occurrence
+      if(!p||seen.has(key))return m;seen.add(key);
+      return pre+'<a class="lnk ent" href="'+esc(p.url)+'" data-src="'+p.src+'" data-i="'+p.i+
+        '" target="_blank" rel="noreferrer">'+txt+'</a>'});
   }).join('');
 }
 /* The Remaster renamed things; the old name is what a table still says. */
