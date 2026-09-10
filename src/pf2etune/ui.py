@@ -142,6 +142,20 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .body li.sub{margin-left:1.1rem;list-style:circle}
 .body li.sub{margin-left:1.1rem;list-style:circle;color:var(--muted)}
 .body a{color:var(--accent)}
+/* The Archives underline their cross-references; keep that habit so a linked
+   term reads as one. */
+:root{--link:#1a3f8f}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--link:#8fb0ff}}
+:root[data-theme=dark]{--link:#8fb0ff}
+.body a.lnk{color:var(--link);text-decoration:underline;text-decoration-thickness:1px;
+ text-underline-offset:.12em}
+.body a.lnk:hover{color:var(--accent)}
+.star{background:none;border:0;padding:0 .1rem;cursor:pointer;font-size:1.05rem;line-height:1;
+ color:var(--muted);flex:none;align-self:center}
+.star:hover,.star.on{color:#d19a1a}
+.tile .star{position:absolute;top:.35rem;right:.5rem}
+.pop .star{position:absolute;top:.75rem;right:3rem;font-size:1.25rem}
+#favs[hidden]{display:none}
 .body .clip{max-height:16rem;overflow:auto}
 .tw{overflow-x:auto;margin:.45rem 0}
 .body table{border-collapse:collapse;font-size:.85rem;min-width:50%}
@@ -384,6 +398,7 @@ should you want to check. No account, no cloud, no dice tax.</p>
 <p class="note">Press <kbd>?</kbd> any time to see this again.</p></div>
 </div></div>
 
+<div id="favs" hidden><p class="tryh">★ Favourites</p><div class="tiles" id="fav-tiles"></div></div>
 <div id="home" hidden>
 <p class="tryh">Try one</p>
 <div class="chips" id="examples"></div>
@@ -469,6 +484,7 @@ settings do not travel to it — the MCP server uses its own command-line flags.
 
 <div id="out"></div>
 </div><script>
+const EL=id=>document.getElementById(id);
 const out=document.getElementById('out'),q=document.getElementById('q'),
  st=document.getElementById('status'),stt=document.getElementById('statustext'),
  look=document.getElementById('lookbtn'),askBtn=document.getElementById('askbtn'),
@@ -526,13 +542,18 @@ function chip(url,label){
     esc(label)+'</a>';
 }
 function inline(t,cites){
+  // The corpus keeps the Archives' own links ("[grabbed](https://2e.aonprd.com/…)").
+  // They are rendered first, and the bare-URL pass below is told to leave an
+  // href alone, so a link is never linked twice.
+  t=t.replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g,(m,label,url)=>
+     '<a class="lnk" href="'+url+'" target="_blank" rel="noreferrer">'+label+'</a>');
   t=t.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
      // require a non-space next to each marker, or the "*   *" between list
      // items becomes an italic run of spaces
-     .replace(/(^|[^*])\*(?=\S)([^*\n]*[^*\s])\*/g,'$1<i>$2</i>');
-  // Bare URLs are linked before anything else emits a tag -- run this pass over
-  // HTML and it happily rewrites the href of a link made a line earlier.
-  t=t.replace(/https?:\/\/[^\s<)\]]+/g,u=>{
+     .replace(/(^|[^*])\*(?=\S)([^*\n]*[^*\s])\*/g,'$1<i>$2</i>')
+     // _Player Core_ -- underscores only when they wrap a word, not inside one
+     .replace(/(^|[^\w])_(?=\S)([^_\n]*[^_\s])_(?!\w)/g,'$1<i>$2</i>');
+  t=t.replace(/(?<!href=")https?:\/\/[^\s<)\]"]+/g,u=>{
     const clean=u.replace(/[.,;:]$/,''),tail=u.slice(clean.length);
     return chip(clean,AON_LABEL[clean]||clean.replace(/^https?:\/\/(www\.)?/,''))+tail;
   });
@@ -636,7 +657,10 @@ function statblock(h){
   const tr=text.match(/^\*\*Traits\*\*\s*([^\n]+)\n?/m);
   if(tr){traits=tr[1].split(',').map(s=>s.trim()).filter(Boolean);
          text=text.replace(tr[0],'')}
-  const rank=kind||(h.level!==null&&h.level!==undefined?'Level '+h.level:'');
+  // The kind badge above already says "Action" or "Spell"; the corner is for
+  // the level, which the heading carries as "Feat 2" or the record as a number.
+  const lvl=(kind||'').match(/\d+$/);
+  const rank=lvl?'Level '+lvl[0]:(h.level!==null&&h.level!==undefined?'Level '+h.level:'');
 
   const pills=traits.map(t=>{
     const l=t.toLowerCase();
@@ -656,7 +680,7 @@ function statblock(h){
    kind (coloured), the name with its action cost, up to four traits and the
    first line. Clicking opens the whole entry in a popout with an × in the
    corner; ← → step through the eight without closing it. */
-let SHOWN=[],OPEN=-1;
+let SHOWN=[],OPEN=-1,OPEN_SRC='res';
 const KIND_ICON={
  spell:'<svg viewBox="0 0 16 16"><path d="M8 0l1.6 4.9L14.5 5l-3.9 3 1.5 4.9L8 10l-4.1 2.9L5.4 8 1.5 5l4.9-.1z"/></svg>',
  feat:'<svg viewBox="0 0 16 16"><path d="M8 1l6 2.2v4.1c0 3.6-2.5 6.3-6 7.7-3.5-1.4-6-4.1-6-7.7V3.2zM6.9 10.4l4.2-4.2-1.1-1.1-3.1 3.1-1.4-1.4-1.1 1.1z"/></svg>',
@@ -704,59 +728,110 @@ function firstLine(text){
   t=(t[0]||'').replace(/\*\*?/g,'');
   return t.length>150?t.slice(0,150).replace(/\s+\S*$/,'')+'…':t;
 }
-function tile(h,i){
+/* ---------- favourites ----------
+   A star on any entry keeps it on the front page. The whole entry is stored,
+   so a favourite opens instantly and offline like anything else here. */
+const FKEY='pf2e-favs';
+let FAVS=[];
+try{FAVS=JSON.parse(localStorage.getItem(FKEY)||'[]');if(!Array.isArray(FAVS))FAVS=[]}catch(e){FAVS=[]}
+const favKey=h=>h.url||h.name;
+const isFav=h=>FAVS.some(f=>favKey(f)===favKey(h));
+function toggleFav(h){
+  if(isFav(h))FAVS=FAVS.filter(f=>favKey(f)!==favKey(h));
+  else FAVS.unshift({name:h.name,category:h.category,level:h.level,url:h.url,text:h.text,
+                     summary:h.summary||''});
+  try{localStorage.setItem(FKEY,JSON.stringify(FAVS))}catch(e){}
+  paintFavs();
+  for(const b of document.querySelectorAll('.star[data-key]'))
+    b.classList.toggle('on',FAVS.some(f=>favKey(f)===b.dataset.key)),
+    b.textContent=b.classList.contains('on')?'★':'☆';
+}
+function starBtn(h){
+  const on=isFav(h);
+  return '<button type="button" class="star'+(on?' on':'')+'" data-key="'+esc(favKey(h))+
+    '" title="'+(on?'Remove from favourites':'Keep on the front page')+'" aria-label="Favourite">'+
+    (on?'★':'☆')+'</button>';
+}
+function paintFavs(){
+  const w=EL('favs');w.hidden=!FAVS.length;
+  EL('fav-tiles').innerHTML=FAVS.map((h,i)=>tile(h,i,'fav')).join('');
+}
+const LISTS={res:()=>SHOWN,fav:()=>FAVS};
+function tile(h,i,src){
+  src=src||'res';
   const p=parseHead(h),k=kindOf(h.category);
+  const snippet=h.summary||firstLine(p.text);
   return '<div class="tile'+(p.rarity?' '+p.rarity:'')+'" style="--k:var(--k-'+k+')" data-i="'+i+
-    '" role="button" tabindex="0" title="Open">'+kindBadge(h,p)+
+    '" data-src="'+src+'" role="button" tabindex="0" title="Open">'+kindBadge(h,p)+starBtn(h)+
     '<div class="thead"><span class="tname">'+esc(p.title)+'</span>'+glyphs(p.cost)+'</div>'+
     (p.traits.length?'<div class="traits">'+p.traits.slice(0,4).map(t=>{
       const l=t.toLowerCase(),cls=RARITY.includes(l)?l:(SIZES.includes(l)?'size':'');
       return '<span class="trait'+(cls?' '+cls:'')+'">'+esc(t)+'</span>'}).join('')+'</div>':'')+
-    '<p class="snip-t">'+esc(firstLine(p.text))+'</p><span class="more">open ↗</span></div>';
+    '<p class="snip-t">'+esc(snippet)+'</p><span class="more">open ↗</span></div>';
 }
 function cards(hits){
   if(!hits||!hits.length)return '';
   SHOWN=hits;
   return '<p class="sources-h">Entries · from the local copy of the Archives of Nethys — '+
-    'click one to read it</p><div class="tiles">'+hits.map(tile).join('')+'</div>';
+    'click one to read it</p><div class="tiles">'+hits.map((h,i)=>tile(h,i,'res')).join('')+'</div>';
 }
 const sheet=document.createElement('div');sheet.id='sheet';sheet.hidden=true;
 document.body.appendChild(sheet);
-function openEntry(i){
-  const h=SHOWN[i];if(!h)return;
-  const p=parseHead(h),k=kindOf(h.category);OPEN=i;
+function openEntry(i,src){
+  src=src||'res';const list=LISTS[src]();
+  const h=list[i];if(!h)return;
+  const p=parseHead(h),k=kindOf(h.category);OPEN=i;OPEN_SRC=src;
   sheet.innerHTML='<div class="pop'+(p.rarity?' '+p.rarity:'')+'" style="--k:var(--k-'+k+')" '+
     'role="dialog" aria-modal="true" aria-label="'+esc(p.title)+'">'+
     '<button type="button" class="x" id="sheet-x" title="Close (Esc)" aria-label="Close">×</button>'+
-    kindBadge(h,p)+statblock(h)+
+    starBtn(h)+kindBadge(h,p)+statblock(h)+
     '<div class="nav"><button type="button" id="sheet-prev"'+(i?'':' disabled')+'>← previous</button>'+
     '<a class="cite aon" href="'+esc(h.url)+'" target="_blank" rel="noreferrer">Open on Archives of Nethys ↗</a>'+
-    '<button type="button" id="sheet-next"'+(i<SHOWN.length-1?'':' disabled')+'>next →</button></div></div>';
+    '<button type="button" id="sheet-next"'+(i<list.length-1?'':' disabled')+'>next →</button></div></div>';
   sheet.hidden=false;lockScroll();
   EL('sheet-x').addEventListener('click',closeEntry);
-  EL('sheet-prev').addEventListener('click',()=>openEntry(i-1));
-  EL('sheet-next').addEventListener('click',()=>openEntry(i+1));
+  EL('sheet-prev').addEventListener('click',()=>openEntry(i-1,src));
+  EL('sheet-next').addEventListener('click',()=>openEntry(i+1,src));
+  sheet.querySelector('.star').addEventListener('click',e=>{e.stopPropagation();toggleFav(h)});
   EL('sheet-x').focus();
 }
+/* A cross-reference to an entry that is already on the page opens in place;
+   anything else goes to the Archives in a new tab, as the link says. */
+function followLink(e){
+  const a=e.target.closest('a.lnk');if(!a)return;
+  const url=a.getAttribute('href');
+  for(const src of ['res','fav']){
+    const i=LISTS[src]().findIndex(h=>h.url===url);
+    if(i>=0){e.preventDefault();openEntry(i,src);return}
+  }
+}
+sheet.addEventListener('click',followLink);
 function closeEntry(){
   if(sheet.hidden)return;
   sheet.hidden=true;lockScroll();
-  const t=document.querySelector('.tile[data-i="'+OPEN+'"]');if(t)t.focus();OPEN=-1;
+  const t=document.querySelector('.tile[data-i="'+OPEN+'"][data-src="'+OPEN_SRC+'"]');
+  if(t)t.focus();OPEN=-1;
 }
 sheet.addEventListener('click',e=>{if(e.target===sheet)closeEntry()});
-out.addEventListener('click',e=>{
-  if(e.target.closest('a'))return;
-  const t=e.target.closest('.tile');if(t)openEntry(+t.dataset.i);
-});
-out.addEventListener('keydown',e=>{
+function tileClick(e){
+  const star=e.target.closest('.star');
+  if(star){e.stopPropagation();const t=star.closest('.tile');
+    toggleFav(LISTS[t.dataset.src]()[+t.dataset.i]);return}
+  if(e.target.closest('a')){followLink(e);return}
+  const t=e.target.closest('.tile');if(t)openEntry(+t.dataset.i,t.dataset.src);
+}
+function tileKey(e){
   if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('tile')){
-    e.preventDefault();openEntry(+e.target.dataset.i)}
-});
+    e.preventDefault();openEntry(+e.target.dataset.i,e.target.dataset.src)}
+}
+out.addEventListener('click',tileClick);out.addEventListener('keydown',tileKey);
+EL('favs').addEventListener('click',tileClick);EL('favs').addEventListener('keydown',tileKey);
+paintFavs();
 document.addEventListener('keydown',e=>{
   if(sheet.hidden)return;
   if(e.key==='Escape'){e.preventDefault();closeEntry()}
-  else if(e.key==='ArrowRight'&&OPEN<SHOWN.length-1)openEntry(OPEN+1);
-  else if(e.key==='ArrowLeft'&&OPEN>0)openEntry(OPEN-1);
+  else if(e.key==='ArrowRight'&&OPEN<LISTS[OPEN_SRC]().length-1)openEntry(OPEN+1,OPEN_SRC);
+  else if(e.key==='ArrowLeft'&&OPEN>0)openEntry(OPEN-1,OPEN_SRC);
 },true);
 </script>
 <script>
@@ -771,7 +846,6 @@ document.addEventListener('keydown',e=>{
    different encoder does not fail, it returns plausible and unrelated entries,
    so "this server's own" is the default and the alternative is fingerprinted
    against the index before the first question. */
-const EL=id=>document.getElementById(id);
 const SDEF={backend:'ollama',base:'http://localhost:11434',model:'',key:'',
  k:8,rerank:true,ctx:1600,tokens:400,embed:'server'};
 let SET=Object.assign({},SDEF),SEEDED=false,LOCAL_ONLY=true,EMBED_MODEL='',AUTO_MODEL=false;

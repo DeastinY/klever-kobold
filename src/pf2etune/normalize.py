@@ -58,6 +58,15 @@ def _render_row(match: re.Match[str]) -> str:
     return " | ".join(cells) + "\n"
 
 
+def _render_link(match: re.Match[str]) -> str:
+    label, href = match.group(1), match.group(2).strip()
+    if href.startswith("/"):
+        return f"[{label}](https://2e.aonprd.com{href})"
+    if href.startswith("http"):
+        return f"[{label}]({href})"
+    return label
+
+
 def to_markdown(raw: str, keep_embeds: bool = False) -> str:
     """Render AoN pseudo-XML markdown down to plain markdown.
 
@@ -81,7 +90,11 @@ def to_markdown(raw: str, keep_embeds: bool = False) -> str:
     text = RE_BLOCK.sub("", text)
     text = RE_SELFCLOSING.sub("", text)
     text = RE_ANY_TAG.sub("", text)
-    text = RE_LINK.sub(lambda m: m.group(1), text)  # keep anchor text, drop href
+    # Keep the Archives' own links: "grabbed" underlined and pointing at Grapple
+    # is how the site reads, and the runtime can open a linked entry in place.
+    # Retrieval and the prompt strip them again (retrieval.plain) -- URLs are
+    # noise to an embedder and cost the answering model tokens.
+    text = RE_LINK.sub(_render_link, text)
     text = html.unescape(text)
     text = RE_BLANKS.sub("\n\n", text)
     return "\n".join(line.rstrip() for line in text.splitlines()).strip()

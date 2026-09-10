@@ -802,7 +802,7 @@ class Assistant:
             if h.level is not None:
                 head += f", level {h.level}"
             head += f") — {h.url}"
-            blocks.append(head + "\n" + h.text[:max_chars].strip())
+            blocks.append(head + "\n" + retrieval.plain(h.text)[:max_chars].strip())
         return "<rules_excerpts>\n" + "\n\n".join(blocks) + "\n</rules_excerpts>"
 
     def retrieve(self, question: str, k: int = DEFAULT_K, rerank: bool = True,

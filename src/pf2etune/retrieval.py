@@ -32,6 +32,14 @@ def tokenize(text: str) -> list[str]:
     return RE_TOKEN.findall(text.lower())
 
 
+RE_MD_LINK = re.compile(r"\[([^\]]*)\]\([^)]*\)")
+
+
+def plain(text: str) -> str:
+    """Body text with markdown links reduced to their labels."""
+    return RE_MD_LINK.sub(r"\1", text or "")
+
+
 def chunk_text(chunk: dict, max_chars: int = 1200) -> str:
     """The string that represents a chunk to the retriever.
 
@@ -48,7 +56,7 @@ def chunk_text(chunk: dict, max_chars: int = 1200) -> str:
         head.append(", ".join(chunk["traits"]))
     if chunk.get("rarity"):
         head.append(chunk["rarity"])
-    body = (chunk.get("summary") or "") + "\n" + (chunk.get("text") or "")
+    body = (chunk.get("summary") or "") + "\n" + plain(chunk.get("text") or "")
     return " | ".join(h for h in head if h) + "\n" + body[:max_chars].strip()
 
 
