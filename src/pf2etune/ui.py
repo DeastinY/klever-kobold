@@ -55,6 +55,11 @@ body{margin:0;background:var(--bg);color:var(--ink);
  font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
 .wrap{max-width:58rem;margin:0 auto;padding:1.25rem 1rem 4rem}
 header{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.75rem}
+#home-link{display:flex;align-items:baseline;gap:.6rem;color:inherit;text-decoration:none;
+ border-radius:8px;padding:.15rem .4rem .15rem .2rem;margin-left:-.2rem}
+#home-link:hover{background:var(--chip)}
+#home-link:hover .d20{transform:rotate(-12deg)}
+#home-link .d20{transition:transform .2s}
 h1{font-size:1.05rem;margin:0;font-weight:600;
  font-family:ui-serif,Georgia,"Iowan Old Style",serif}
 h1 small{color:var(--muted);font-weight:400;font-family:inherit}
@@ -399,8 +404,8 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 .tog input{width:auto;margin:0}
 .ob .row .note{margin:0;flex:1;grid-column:auto}
 </style></head><body><div class="wrap">
-<header><span class="d20" id="d20" aria-hidden="true"></span>
-<h1>Pathfinder 2e rules <small>— Archives of Nethys, offline</small></h1>
+<header><a href="/" id="home-link" title="Start over"><span class="d20" id="d20" aria-hidden="true"></span>
+<h1>Pathfinder 2e rules <small>— Archives of Nethys, offline</small></h1></a>
 <button id="hist" title="Questions you have asked" aria-expanded="false" aria-controls="history"></button>
 <button id="gear" title="Settings" aria-expanded="false" aria-controls="settings"></button>
 <button id="help" title="How this works" aria-expanded="false">?</button>
@@ -1368,6 +1373,14 @@ EL('examples').addEventListener('click',e=>{
 });
 drawExamples();
 function showHome(on){EL('home').hidden=!on}
+/* The die and the title are the way back to a blank page: nothing on screen
+   but the box, the suggestions and what you have asked before. */
+function goHome(){
+  closeOverlays();closeEntry();clearInterval(timer);rolling(false);
+  out.innerHTML='';q.value='';hpos=-1;CURRENT=null;showHome(true);
+  window.scrollTo({top:0});if(ready)q.focus();
+}
+EL('home-link').addEventListener('click',e=>{e.preventDefault();goHome()});
 paintHist();showHome(true);
 
 /* ---------- onboarding ---------- */
