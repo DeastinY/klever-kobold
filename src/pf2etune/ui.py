@@ -1582,6 +1582,8 @@ async function ask(text){
     const body=ans.querySelector('.body');
     body.innerHTML=answer?(live?md(answer,true)+'<span class="caret"></span>':linkNames(md(answer,true)))
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>';
+    // The footer's line begins in the same paint that removes the body's.
+    if(live&&answer&&!document.getElementById('fun'))funStart();
     if(!live){
       ans.querySelector('.foot').innerHTML=stamp(timings||{},false)+
         '<button type="button" class="report" id="report-btn">Wrong? Report it</button>';
@@ -1602,7 +1604,7 @@ async function ask(text){
         clearInterval(timer);timings=ev.timings;hits=ev.hits||[];srcHtml=cards(hits);
         setCites(hits);frame();EL('src').innerHTML=srcHtml;paint();pending();
       }else if(ev.event==='token'){
-        if(!started){started=true;clearInterval(timer);funStart()}
+        if(!started){started=true;clearInterval(timer)}
         answer+=ev.text;
         // One repaint per frame, however many chunks arrived: markdown over the
         // whole answer per token is what made the page stutter while writing.
