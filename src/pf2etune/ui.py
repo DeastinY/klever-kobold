@@ -1608,7 +1608,9 @@ async function ask(text){
         answer+=ev.text;
         // One repaint per frame, however many chunks arrived: markdown over the
         // whole answer per token is what made the page stutter while writing.
-        if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;paint()})}
+        if(!queued){queued=true;const run=()=>{queued=false;paint()};
+          // A hidden tab gets no animation frames; a timer keeps it current.
+          if(document.hidden)setTimeout(run,150);else requestAnimationFrame(run)}
       }else if(ev.event==='done'){clearInterval(timer);funStop();rolling(false);timings=ev.timings;
         EXTRA=ev.mentions||[];answer=answer.trimEnd();
         CURRENT={q:text,answer,sources:hits,model:SET.model||SDEF.model,timings};paint(false);
