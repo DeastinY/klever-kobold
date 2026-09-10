@@ -239,6 +239,11 @@ kbd{font:inherit;font-size:.75rem;background:var(--chip);border:1px solid var(--
  margin:.4rem 0 1rem;align-items:baseline}
 .ob .trust .ok{color:var(--ok);font-weight:600}.ob .trust .no{color:var(--crit-fail);font-weight:600}
 .ob .trust .so{color:var(--warn);font-weight:600}
+.ob .trust .ext{color:var(--accent);font-weight:600}
+.ob .models{margin-top:.2rem}
+.ob code{background:var(--chip);border-radius:3px;padding:.05rem .3rem;font-size:.82em}
+button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
+ text-decoration:underline;cursor:pointer}
 .ob .row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.6rem}
 .ob .row .note{margin:0;flex:1;grid-column:auto}
 </style></head><body><div class="wrap">
@@ -280,6 +285,18 @@ Archives of Nethys, and cites its sources. No account, no cloud, no dice tax.</p
  <span class="ok">Trust it</span><span>“What level is Battle Medicine?” · “How does Treat Wounds work?”</span>
  <span class="so">Mostly</span><span>“Is there a feat that makes falling less dangerous?”</span>
  <span class="no">Read the rule</span><span>“Does X interact with Y?” — it finds the rule fast; you settle the argument.</span>
+</div>
+<p class="tryh" style="margin-top:.2rem">Which model answers</p>
+<div class="trust models">
+ <span class="ok">Better</span><span>qwen3.5:9b, the default — 100 of 109 on the hand-written
+  holdout. Slow on a laptop: expect a minute per answer.</span>
+ <span class="so">Faster</span><span>qwen3.5:4b, about twice the speed for 93 of 109. Pick it
+  in <button type="button" class="link" id="ob-settings">Settings</button> when the wait
+  hurts more than seven misses.</span>
+ <span class="ext">Your own</span><span>Any OpenAI-compatible server — LM Studio, llama.cpp, a
+  hosted API — as the answering model; retrieval stays local. Or skip this page and use the
+  <b>MCP server</b> from Claude Desktop or Claude Code: <code>pf2e mcp</code> exposes the
+  search to a stronger model that reads the rules itself. Both are set up under Settings.</span>
 </div>
 <div class="row"><button class="primary" type="button" id="ob-go">Roll for initiative</button>
 <p class="note">Press <kbd>?</kbd> any time to see this again.</p></div>
@@ -863,6 +880,8 @@ function closeHelp(){ob.hidden=true;EL('help').setAttribute('aria-expanded','fal
   try{localStorage.setItem('pf2e-onboarded','1')}catch(e){}
   if(ready)q.focus()}
 EL('ob-go').addEventListener('click',closeHelp);
+EL('ob-settings').addEventListener('click',()=>{closeHelp();
+  if(panel.hidden)gear.click();panel.scrollIntoView({behavior:'smooth'})});
 EL('help').addEventListener('click',()=>ob.hidden?openHelp():closeHelp());
 ob.addEventListener('click',e=>{if(e.target===ob)closeHelp()});
 let seen=false;try{seen=!!localStorage.getItem('pf2e-onboarded')}catch(e){}
