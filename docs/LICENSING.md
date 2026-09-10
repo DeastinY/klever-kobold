@@ -4,6 +4,14 @@ Not legal advice. This is the working understanding this project operates under.
 The required attribution and the full source acknowledgements are in
 [`NOTICE.md`](../NOTICE.md).
 
+## The code
+
+Everything in this repository that we wrote — the runtime, the build scripts, the
+evaluation harness, the web page, the worker — is under the [MIT License](../LICENSE).
+Use it, fork it, sell a tool built on it if you must; the MIT terms allow that.
+What MIT does not and cannot cover is the content the code works with, which is
+the rest of this document, and which is non-commercial.
+
 ## The two bodies of text are licensed differently
 
 **Rules mechanics** (Archives of Nethys) are published under the **ORC License** — the

@@ -3,6 +3,9 @@ name = "kleverkobold"
 version = "0.1.0"
 description = "The Klever Kobold: a Pathfinder 2e rules reference that runs on your own machine -- corpus, retrieval, benchmark, fine-tune."
 requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Richard Polzin" }]
 # The runtime, and nothing else. Ollama holds the models over HTTP, so there is
 # no torch, no transformers and no CUDA anywhere in this graph. Everything needed
 # to *build* a corpus or train something lives in an extra.

@@ -105,4 +105,8 @@ what keeps the site free for everyone, this tool included. Lore comes from
 support a wiki is to [help write it](https://pathfinderwiki.com/wiki/Help:Contents).
 
 Full acknowledgements, including the fonts and the models, are in
-[NOTICE.md](NOTICE.md). Non-commercial use only.
+[NOTICE.md](NOTICE.md).
+
+**Licence.** The code is [MIT](LICENSE). The game content it works with is not
+ours to licence: rules text is ORC / Community Use Policy, lore is Community Use
+Policy, both non-commercial. [docs/LICENSING.md](docs/LICENSING.md) has the details.
