@@ -298,13 +298,12 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 /* The container is a compositor layer: rotating it costs no repaint. Animating
    the SVG's parts did -- ten facets re-rasterised per frame, which stuttered
    on a laptop already busy running the model. */
-/* While a question runs, the model owns the GPU that macOS also composites
-   with, so any motion on screen drops frames -- a roll shows every dropped
-   frame as a jump. A slow breath does not: opacity and a hair of scale, both
-   composited, and a late frame lands on a slightly different shade of the
-   same thing. */
-.d20.rolling{animation:breathe 1.8s ease-in-out infinite}
-@keyframes breathe{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.9)}}
+/* The cheapest motion there is: one composited layer, rotation only, no scale
+   and no opacity, so the die is rasterised once and each frame is a single
+   transform on the compositor. Slow, so a frame the busy GPU drops is a few
+   degrees rather than a jump. */
+.d20.rolling{animation:spin 4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 @media(prefers-reduced-motion:reduce){.d20.rolling{animation:none}}
 #help,#hist{padding:.35rem .65rem;font-size:.8rem;border:1px solid var(--line);
