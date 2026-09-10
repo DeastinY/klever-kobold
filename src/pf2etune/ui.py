@@ -1562,6 +1562,11 @@ async function ask(text){
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>';
     const t=ans.querySelector('.timing');const fresh=stamp(timings||{});
     if(t)t.outerHTML=fresh;else ans.querySelector('.card').insertAdjacentHTML('beforeend',fresh);
+    // The report button belongs to a finished answer; the flag line is drawn
+    // once, so it is added here when the stream ends.
+    if(!live&&!ans.querySelector('#report-btn'))
+      ans.querySelector('.flag').insertAdjacentHTML('beforeend',
+        '<button type="button" class="report" id="report-btn">Wrong? Report it</button>');
   };
   const pending=()=>{const t0=Date.now();clearInterval(timer);
     timer=setInterval(()=>{const el=document.getElementById('pend');
