@@ -425,7 +425,7 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 <button id="help" title="How this works" aria-expanded="false">?</button>
 <button id="theme" title="Theme"></button></header>
 <div id="status"><span class="dot pulse"></span><span id="statustext">starting…</span></div>
-<form id="f"><input id="q" placeholder="ask what happens, name it, or describe it…" autofocus
+<form id="f"><input id="q" placeholder="ask the kobold what happens, name a thing, or describe it…" autofocus
  autocomplete="off" disabled><button class="primary" id="askbtn" disabled>Ask</button>
 <button id="lookbtn" type="button" disabled>Look up</button></form>
 <p class="hint"><kbd>Enter</kbd> asks · <kbd>Shift</kbd>+<kbd>Enter</kbd> shows only the entries
@@ -434,8 +434,8 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 <div id="history-wrap" class="ov" hidden><div class="pop" role="dialog" aria-modal="true" aria-label="Asked before">
 <button type="button" class="x" data-close="history-wrap" title="Close (Esc)" aria-label="Close">×</button>
 <div id="history">
-<div class="top"><p class="set-h">Asked before</p>
- <button type="button" id="h-clear">Forget all</button></div>
+<div class="top"><p class="set-h">Things you asked the kobold</p>
+ <button type="button" id="h-clear">Make the kobold forget</button></div>
 <p class="note" style="margin:0 0 .5rem">Answers are kept in this browser, so asking the same
 thing again is instant — until you press <b>Ask again</b>.</p>
 <ul class="recent" id="h-list"></ul>
@@ -480,7 +480,7 @@ the MCP setup for Claude Desktop and Claude Code: Settings →
 
 <div id="report-wrap" class="ov" hidden><div class="pop" role="dialog" aria-modal="true" aria-label="Report a wrong answer">
 <button type="button" class="x" data-close="report-wrap" title="Close (Esc)" aria-label="Close">×</button>
-<p class="set-h">Report a wrong answer</p>
+<p class="set-h">Tell the kobold it was wrong</p>
 <p class="note" id="r-where" style="margin:.2rem 0 .7rem"></p>
 <p class="r-label">Question</p><p class="r-quote" id="r-q"></p>
 <p class="r-label">Answer given</p><p class="r-quote clipq" id="r-a"></p>
@@ -495,11 +495,11 @@ the MCP setup for Claude Desktop and Claude Code: Settings →
  <span id="r-stat" class="note" style="margin:0"></span></div>
 </div></div>
 
-<div id="favs" hidden><p class="tryh">★ Favourites</p><div class="tiles" id="fav-tiles"></div></div>
+<div id="favs" hidden><p class="tryh">★ The hoard</p><div class="tiles" id="fav-tiles"></div></div>
 <div id="home" hidden>
-<p class="tryh">Try one</p>
+<p class="tryh">Ask the kobold</p>
 <div class="chips" id="examples"></div>
-<div id="recent-wrap" hidden><p class="tryh">Asked before</p><ul class="recent" id="recent"></ul></div>
+<div id="recent-wrap" hidden><p class="tryh">You asked earlier</p><ul class="recent" id="recent"></ul></div>
 </div>
 
 <div id="settings-wrap" class="ov" hidden><div class="pop wide" role="dialog" aria-modal="true" aria-label="Settings">
@@ -864,7 +864,7 @@ function toggleFav(h){
 function starBtn(h){
   const on=isFav(h);
   return '<button type="button" class="star'+(on?' on':'')+'" data-key="'+esc(favKey(h))+
-    '" title="'+(on?'Remove from favourites':'Keep on the front page')+'" aria-label="Favourite">'+
+    '" title="'+(on?'Take it out of the hoard':'Add it to the hoard')+'" aria-label="Hoard">'+
     (on?'★':'☆')+'</button>';
 }
 function paintFavs(){
@@ -921,8 +921,8 @@ function tile(h,i,src){
 function cards(hits){
   if(!hits||!hits.length)return '';
   SHOWN=hits;
-  return '<p class="sources-h">Entries · from the local copy of the Archives of Nethys — '+
-    'click one to read it</p><div class="tiles">'+hits.map((h,i)=>tile(h,i,'res')).join('')+'</div>';
+  return '<p class="sources-h">Found proof · dug out of the Archives of Nethys — '+
+    'poke one to read it</p><div class="tiles">'+hits.map((h,i)=>tile(h,i,'res')).join('')+'</div>';
 }
 const sheet=document.createElement('div');sheet.id='sheet';sheet.hidden=true;
 document.body.appendChild(sheet);
@@ -935,7 +935,7 @@ function openEntry(i,src){
     '<button type="button" class="x" id="sheet-x" title="Close (Esc)" aria-label="Close">×</button>'+
     starBtn(h)+kindBadge(h,p)+statblock(h).replace('</div><div class="body',formerly(h)+'</div><div class="body')+
     '<div class="nav"><button type="button" id="sheet-prev"'+(i?'':' disabled')+'>← previous</button>'+
-    '<a class="cite aon" href="'+esc(h.url)+'" target="_blank" rel="noreferrer">Open on Archives of Nethys ↗</a>'+
+    '<a class="cite aon" href="'+esc(h.url)+'" target="_blank" rel="noreferrer">See it in the Archives ↗</a>'+
     '<button type="button" id="sheet-next"'+(i<list.length-1?'':' disabled')+'>next →</button></div></div>';
   sheet.hidden=false;lockScroll();
   EL('sheet-x').addEventListener('click',closeEntry);
@@ -1302,7 +1302,7 @@ function paintHist(){
   list.innerHTML=n?HIST.map(histRow).join(''):'';
   list.insertAdjacentHTML('beforebegin','');
   let empty=document.querySelector('#history .empty');
-  if(!n){if(!empty){list.insertAdjacentHTML('afterend','<p class="empty">Nothing yet. The first question goes here.</p>')}}
+  if(!n){if(!empty){list.insertAdjacentHTML('afterend','<p class="empty">Nothing yet. The kobold is waiting.</p>')}}
   else if(empty)empty.remove();
   const rw=EL('recent-wrap');rw.hidden=!n;
   EL('recent').innerHTML=HIST.slice(0,5).map(histRow).join('');
@@ -1314,7 +1314,7 @@ for(const id of ['h-list','recent'])EL(id).addEventListener('click',e=>{
   q.value=r.q;replay(r);
 });
 EL('h-clear').addEventListener('click',()=>{
-  if(!HIST.length||confirm('Forget all '+HIST.length+' questions kept in this browser?')){
+  if(!HIST.length||confirm('Make the kobold forget all '+HIST.length+' questions kept in this browser?')){
     HIST=[];saveHist();paintHist();}
 });
 const histBtn=EL('hist'),histPanel=EL('history-wrap');
@@ -1385,7 +1385,7 @@ async function drawExamples(){
   EL('examples').innerHTML=EXAMPLES.map(([t,m],i)=>
     '<button type="button" class="chip" data-i="'+i+'">'+esc(t)+
     (m==='search'?'<span class="m">look up</span>':'')+'</button>').join('')+
-    '<button type="button" class="chip again" id="reroll" title="Different ones">↻</button>';
+    '<button type="button" class="chip again" id="reroll" title="Other ideas">↻</button>';
 }
 EL('examples').addEventListener('click',e=>{
   if(e.target.closest('#reroll')){drawExamples();return}
@@ -1436,8 +1436,8 @@ if(!seen)openHelp();
 
 /* ---------- asking ---------- */
 const LINES={
- search:['Consulting the Archives','Thumbing through the index','Searching the stacks'],
- find:['Consulting the Archives','Rolling Recall Knowledge','Finding the right page',
+ search:['Digging through the Archives','Sniffing along the shelves','Thumbing through the index'],
+ find:['The kobold scurries off','Digging through the Archives','Rolling Recall Knowledge','Finding the right page',
        'Asking the librarian','Checking the errata','Pondering the orb','Waking the archivist'],
  write:['The kobold is writing','Pondering the orb','Questioning the dead','Consulting the oracle',
         'Leafing through the Player Core','Arguing with the GM','Sharpening the quill',
@@ -1541,7 +1541,7 @@ function answerCard(answer,timings,live){
     '<div class="body">'+(answer?md(answer,true)+(live?'<span class="caret"></span>':'')
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>')+'</div>'+
     '<div class="foot">'+(answer||!live?stamp(timings||{},live):'')+
-    (live?'':'<button type="button" class="report" id="report-btn">Wrong? Report it</button>')+
+    (live?'':'<button type="button" class="report" id="report-btn">Wrong? Tell the kobold</button>')+
     '</div></div>';
 }
 /* ---------- reporting a wrong answer ----------
@@ -1581,7 +1581,7 @@ async function sendReport(){
       body:JSON.stringify(b)});
     const d=await res.json();
     if(!res.ok||!d.ok){st.className='bad';st.textContent=d.error||('server said '+res.status);return}
-    st.className='ok';st.textContent='Sent — thank you. Report #'+d.id+'.';
+    st.className='ok';st.textContent='The kobold has it. Thank you — report #'+d.id+'.';
     setTimeout(closeOverlays,1400);
   }catch(e){st.className='bad';st.textContent='could not send: '+e}
 }
@@ -1603,7 +1603,7 @@ EL('r-send').addEventListener('click',sendReport);
 EL('r-issue').addEventListener('click',issueReport);
 EL('r-copy').addEventListener('click',copyReport);
 function fromBanner(r){
-  return '<div class="from"><span><span class="ok">✓</span> From your history — '+
+  return '<div class="from"><span><span class="ok">✓</span> The kobold remembers this one — '+
     (r.mode==='ask'?'asked ':'looked up ')+ago(r.ts)+(r.model?' with '+esc(r.model):'')+
     ', no model call.</span><button type="button" id="again">'+
     (r.mode==='ask'?'Ask again':'Look up again')+'</button></div>';

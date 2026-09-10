@@ -407,7 +407,7 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
         try:
             timings = assistant.warmup(progress)
             health.update(state="ready",
-                          detail=f"ready — models loaded in {sum(timings.values()):.1f}s")
+                          detail=f"the kobold is awake — models loaded in {sum(timings.values()):.1f}s")
             print("  ready", flush=True)
         except Exception as exc:
             health.update(state="error", detail=str(exc))

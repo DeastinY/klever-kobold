@@ -1,247 +1,102 @@
 # The Klever Kobold
 
-Quick, keen, and wrong often enough that every answer shows the entries it was
-read from. (The package is `kleverkobold`; the kobold is what you run.)
+**A Pathfinder 2e rules reference that runs on your own computer, cites every
+answer, and is wrong just often enough to keep you honest.**
 
-![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+Ask "How does Treat Wounds work?" and get a short answer with the Archives of
+Nethys entries it was read from, right underneath, in under fifteen seconds on a
+laptop. No account, no cloud, nothing you type leaves the machine.
+
+| light | dark |
+| --- | --- |
+| ![Light theme](docs/img/ui-light.png) | ![Dark theme](docs/img/ui-dark.png) |
+
 ![Runs offline](https://img.shields.io/badge/runs-fully%20offline-2f6b4f)
-![Runtime deps](https://img.shields.io/badge/runtime%20deps-4%20(no%20torch)-2f6b4f)
-![Memory](https://img.shields.io/badge/RAM-5.6%20GB%20(4B)-informational)
-![Model](https://img.shields.io/badge/model-Qwen3.5--4B%20Q4%20(9B%20optional)-8a1b2e)
+![Memory](https://img.shields.io/badge/needs-6%20GB%20RAM-informational)
 ![Corpus](https://img.shields.io/badge/corpus-41%2C743%20AoN%20entries-8a1b2e)
-![Index](https://img.shields.io/badge/index-v2-8a1b2e)
-![Lookups](https://img.shields.io/badge/hand--written%20lookups-91.7%25-2f6b4f)
-![Real questions](https://img.shields.io/badge/real%20questions-31.8%25-8a5a12)
+![Lookups](https://img.shields.io/badge/lookups-93%2F109-2f6b4f)
 ![License](https://img.shields.io/badge/content-ORC%20%2F%20Paizo%20CUP-lightgrey)
 
-A Pathfinder 2e rules reference that runs entirely on your own machine, searches
-the Archives of Nethys, and cites every answer.
+## Get it
 
-**Python 3.11+.** Two models via [Ollama](https://ollama.com): `qwen3.5:9b` (Q4,
-6.6 GB) answers, `qwen3-embedding:0.6b` retrieves. 7.2 GB resident, four runtime
-dependencies, no torch, no network after setup.
+**macOS or Linux** — one line in a terminal:
 
----
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeastinY/klever-kobold/main/deploy/install.sh | sh
+```
 
-## Read this before you trust it
+**Windows** — one line in PowerShell:
 
-It is a **lookup tool, not a rules adjudicator** — and that distinction is
-measured, not modest.
+```powershell
+irm https://raw.githubusercontent.com/DeastinY/klever-kobold/main/deploy/install.ps1 | iex
+```
+
+Either installs [Ollama](https://ollama.com) and [uv](https://docs.astral.sh/uv/)
+if they are missing, pulls the two models (about 4 GB), fetches the rules index
+(150 MB), and opens the kobold in your browser. From then on it is:
+
+```bash
+kobold serve
+```
+
+Needs about 6 GB of memory and 5 GB of disk. Apple Silicon, Linux, and Windows
+are all fine; a GPU helps but is not required. Details, other ways to install,
+and every option are in [docs/running.md](docs/running.md).
+
+## What it does
+
+- **Answers from the rules, not from memory.** Every answer is written from the
+  eight most relevant entries in a local copy of the Archives of Nethys, and
+  those entries are shown under it, as stat blocks, linked to the site.
+- **Enter asks; Shift+Enter just shows the entries**, which is faster and often
+  all you need. Click an entry to read all of it.
+- **Names in an answer are links.** "You can Grab an Edge as a reaction" opens
+  Grab an Edge.
+- **Keeps what you asked.** History and favourites live in your browser; asking
+  the same thing twice is instant.
+- **Wrong? Report it.** One button under every answer. Reports are how the
+  kobold gets less wrong; see [docs/reporting.md](docs/reporting.md) for exactly
+  what is sent and what happens to it.
+- **Works with Claude.** `kobold mcp` gives Claude Desktop or Claude Code the
+  same search, so a stronger model can read the rules itself.
+- **Bring your own model.** Any OpenAI-compatible server can do the answering;
+  retrieval stays local.
+
+## What to trust
+
+It is a lookup tool, not a rules judge. This is measured, not modest:
 
 | Ask it | How it does |
 | --- | --- |
 | "What level is Battle Medicine?" | **Reliable.** |
 | "How does Treat Wounds work?" | **Reliable**, with a citation you can check. |
 | "Is there a feat that makes falling less dangerous?" | **Mostly** — about three times in four. |
-| **"Does X interact with Y?"** | **Do not trust it.** |
+| **"Does X interact with Y?"** | **Do not trust it.** Find the rule here; read it yourself. |
 | "Tell me about Cheliax" | **Thin.** Lore is not indexed yet. |
 
-A real failure, verbatim, asked whether a rogue gets sneak attack on the
-*fighter's* Reactive Strike:
+On 109 hand-written questions the default model gets 93 right; on questions real
+tables ask, retrieval finds the answer outright only about a third of the time.
+The full accounting is in [Building the brain](docs/building-the-brain.md).
 
-> **Yes, she gets Sneak Attack damage.** … a creature is flat-footed if they are
-> flanked by at least two enemies and have not yet acted in the current round.
+## Documentation
 
-Wrong three times over: sneak attack applies to the rogue's own Strikes,
-*flat-footed* is the pre-Remaster name for *off-guard*, and "denied their
-Dexterity bonus" is Pathfinder 1e language. It cited two real AoN pages while
-doing it.
-
-**Interaction questions are where it fails and where a table most wants an
-answer.** Use it to find the rule fast; read the rule before settling an
-argument. Every answer carries its source URL so that is a one-click check —
-which is why the UI links every claim and keeps the rules entries right
-underneath the answer.
-
-**91.7%** on 109 hand-written questions — but those are lookups. On real
-questions mined from RPG StackExchange, only **31.8%** of retrieved excerpt sets
-are judged to contain the answer at all.
-
----
-
-## Screenshots
-
-| light | dark |
-| --- | --- |
-| ![Light theme](docs/img/ui-light.png) | ![Dark theme](docs/img/ui-dark.png) |
-
-Entries render as stat blocks — action glyphs, trait pills, degrees of success —
-and link back to AoN. Answers stream, so sources appear as soon as retrieval
-finishes. Settings let you point the answering model at any OpenAI-compatible
-provider, or attach the retrieval to any model over MCP:
-
-![Settings](docs/img/ui-settings.png)
-
----
-
-## Run it
-
-```bash
-uv tool install git+ssh://git@github.com/DeastinY/klever-kobold
-kobold setup --install-ollama     # installs Ollama, pulls both models, fetches the index
-kobold serve                      # http://localhost:8765
-```
-
-`kobold setup` is idempotent. Without `--install-ollama` it prints the one command
-for your platform and stops. `kobold doctor` checks each moving part separately.
-
-Every answer has a **Wrong? Report it** button; see
-[Reporting wrong answers](#reporting-wrong-answers) for what it sends and why.
-
-The 4B answers by default: 93/109 on the holdout against the 9B's 100, at twice
-the speed and half the memory, and a 16 GB laptop stays usable while it thinks.
-`--llm-model qwen3.5:9b` runs the 9B; the web UI's Settings has it as the Better preset.
-
-Also: `kobold ask "…"`, `kobold search "…"`, `kobold mcp` (stdio MCP server for Claude
-Desktop / Claude Code). Docker for Linux and Windows is in
-[`deploy/README.md`](deploy/README.md) — on a Mac use uv, since a container
-cannot reach Metal.
-
-**Smaller machines:** `--llm-model qwen3.5:4b` halves memory to 3.4 GB and costs
-seven items (93/109). Below 4B it starts answering PF2e questions with D&D 5e
-rules. The UI's **Faster** preset sets this for you.
-
----
-
-## How it works, and what it cost to find out
-
-**RAG, not a fine-tune.** That was the first finding and it survived every
-attempt to overturn it. A QLoRA/RAFT fine-tune scored +10.1 on the generated
-benchmark and **−7.0 on hand-written questions** — better at the benchmark's
-tics, worse at the job. Fine-tuning the embedder was tried twice and rejected
-twice; the second attempt improved recall at every *k* while end-to-end accuracy
-fell, which is the single most useful thing this project learned about metrics.
-
-**Retrieval** is BM25 + dense over full text + dense over a summary index, fused
-by reciprocal rank fusion (smoothing 5, not the TREC default 60 — swept). On top:
-a rewrite step that generates the one-line summary an answering entry *would*
-have and matches that against the summary index; category routing fused with the
-unrouted ranking rather than replacing it; a legacy→Remaster hop; canonical
-collapse before fusion; and a listwise rerank of 24 candidates down to 8 using
-the answering model, so no cross-encoder and no torch. Natural-phrasing recall
-went 47.2% → 76.4% R@5; situational questions 7.7% → 77.4%.
-
-**Model choice**, all on the 109-question holdout through the deployed runtime:
-
-| model | resident | holdout |
-| --- | ---: | ---: |
-| **qwen3.5:9b** *(default)* | 6.6 GB | **100/109 (91.7%)** |
-| qwen3.8:27b | 17.7 GB | 98/109 (89.9%) |
-| qwen3.5:4b | 3.4 GB | 93/109 (85.3%) |
-| qwen3.5:2b | 2.7 GB | 86/109 (78.9%) |
-| qwen3.5:0.8b | 1.0 GB | 83/109 (76.1%) |
-
-Nothing above 9B is worth its memory — 27B is 2.8× the weights for no gain. The
-ceiling is retrieval, not the answering model.
-
-**Against frontier models**, same retrieval, on the generated benchmark:
-qwen3.5:9b **89.5%**, gpt-5 **88.0%**, gpt-4.1-mini 82.4%. Closed-book, gpt-5
-scores **27.9%** — the corpus is doing nearly all the work, which is the point.
-
-The full record, including everything that failed and several measurement bugs
-found in our own favour, is in [`notes/experiments.md`](notes/experiments.md).
-
----
-
-## Shortcomings
-
-- **Rule interactions are unreliable.** The headline number is lookups.
-- **Lore is not indexed.** 22,604 PathfinderWiki chunks are built and unused.
-- **No multi-turn.** Every question starts cold.
-- **The benchmark has a noise floor of ±3 items.** One configuration run three
-  times scored 95, 93, 92 — Ollama is not reproducible across processes even at
-  `temperature: 0`. Differences under about four items are not results, and two
-  claims in the notes were retracted for exactly this.
-- **"Was Magic Missile renamed?" fails.** The legacy→Remaster hop serves Force
-  Barrage correctly but drops the old name, so the model never sees the string it
-  was asked about.
-- **`follow_remaster` resolves hop targets under the wrong category**, so class
-  feature hops fail silently. Left unfixed on purpose: the targets are class
-  pages, so a working hop may be worse than the legacy row.
-- **No auth on the web UI.** `--host 0.0.0.0` is for your LAN, not the internet.
-
-## Corpus and layout
-
-| Source | Chunks | License |
-| --- | ---: | --- |
-| [Archives of Nethys](https://2e.aonprd.com/) | 41,743 | ORC / Paizo CUP |
-| [PathfinderWiki](https://pathfinderwiki.com/) | 22,604 *(unused)* | Paizo CUP |
-
-Rebuilt from scratch by four scripts; nothing derived is committed. The packaged
-index ships as a [release asset](https://github.com/DeastinY/klever-kobold/releases).
-`src/kleverkobold` is the runtime, `scripts/` builds the corpus, `eval/` is the
-measurement harness, `notes/` is the record.
-
-## Reporting wrong answers
-
-The measured weakness of this tool is that it answers rule interactions wrongly
-while sounding sure. The 109 hand-written questions catch some of that; the
-questions real tables ask catch the rest, and the only way to collect those is to
-ask. Every finished answer carries a **Wrong? Report it** button.
-
-**What a report contains.** The question, the answer exactly as shown, what you
-typed as the correction, an optional source (an Archives URL or a page number),
-the names and URLs of the eight entries the answer was built from, the answering
-model, the index version, and the app name. That is the whole list. Not sent: your
-settings, your history, your favourites, any API key, anything you did not type
-into that form. A hash of the sender's IP is kept for a 20-a-day limit and for
-nothing else.
-
-**Where it goes.** To a small mailbox the maintainer runs on Cloudflare Workers,
-`https://kobold-reports.deastiny.workers.dev`, backed by a D1 table. The code is in
-[`deploy/report-worker`](deploy/report-worker/README.md); anyone can run their
-own with six commands and point the app at it with `--report-url`. Nothing is
-sent unless someone fills the form in and presses Send — the tool otherwise
-makes no network calls after setup, and this stays true.
-
-**What we do with them.** Reports are the raw material for making the thing
-better, in this order:
-
-1. **Regression cases.** A confirmed wrong answer becomes a hand-written holdout
-   question with the corrected answer as its gold, so it is measured on every
-   change from then on ([`eval/seeds/natural_holdout.jsonl`](eval/seeds/natural_holdout.jsonl)).
-2. **Retrieval and prompt fixes.** Most wrong answers so far were the right entry
-   not being retrieved, or being retrieved and ignored — the Gurglegut case, where
-   the 4B skipped excerpt one, was fixed by reordering the prompt. Reports show
-   which of the two it was, because they carry the entries used.
-3. **Index defects.** A page that lost its list, a rename the index does not
-   know, a legacy entry served as current: reports point at the entry, the build
-   gets fixed, the index gets rebuilt.
-4. **Training data, eventually.** Question, wrong answer, correction and source
-   is exactly the shape of a preference pair. If enough accumulate, they become a
-   fine-tuning set for the answering model. That has not happened yet and will be
-   written up in [`notes/experiments.md`](notes/experiments.md) when it does.
-
-Reports are not published as they arrive. Corrections that turn into holdout
-questions are rewritten in the maintainer's words, without anything that could
-identify the reporter. If you would rather your report went into a GitHub issue
-under your own name, run with `--report-url ''`: the same button then opens a
-pre-filled issue instead.
-
-## Contributing
-
-[`CONTRIBUTING.md`](CONTRIBUTING.md) — mostly measurement discipline, which is the
-part worth copying. The gate is 109 hand-written questions: run it before and
-after, record the number when your change loses, run it more than once before
-believing a small difference, and treat an implausible number as a bug until
-proven otherwise. `eval/test_score.py` pins 43 grader cases; run it if you touch
-the scorer.
+- [Running it](docs/running.md) — every way to install and run, all the options, Docker, MCP.
+- [Building the brain](docs/building-the-brain.md) — how retrieval works, what was
+  measured, what fine-tuning did and did not do, how to rebuild the index.
+- [Reporting wrong answers](docs/reporting.md) — what a report contains, where it goes, what it is used for.
+- [Licensing](docs/LICENSING.md) — what the content licences allow, and the grey areas, named.
+- [Contributing](CONTRIBUTING.md) — mostly measurement discipline.
+- [The full experiment record](notes/experiments.md) — everything that was tried, including what failed.
 
 ## Attribution
 
 **This work uses trademarks and/or copyrights owned by Paizo Inc., used under
-Paizo's Community Use Policy. We are expressly prohibited from charging you to
-use or access this content. This work is not published, endorsed, or specifically
-approved by Paizo.**
+Paizo's Community Use Policy ([paizo.com/communityuse](https://paizo.com/communityuse)).
+We are expressly prohibited from charging you to use or access this content.
+This work is not published, endorsed, or specifically approved by Paizo. For
+more information about Paizo Inc. and Paizo products, visit [paizo.com](https://paizo.com).**
 
-The rules corpus is [Archives of Nethys](https://2e.aonprd.com/) — free, complete,
-and maintained by volunteers through an edition remaster. Every answer here is
-really theirs; please use and support the site directly. Full acknowledgements,
-and exactly how each source was collected, are in [`NOTICE.md`](NOTICE.md).
-
-## Licensing
-
-Rules mechanics are ORC-licensed; Golarion lore and PathfinderWiki are under
-Paizo's Community Use Policy — non-commercial use only. See
-[`docs/LICENSING.md`](docs/LICENSING.md). This repository is for personal,
-non-commercial research.
+The rules corpus is [Archives of Nethys](https://2e.aonprd.com/), free, complete,
+and maintained by volunteers. Every answer here is really theirs; please use and
+support the site directly. Full acknowledgements, including the fonts and the
+models, are in [NOTICE.md](NOTICE.md). Non-commercial use only.

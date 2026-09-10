@@ -38,3 +38,6 @@ eval/runs/*.jsonl
 eval/runs/*.log
 !eval/runs/*.scores.json
 !eval/runs/*.meta.json
+
+# Local Claude Code launch configuration
+.claude/

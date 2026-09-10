@@ -15,6 +15,25 @@ Pathfinder and the Pathfinder logo are trademarks of Paizo Inc. Rules mechanics
 are available under the [ORC License](https://paizo.com/licenses) and the Open
 Game License v1.0a.
 
+### ORC Notice
+
+This product is licensed under the ORC License held in the Library of Congress
+at TX 9-307-067 and available online at various locations including
+[paizo.com/orclicense](https://paizo.com/orclicense) and others. All warranties
+are disclaimed as set forth therein.
+
+**Attribution:** This product is based on the following Licensed Material:
+*Pathfinder Player Core* © 2023, Paizo Inc.; *Pathfinder GM Core* © 2023,
+Paizo Inc.; *Pathfinder Monster Core* © 2024, Paizo Inc.; *Pathfinder Player
+Core 2* © 2024, Paizo Inc.; and the further Paizo publications indexed by the
+Archives of Nethys, each © Paizo Inc. in its year of publication. The rules text
+in the packaged index is reproduced from the Archives of Nethys. Reserved
+Material as designated by Paizo (setting names, characters, deities, places and
+the like) is used under the Community Use Policy above, not under the ORC License.
+
+If you use this product's Licensed Material under the ORC License, you must
+include this notice.
+
 ## Thanks
 
 **[Archives of Nethys](https://2e.aonprd.com/)** — the entire rules corpus. A

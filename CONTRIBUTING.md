@@ -1,5 +1,8 @@
 # Contributing
 
+The architecture and the measurements are in
+[docs/building-the-brain.md](docs/building-the-brain.md); this file is the discipline.
+
 The unusual thing about this project is not the architecture, it is the
 measurement discipline. Sixteen measurement bugs have been found here, every one
 by reading model outputs rather than model scores, and several ran in the
