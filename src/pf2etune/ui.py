@@ -1644,12 +1644,12 @@ async function ask(text){
   // The containers are made when the sources arrive: until then the busy
   // ticker owns the output and would overwrite them.
   const frame=()=>{if(!EL('ans'))out.innerHTML='<div id="ans"></div><div id="src"></div>'};
-  const paint=(live=true)=>{
+  const paint=(live=true,caret=true)=>{
     frame();const ans=EL('ans');
     if(!ans.firstChild){ans.innerHTML=answerCard(answer,timings,live);
       if(live&&answer)ans.querySelector('.body').innerHTML=streamed(answer)+'<span class="caret"></span>';return}
     const body=ans.querySelector('.body');
-    body.innerHTML=answer?(live?streamed(answer)+'<span class="caret"></span>':linkNames(md(answer,true)))
+    body.innerHTML=answer?(live?streamed(answer)+(caret?'<span class="caret"></span>':''):linkNames(md(answer,true)))
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>';
     // The footer's line begins in the same paint that removes the body's.
     if(live&&answer&&!document.getElementById('fun'))funStart();
@@ -1682,7 +1682,13 @@ async function ask(text){
           if(document.hidden)setTimeout(run,150);else requestAnimationFrame(run)}
       }else if(ev.event==='done'){clearInterval(timer);funStop();settle=null;rolling(false);timings=ev.timings;
         EXTRA=ev.mentions||[];answer=answer.trimEnd();
-        CURRENT={q:text,answer,sources:hits,model:SET.model||SDEF.model,timings};paint(false);
+        CURRENT={q:text,answer,sources:hits,model:SET.model||SDEF.model,timings};
+        // Let the last characters finish fading before the final render, or
+        // the end of every answer snaps from half-faded to solid.
+        await new Promise(res=>{const tick=setInterval(()=>{
+          if(stableLength(answer,SETTLE_MS)>=answer.length||REDUCED){clearInterval(tick);res();return}
+          paint(true,false)},100)});
+        paint(false);
         addHist({id:String(Date.now()),q:text,mode:'ask',ts:Date.now(),
           model:SET.model||SDEF.model,answer,hits,timings,mentions:EXTRA});
       }else if(ev.event==='error'){clearInterval(timer);funStop();settle=null;rolling(false);
