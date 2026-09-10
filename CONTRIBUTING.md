@@ -89,3 +89,13 @@ mechanics are ORC-licensed and Golarion lore is under Paizo's Community Use
 Policy — non-commercial, freely available use only. See
 [`docs/LICENSING.md`](docs/LICENSING.md) before publishing anything built from
 this, especially model weights.
+
+## Wrong-answer reports
+
+The **Wrong? Report it** button in the web UI sends reports to the project
+mailbox (what is sent and why: the README's "Reporting wrong answers" section).
+The intended path for a confirmed report is a new holdout question: add it to
+`eval/seeds/natural_holdout.jsonl` in the same shape as its neighbours, with the
+corrected ruling as the gold and the Archives entry as the ref, rewritten in your
+own words and with nothing that identifies the reporter. Then it is measured on
+every change.

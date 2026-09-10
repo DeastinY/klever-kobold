@@ -82,10 +82,8 @@ pf2e serve                      # http://localhost:8765
 `pf2e setup` is idempotent. Without `--install-ollama` it prints the one command
 for your platform and stops. `pf2e doctor` checks each moving part separately.
 
-Every answer has a **Wrong? Report it** button. Reports go to this project's
-mailbox (a free Cloudflare Worker, see [`deploy/report-worker`](deploy/report-worker/README.md));
-`--report-url` points it elsewhere and `--report-url ''` turns it into a GitHub
-issue instead. Nothing is sent unless someone fills the form and presses Send.
+Every answer has a **Wrong? Report it** button; see
+[Reporting wrong answers](#reporting-wrong-answers) for what it sends and why.
 
 The 4B answers by default: 93/109 on the holdout against the 9B's 100, at twice
 the speed and half the memory, and a 16 GB laptop stays usable while it thinks.
@@ -170,6 +168,52 @@ Rebuilt from scratch by four scripts; nothing derived is committed. The packaged
 index ships as a [release asset](https://github.com/DeastinY/pf2etune/releases).
 `src/pf2etune` is the runtime, `scripts/` builds the corpus, `eval/` is the
 measurement harness, `notes/` is the record.
+
+## Reporting wrong answers
+
+The measured weakness of this tool is that it answers rule interactions wrongly
+while sounding sure. The 109 hand-written questions catch some of that; the
+questions real tables ask catch the rest, and the only way to collect those is to
+ask. Every finished answer carries a **Wrong? Report it** button.
+
+**What a report contains.** The question, the answer exactly as shown, what you
+typed as the correction, an optional source (an Archives URL or a page number),
+the names and URLs of the eight entries the answer was built from, the answering
+model, the index version, and the app name. That is the whole list. Not sent: your
+settings, your history, your favourites, any API key, anything you did not type
+into that form. A hash of the sender's IP is kept for a 20-a-day limit and for
+nothing else.
+
+**Where it goes.** To a small mailbox the maintainer runs on Cloudflare Workers,
+`https://pf2e-reports.deastiny.workers.dev`, backed by a D1 table. The code is in
+[`deploy/report-worker`](deploy/report-worker/README.md); anyone can run their
+own with six commands and point the app at it with `--report-url`. Nothing is
+sent unless someone fills the form in and presses Send — the tool otherwise
+makes no network calls after setup, and this stays true.
+
+**What we do with them.** Reports are the raw material for making the thing
+better, in this order:
+
+1. **Regression cases.** A confirmed wrong answer becomes a hand-written holdout
+   question with the corrected answer as its gold, so it is measured on every
+   change from then on ([`eval/seeds/natural_holdout.jsonl`](eval/seeds/natural_holdout.jsonl)).
+2. **Retrieval and prompt fixes.** Most wrong answers so far were the right entry
+   not being retrieved, or being retrieved and ignored — the Gurglegut case, where
+   the 4B skipped excerpt one, was fixed by reordering the prompt. Reports show
+   which of the two it was, because they carry the entries used.
+3. **Index defects.** A page that lost its list, a rename the index does not
+   know, a legacy entry served as current: reports point at the entry, the build
+   gets fixed, the index gets rebuilt.
+4. **Training data, eventually.** Question, wrong answer, correction and source
+   is exactly the shape of a preference pair. If enough accumulate, they become a
+   fine-tuning set for the answering model. That has not happened yet and will be
+   written up in [`notes/experiments.md`](notes/experiments.md) when it does.
+
+Reports are not published as they arrive. Corrections that turn into holdout
+questions are rewritten in the maintainer's words, without anything that could
+identify the reporter. If you would rather your report went into a GitHub issue
+under your own name, run with `--report-url ''`: the same button then opens a
+pre-filled issue instead.
 
 ## Contributing
 

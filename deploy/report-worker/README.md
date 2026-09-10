@@ -1,5 +1,8 @@
 # Wrong-answer reports
 
+What a report contains, where it goes and what it is used for is in the main
+README under "Reporting wrong answers"; this file is how to run the mailbox.
+
 A Cloudflare Worker with a D1 table. Free tier, no server to keep alive.
 The page's **Report a wrong answer** form posts here; nothing is sent unless
 someone fills that form in and presses Send.
