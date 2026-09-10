@@ -22,8 +22,8 @@ import urllib.parse
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, SMALL_LLM, Assistant, OllamaError,
-                  probe_backend)
+from .app import (BIG_LLM, DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, SMALL_LLM, Assistant,
+                  OllamaError, probe_backend)
 from .ui import PAGE
 
 # The header the API key travels in. A header rather than a query parameter so it
@@ -162,7 +162,7 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                 self._send(200, json.dumps({"entries": _random_entries(pool.base)}).encode(),
                            "application/json; charset=utf-8")
                 return
-            if parsed.path not in ("/api/search", "/api/ask", "/api/test"):
+            if parsed.path not in ("/api/search", "/api/ask", "/api/test", "/api/pull"):
                 self._send(404, b'{"error":"not found"}', "application/json")
                 return
 
@@ -174,6 +174,17 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
 
             if parsed.path == "/api/test":
                 self._test(config, api_key)
+                return
+            if parsed.path == "/api/pull":
+                # Only the two models this program ships with: the page must not
+                # be able to make the machine download arbitrary things.
+                model = (query.get("model") or [""])[0].strip()
+                if model not in (BIG_LLM, SMALL_LLM):
+                    self._send(400, b'{"error":"not a model this program knows"}',
+                               "application/json")
+                    return
+                base = config.base_url if config.backend == "ollama" else pool.base_config.base_url
+                self._pull_stream(base, model)
                 return
 
             # A configuration that does its own embedding does not depend on this
@@ -230,6 +241,33 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                         llm_ok=_has_model(models, config.llm_model),
                         embed_ok=_has_model(models, embed_model))
             self._send(200, json.dumps(body).encode(), "application/json; charset=utf-8")
+
+        def _pull_stream(self, base_url: str, model: str) -> None:
+            """Ollama's pull progress, forwarded as server-sent events."""
+            import httpx
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.close_connection = True
+            try:
+                with httpx.stream("POST", f"{base_url}/api/pull",
+                                  json={"model": model, "stream": True}, timeout=None) as r:
+                    for line in r.iter_lines():
+                        if not line.strip():
+                            continue
+                        row = json.loads(line)
+                        if row.get("error"):
+                            self._sse({"event": "error", "error": row["error"]})
+                            return
+                        self._sse({"event": "progress", "status": row.get("status", ""),
+                                   "completed": row.get("completed", 0), "total": row.get("total", 0)})
+                self._sse({"event": "done", "model": model})
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            except Exception as exc:
+                self._sse({"event": "error", "error": f"{type(exc).__name__}: {exc}"})
 
         def _ask_stream(self, question: str, config: Config, api_key: str,
                         k: int, rerank: bool, max_tokens: int) -> None:

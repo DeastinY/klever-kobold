@@ -374,6 +374,18 @@ kbd{font:inherit;font-size:.75rem;background:var(--chip);border:1px solid var(--
 button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
  text-decoration:underline;cursor:pointer}
 .ob .row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.6rem}
+.choices{display:flex;gap:.5rem;flex-wrap:wrap}
+.choice{flex:1;min-width:13rem;display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;
+ padding:.6rem .75rem;text-align:left;line-height:1.35;border:2px solid var(--line);
+ background:var(--card);color:var(--ink);border-radius:8px;cursor:pointer;position:relative}
+.choice b{font-family:ui-serif,Georgia,"Iowan Old Style",serif;font-size:1rem}
+.choice em{position:absolute;top:.55rem;right:.7rem;font-style:normal;font-size:.68rem;
+ letter-spacing:.06em;text-transform:uppercase;color:var(--ok);font-weight:700}
+.choice span{font-size:.8rem;color:var(--soft)}
+.choice.on{border-color:var(--accent);background:var(--chip)}
+.choice.on b{color:var(--accent)}
+.tog{display:flex;align-items:center;gap:.4rem;font-size:.88rem;color:var(--ink);cursor:pointer}
+.tog input{width:auto;margin:0}
 .ob .row .note{margin:0;flex:1;grid-column:auto}
 </style></head><body><div class="wrap">
 <header><span class="d20" id="d20" aria-hidden="true"></span>
@@ -420,18 +432,17 @@ should you want to check. No account, no cloud, no dice tax.</p>
  <span class="so">Mostly</span><span>“Is there a feat that makes falling less dangerous?”</span>
  <span class="no">Read the rule</span><span>“Does X interact with Y?” — it finds the rule fast; you settle the argument.</span>
 </div>
-<p class="tryh" style="margin-top:.2rem">Which model answers</p>
-<div class="trust models">
- <span class="so">Faster</span><span>qwen3.5:4b, the default — 93 of 109 on the hand-written
-  holdout, about twice the speed of the 9B, and it leaves a 16 GB laptop usable.</span>
- <span class="ok">Better</span><span>qwen3.5:9b — 100 of 109, at half the speed and twice the
-  memory. One click in <button type="button" class="link" id="ob-settings">Settings</button>;
-  it is pulled the first time you pick it.</span>
- <span class="ext">Your own</span><span>Any OpenAI-compatible server — LM Studio, llama.cpp, a
-  hosted API — as the answering model; retrieval stays local. Or skip this page and use the
-  <b>MCP server</b> from Claude Desktop or Claude Code: <code>pf2e mcp</code> exposes the
-  search to a stronger model that reads the rules itself. Both are set up under Settings.</span>
+<p class="tryh" style="margin-top:.2rem">Pick who answers</p>
+<div class="choices" id="ob-choices">
+ <button type="button" class="choice on" data-choice="faster"><b>Faster</b><em>recommended</em>
+  <span>Quick answers, light on memory. Right 93 times out of 109 on our test.</span></button>
+ <button type="button" class="choice" data-choice="better"><b>Better</b>
+  <span>Right 100 times out of 109, at half the speed and about 7 GB of memory.
+  Downloaded once, the first time you pick it.</span></button>
 </div>
+<p class="note" style="margin:.4rem 0 0">Change it any time in Settings. Your own model server, or
+the MCP setup for Claude Desktop and Claude Code: Settings →
+<button type="button" class="link" id="ob-settings">Expert mode</button>.</p>
 <div class="row"><button class="primary" type="button" id="ob-go">Roll for initiative</button>
 <p class="note">Press <kbd>?</kbd> any time to see this again.</p></div>
 </div></div>
@@ -446,15 +457,18 @@ should you want to check. No account, no cloud, no dice tax.</p>
 <div id="settings-wrap" class="ov" hidden><div class="pop wide" role="dialog" aria-modal="true" aria-label="Settings">
 <button type="button" class="x" data-close="settings-wrap" title="Close (Esc)" aria-label="Close">×</button>
 <div id="settings">
-<p class="set-h">Preset</p>
+<p class="set-h">Who answers</p>
 <div class="presets">
  <button type="button" class="preset" id="p-faster"><b>Faster</b>
-  <span>qwen3.5:4b · 93/109 on the holdout · ~3.4 GB · default</span></button>
+  <span>recommended · quick and light · 93 of 109</span></button>
  <button type="button" class="preset" id="p-better"><b>Better</b>
-  <span>qwen3.5:9b · 100/109 on the holdout · ~6.6 GB</span></button>
+  <span>100 of 109 · half the speed · ~7 GB</span></button>
 </div>
 <p class="note" id="p-note"></p>
+<div class="pair" style="margin-top:.9rem"><label class="tog"><input type="checkbox" id="s-expert">
+ Expert mode</label><span class="note" style="margin:0">model servers, retrieval knobs, MCP</span></div>
 
+<div id="expert" hidden>
 <p class="set-h">Answering model</p>
 <div class="grid">
  <label for="s-backend">Backend</label>
@@ -488,19 +502,16 @@ should you want to check. No account, no cloud, no dice tax.</p>
 <div class="grid" style="margin-top:.6rem">
  <label for="s-embed">Embedder</label>
  <select id="s-embed">
-  <option value="server">This server's — verified against the index</option>
-  <option value="backend">The backend above — checked before use</option>
+  <option value="server">This server's</option>
+  <option value="backend">The backend above</option>
  </select>
  <p class="note" id="s-embednote"></p>
 </div>
 <div class="pair" style="margin-top:.7rem"><button id="s-reset" type="button">Reset to
- defaults</button><span class="note" style="grid-column:auto;margin:0">Applies to the next
- question. Kept in this browser only.</span></div>
+ defaults</button></div>
 
 <p class="set-h">Use it from Claude Desktop or Claude Code</p>
-<p class="tools">A stdio MCP server exposing <code>pf2e_ask</code> (the whole pipeline) and
-<code>pf2e_search</code> (the excerpts, for the calling model to read itself — the better
-choice when the caller is a strong model).</p>
+<p class="tools">Exposes <code>pf2e_ask</code> and <code>pf2e_search</code> to Claude over stdio.</p>
 <div class="pair" style="margin-top:.5rem"><b style="font-size:.8rem;color:var(--soft)">Claude
  Desktop</b><button id="c-desktop" type="button">Copy</button></div>
 <pre class="snip" id="snip-desktop">{
@@ -514,10 +525,9 @@ choice when the caller is a strong model).</p>
 <div class="pair" style="margin-top:.6rem"><b style="font-size:.8rem;color:var(--soft)">Claude
  Code</b><button id="c-code" type="button">Copy</button></div>
 <pre class="snip" id="snip-code">claude mcp add pf2e -- pf2e mcp</pre>
-<p class="tools">Not installed as a tool? Use the interpreter that runs this server:
-<code>"command": "/path/to/.venv/bin/python", "args": ["-m", "pf2etune", "mcp"]</code>.
-Both accept <code>--index</code> and <code>--ollama</code> before <code>mcp</code>. These
-settings do not travel to it — the MCP server uses its own command-line flags.</p>
+<p class="tools">Without the <code>pf2e</code> command: <code>"command": "/path/to/.venv/bin/python",
+"args": ["-m", "pf2etune", "mcp"]</code>. These settings do not travel to it.</p>
+</div>
 </div></div></div>
 
 <div id="out"></div>
@@ -954,13 +964,9 @@ const PRESETS={
  better:{model:'qwen3.5:9b',rerank:true,k:8,ctx:1600,tokens:400},
  faster:{model:'qwen3.5:4b',rerank:false,k:8,ctx:1600,tokens:400}};
 const PRESET_NOTE={
- better:'The 9B — 100/109 on the hand-written holdout, seven items better than Faster, at '
-  +'half the speed and twice the memory. On a 16 GB laptop it makes the whole machine lag.',
- faster:'The default. 93/109 on the same holdout, against 100 for Better: seven items, and that '
-  +'gap is the trade. Rerank is off because it removes a whole model call at no measurable '
-  +'cost — the 4B scores the same with it and without it, once the same configuration is run '
-  +'more than once. Measured on an M3: 22 tokens/s against the 9B\'s 12.',
- custom:'Custom — the fields below match neither preset.'};
+ faster:'Recommended. Applies to the next question.',
+ better:'A little more accurate, twice the wait. Downloaded once when first chosen.',
+ custom:'Custom settings — see Expert mode.'};
 function currentPreset(){
   for(const name in PRESETS){
     const p=PRESETS[name];
@@ -1007,12 +1013,8 @@ function paintSettings(){
     : 'This server is NOT bound to localhost, and the page has no authentication — anyone who '
       +'can reach it can use your key. Do not enter one here.';
   EL('s-embednote').textContent=SET.embed==='backend'
-    ? 'The backend above must serve '+(EMBED_MODEL||'the index’s encoder')
-      +'. It is fingerprinted against the index before the first question and refused on a '
-      +'mismatch — a wrong encoder returns plausible, unrelated entries rather than an error.'
-    : 'Retrieval keeps the encoder this server verified against the index, so changing the '
-      +'answering model cannot change what is retrieved. Leave it here unless this server has '
-      +'no local models.';
+    ? 'Must serve '+(EMBED_MODEL||'the index’s encoder')+'; checked against the index first.'
+    : 'Leave it here unless this server has no local models.';
 }
 function seedFromServer(health){
   // The panel shows what `pf2e serve` was actually launched with rather than a
@@ -1100,8 +1102,50 @@ for(const name of ['better','faster'])
   // Writing the values into the fields rather than holding a hidden mode: the
   // point is that you can see what the preset did and then hand-tune from it.
   EL('p-'+name).addEventListener('click',()=>{
-    Object.assign(SET,PRESETS[name]);saveSettings();writeForm();
+    Object.assign(SET,PRESETS[name]);saveSettings();writeForm();ensureModel(SET.model);
   });
+/* ---------- expert mode ---------- */
+let EXPERT=false;try{EXPERT=localStorage.getItem('pf2e-expert')==='1'}catch(e){}
+function paintExpert(){EL('expert').hidden=!EXPERT;EL('s-expert').checked=EXPERT}
+EL('s-expert').addEventListener('change',()=>{EXPERT=EL('s-expert').checked;
+  try{localStorage.setItem('pf2e-expert',EXPERT?'1':'0')}catch(e){};paintExpert()});
+paintExpert();
+/* ---------- fetching a model the first time it is chosen ----------
+   Ollama pulls on request, not on use: picking Better on a machine that only
+   has the 4B would otherwise fail on the first question. The pull is asked of
+   the server (which only knows the two shipped models) and its progress goes
+   in the status line. */
+let PULLING=false;
+async function ensureModel(model){
+  if(PULLING||SET.backend!=='ollama'||!model)return;
+  let d;
+  try{d=await (await fetch('/api/test?'+settingsQuery(),{headers:settingsHeaders()})).json()}
+  catch(e){return}
+  if(!d.ok||d.llm_ok)return;
+  PULLING=true;st.hidden=false;st.className='';st.querySelector('.dot').classList.add('pulse');
+  stt.textContent='downloading '+model+'…';enable(false);
+  try{
+    const res=await fetch('/api/pull?model='+encodeURIComponent(model));
+    const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
+    for(;;){
+      const {done,value}=await reader.read();if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const parts=buf.split('\n\n');buf=parts.pop();
+      for(const line of parts){
+        if(!line.startsWith('data: '))continue;
+        const ev=JSON.parse(line.slice(6));
+        if(ev.event==='progress'){
+          const pct=ev.total?Math.round(100*ev.completed/ev.total):null;
+          stt.textContent='downloading '+model+(pct!==null?' — '+pct+'%':' — '+ev.status);
+        }else if(ev.event==='done'){st.className='ready';stt.textContent=model+' is ready';
+          st.querySelector('.dot').classList.remove('pulse');setTimeout(()=>{st.hidden=true},2500);
+        }else if(ev.event==='error'){st.className='bad';stt.textContent='could not download '+model+': '+ev.error;
+          st.querySelector('.dot').classList.remove('pulse')}
+      }
+    }
+  }catch(e){st.className='bad';stt.textContent='could not download '+model+': '+e}
+  PULLING=false;if(ready)enable(true);
+}
 EL('s-test').addEventListener('click',()=>{readForm();probeModels(false)});
 EL('s-reset').addEventListener('click',()=>{
   SET=Object.assign({},SDEF);saveSettings();writeForm();
@@ -1270,13 +1314,29 @@ paintHist();showHome(true);
 
 /* ---------- onboarding ---------- */
 const ob=EL('onboard');
-function openHelp(){closeOverlays();ob.hidden=false;lockScroll();EL('help').setAttribute('aria-expanded','true');
+function openHelp(){closeOverlays();ob.hidden=false;lockScroll();
+  const now=currentPreset();if(now!=='custom'){OB_CHOICE=now;
+    for(const c of EL('ob-choices').querySelectorAll('.choice'))c.classList.toggle('on',c.dataset.choice===now)}EL('help').setAttribute('aria-expanded','true');
   EL('ob-go').focus()}
 function closeHelp(){ob.hidden=true;lockScroll();EL('help').setAttribute('aria-expanded','false');
   try{localStorage.setItem('pf2e-onboarded','1')}catch(e){}
   if(ready)q.focus()}
-EL('ob-go').addEventListener('click',closeHelp);
-EL('ob-settings').addEventListener('click',()=>{closeHelp();if(panel.hidden)gear.click()});
+let OB_CHOICE='faster',OB_TOUCHED=false;
+EL('ob-choices').addEventListener('click',e=>{
+  const b=e.target.closest('.choice');if(!b)return;
+  OB_CHOICE=b.dataset.choice;OB_TOUCHED=true;
+  for(const c of EL('ob-choices').querySelectorAll('.choice'))c.classList.toggle('on',c===b);
+});
+EL('ob-go').addEventListener('click',()=>{
+  // First visit, or a choice made on this visit: apply it. Reopening the card
+  // with ? and closing it again must not undo a hand-tuned setting.
+  if(!seen||OB_TOUCHED){Object.assign(SET,PRESETS[OB_CHOICE]);saveSettings();writeForm();
+    ensureModel(SET.model)}
+  seen=true;OB_TOUCHED=false;closeHelp();
+});
+EL('ob-settings').addEventListener('click',()=>{closeHelp();
+  EXPERT=true;try{localStorage.setItem('pf2e-expert','1')}catch(e){};paintExpert();
+  if(panel.hidden)gear.click()});
 EL('help').addEventListener('click',()=>ob.hidden?openHelp():closeHelp());
 ob.addEventListener('click',e=>{if(e.target===ob)closeHelp()});
 let seen=false;try{seen=!!localStorage.getItem('pf2e-onboarded')}catch(e){}
