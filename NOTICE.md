@@ -28,6 +28,13 @@ action, reaction) are drawn with Paizo's icon font, © Paizo Inc. 2019, the same
 file the Archives of Nethys serve. It is embedded in the web page so it renders
 offline, under the Community Use Policy above.
 
+**Erathian font** — the alphabet newly written text is shown in before it settles
+is the Erathian script from the *Might and Magic* games, as the font by
+[Tom Chen](https://github.com/might-and-magic/erathian-font), SIL Open Font License 1.1
+(the remaining glyphs come from Alegreya, also OFL). The letter shapes themselves
+belong to New World Computing, The 3DO Company and Ubisoft Entertainment; *Might and
+Magic* is a registered trademark of Ubisoft Entertainment SA.
+
 **[PathfinderWiki](https://pathfinderwiki.com/)** — 27,749 articles of Golarion
 lore, written and curated by volunteers over more than a decade.
 

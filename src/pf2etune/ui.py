@@ -25,12 +25,21 @@ _FONT = base64.b64encode(
     importlib.resources.files(__package__).joinpath("Pathfinder-Icons.ttf").read_bytes()
 ).decode()
 
+# The Erathian alphabet from Might and Magic, as a font by Tom Chen (SIL OFL;
+# see NOTICE.md). Latin letters typeset in it come out as Erathian glyphs, so
+# freshly streamed text can be shown "untranslated" and then settle into the
+# page's own face, one character at a time.
+_ERATHIAN = base64.b64encode(
+    importlib.resources.files(__package__).joinpath("Erathian-min.woff2").read_bytes()
+).decode()
+
 _PAGE = r"""<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PF2e Rules</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='#8a1b2e'/%3E%3Cpolygon points='16,1.6 7.6,11.9 24.4,11.9' fill='#fff' opacity='0.42'/%3E%3Cpolygon points='3.4,8.8 16,1.6 7.6,11.9' fill='#fff' opacity='0.28'/%3E%3Cpolygon points='16,1.6 28.6,8.8 24.4,11.9' fill='#fff' opacity='0.34'/%3E%3Cpolygon points='3.4,8.8 7.6,11.9 3.4,23.2' fill='#fff' opacity='0.2'/%3E%3Cpolygon points='28.6,8.8 28.6,23.2 24.4,11.9' fill='#fff' opacity='0.26'/%3E%3Cpolygon points='3.4,23.2 7.6,11.9 16,26.4' fill='#fff' opacity='0.16'/%3E%3Cpolygon points='24.4,11.9 28.6,23.2 16,26.4' fill='#fff' opacity='0.22'/%3E%3Cpolygon points='3.4,23.2 16,26.4 16,30.4' fill='#fff' opacity='0.12'/%3E%3Cpolygon points='16,26.4 28.6,23.2 16,30.4' fill='#fff' opacity='0.18'/%3E%3Cpolygon points='7.6,11.9 24.4,11.9 16,26.4' fill='#fff' opacity='0.07'/%3E%3Cpolygon points='16,1.6 28.6,8.8 28.6,23.2 16,30.4 3.4,23.2 3.4,8.8' fill='none' stroke='#fff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M16,1.6 L7.6,11.9 M16,1.6 L24.4,11.9 M7.6,11.9 L24.4,11.9 M7.6,11.9 L16,26.4 M24.4,11.9 L16,26.4 M3.4,8.8 L7.6,11.9 M28.6,8.8 L24.4,11.9 M3.4,23.2 L7.6,11.9 M28.6,23.2 L24.4,11.9 M3.4,23.2 L16,26.4 M28.6,23.2 L16,26.4 M16,30.4 L16,26.4' fill='none' stroke='#fff' stroke-width='1.1' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
+@font-face{font-family:"Erathian";src:url(data:font/woff2;base64,__ERATHIAN__) format("woff2");font-display:block}
 @font-face{font-family:"Pathfinder-Icons";src:url(data:font/ttf;base64,__ICON_FONT__) format("truetype");font-display:block}
 /* Light is the base palette; the two blocks after it redefine only the tokens,
    so an un-stamped document (the default "system" setting) still resolves. */
@@ -287,8 +296,8 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .err{color:var(--accent);white-space:pre-wrap}
 .timing{color:var(--muted);font-size:.72rem;margin-top:.7rem;
  font-variant-numeric:tabular-nums}
-.rune{color:var(--accent);letter-spacing:.02em;transition:opacity .4s}
-.rune.r0{opacity:.28}.rune.r1{opacity:.55}.rune.r2{opacity:.85}
+.er{font-family:"Erathian",serif;color:var(--accent);letter-spacing:.03em}
+.st{color:var(--ink)}
 .caret{display:inline-block;width:.45em;height:1em;vertical-align:text-bottom;
  background:var(--warn);animation:blink 1s steps(2,start) infinite}
 @keyframes blink{to{visibility:hidden}}
@@ -1431,13 +1440,15 @@ const LINES={
       'Leafing through the Player Core','Sharpening the quill','Casting Read Aura',
       'Rolling a secret check','Bribing the librarian','Checking the errata',
       'Asking Nethys nicely','Reading the fine print']};
-/* ---------- the text arrives as runes ----------
-   Streamed text is shown the moment it lands, but the newest half-second of
-   it is drawn as runes that settle into letters as they age: fully scrambled
-   while fresh, half resolved in the middle, plain once old. Everything older
-   than that is rendered as markdown as before, so the settled text never
-   flickers. Cut at a space so a markdown marker is never split. */
-const RUNES='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';
+/* ---------- the text arrives in Erathian ----------
+   Streamed text is shown the moment it lands, typeset in the Erathian
+   alphabet and nearly transparent. Over the next 2.4 s each character fades
+   in and, at its own moment, changes into the page's own face -- so the
+   newest line reads as a foreign script clearing into words, and nothing
+   ever pops into place. Text older than the window is rendered as markdown
+   as before, so what has settled never flickers. Cuts fall on spaces so a
+   markdown marker is never split. */
+const SETTLE_MS=2400,FADE_MS=2400;
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let ARRIVALS=[];   // [time, answer length at that time]
 function noteArrival(len){ARRIVALS.push([Date.now(),len]);if(ARRIVALS.length>400)ARRIVALS.splice(0,200)}
@@ -1446,16 +1457,10 @@ function stableLength(answer,age){
   for(const [t,len] of ARRIVALS){if(t<=cutoff)n=len;else break}
   return n;
 }
-// Each character keeps one rune (chosen from its position) until it resolves,
-// and resolves at its own moment spread across the window, so the band settles
-// like frost clearing rather than static flickering. The newest text is faint
-// and fades in as it ages.
-const SETTLE_MS=1500;
 // A small integer mix (xorshift-style): stable per position, no visible period.
 const hash=i=>{let x=(i+0x9e3779b9)>>>0;x^=x>>>16;x=Math.imul(x,0x85ebca6b)>>>0;x^=x>>>13;
   x=Math.imul(x,0xc2b2ae35)>>>0;x^=x>>>16;return (x>>>0)/4294967296};
 function charTimes(){
-  // arrival time of each character, from the per-token record
   const t=[];let from=0;
   for(const [time,len] of ARRIVALS){for(let i=from;i<len;i++)t[i]=time;from=Math.max(from,len)}
   return t;
@@ -1467,16 +1472,19 @@ function streamed(answer){
   while(old>0&&old<answer.length&&!/\s/.test(answer[old]))old--;
   if(old>=answer.length)return md(answer,true);
   const settled=md(answer.slice(0,old),true);
-  let tail='',band=-1,open=false;
+  // Runs of characters that share a look become one span: the look is the
+  // face (Erathian or settled) and the opacity in twentieths.
+  let tail='',key=null;
   for(let i=old;i<answer.length;i++){
-    const ch=answer[i],age=now-(times[i]||now),f=Math.min(1,age/SETTLE_MS);
-    const b=f<.34?0:f<.67?1:2;           // faint, half, nearly there
-    if(b!==band){if(open)tail+='</span>';tail+='<span class="rune r'+b+'">';band=b;open=true}
-    if(/\s/.test(ch))tail+=ch;
-    else if(f>=hash(i))tail+=esc(ch);
-    else tail+=RUNES[Math.floor(hash(i*7+3)*RUNES.length)];
+    const ch=answer[i],age=now-(times[i]||now);
+    const op=Math.min(20,Math.round(20*age/FADE_MS)),f=Math.min(1,age/SETTLE_MS);
+    const er=!/\s/.test(ch)&&f<.25+.75*hash(i);
+    const k=(er?'e':'s')+op;
+    if(k!==key){if(key!==null)tail+='</span>';
+      tail+='<span class="'+(er?'er':'st')+'" style="opacity:'+(op/20).toFixed(2)+'">';key=k}
+    tail+=esc(ch);
   }
-  if(open)tail+='</span>';
+  if(key!==null)tail+='</span>';
   const m=settled.match(/((?:<\/(?:p|li|ul|b|i)>\s*)+)$/);
   return m?settled.slice(0,m.index)+tail+m[1]:settled+tail;
 }
@@ -1709,4 +1717,4 @@ document.addEventListener('keydown',e=>{
 });
 </script></body></html>"""
 
-PAGE = _PAGE.replace("__ICON_FONT__", _FONT)
+PAGE = _PAGE.replace("__ICON_FONT__", _FONT).replace("__ERATHIAN__", _ERATHIAN)
