@@ -291,10 +291,12 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
    answer, which is the one bit of this page that must stay plain. */
 .d20{width:1.6rem;height:1.6rem;flex:none;align-self:center;color:var(--accent)}
 .d20 svg{width:100%;height:100%;display:block}
-.d20 svg{transform-origin:50% 52%;will-change:transform}
-.d20.rolling svg{animation:roll 1.9s cubic-bezier(.3,.05,.2,1) infinite}
-.d20.rolling polygon:nth-child(1),.d20.rolling polygon:nth-child(3),.d20.rolling polygon:nth-child(5),
-.d20.rolling polygon:nth-child(7){animation:glint 1.9s ease-in-out infinite}
+.d20{transform-origin:50% 52%;will-change:transform;backface-visibility:hidden;
+ contain:layout paint}
+/* The container is a compositor layer: rotating it costs no repaint. Animating
+   the SVG's parts did -- ten facets re-rasterised per frame, which stuttered
+   on a laptop already busy running the model. */
+.d20.rolling{animation:roll 1.9s cubic-bezier(.3,.05,.2,1) infinite}
 @keyframes roll{
  0%{transform:translateY(0) rotate(0) scale(1)}
  18%{transform:translateY(-.32em) rotate(150deg) scale(1.08)}
@@ -303,8 +305,8 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
  60%{transform:translateY(-.04em) rotate(357deg) scale(1.02,.98)}
  68%{transform:translateY(0) rotate(361deg) scale(1)}
  100%{transform:translateY(0) rotate(360deg) scale(1)}}
-@keyframes glint{0%,100%{opacity:.42}45%{opacity:.12}55%{opacity:.55}}
-@media(prefers-reduced-motion:reduce){.d20.rolling svg,.d20.rolling polygon{animation:none}}
+
+@media(prefers-reduced-motion:reduce){.d20.rolling{animation:none}}
 #help,#hist{padding:.35rem .65rem;font-size:.8rem;border:1px solid var(--line);
  background:var(--card);color:var(--soft);border-radius:6px;cursor:pointer;
  display:flex;align-items:center;gap:.35rem}
@@ -1352,9 +1354,11 @@ let timer=null;
 function rolling(on){d20.classList.toggle('rolling',on)}
 function busy(kind){
   const t0=Date.now(),pool=LINES[kind];
+  out.innerHTML='<p class="spin" id="busy"></p>';
+  const el=EL('busy');
   const tick=()=>{const label=pool[Math.floor((Date.now()-t0)/2600)%pool.length];
-    out.innerHTML='<p class="spin">'+label+'… '+((Date.now()-t0)/1000).toFixed(1)+'s</p>'};
-  tick();clearInterval(timer);timer=setInterval(tick,100);rolling(true);
+    el.textContent=label+'… '+((Date.now()-t0)/1000).toFixed(1)+'s'};
+  tick();clearInterval(timer);timer=setInterval(tick,250);rolling(true);
 }
 function stamp(t){
   // The per-stage split is the answer to "why is this slow on my laptop".
@@ -1412,7 +1416,7 @@ async function ask(text){
     out.innerHTML='<p class="err">'+esc(msg||('server said '+res.status))+'</p>';return;
   }
   const reader=res.body.getReader(),dec=new TextDecoder();
-  let buf='',answer='',timings={},hits=[],srcHtml='',started=false;
+  let buf='',answer='',timings={},hits=[],srcHtml='',started=false,queued=false;
   // Two containers: the entries are drawn once, and each token repaints only
   // the answer's body. Replacing the whole output per token tore the tiles out
   // from under a click.
@@ -1431,7 +1435,7 @@ async function ask(text){
   const pending=()=>{const t0=Date.now();clearInterval(timer);
     timer=setInterval(()=>{const el=document.getElementById('pend');
       if(el){const l=LINES.write[Math.floor((Date.now()-t0)/2600)%LINES.write.length];
-        el.textContent=l+'… '+((Date.now()-t0)/1000).toFixed(1)+'s'}},100)};
+        el.textContent=l+'… '+((Date.now()-t0)/1000).toFixed(1)+'s'}},250)};
   for(;;){
     const {done,value}=await reader.read(); if(done)break;
     buf+=dec.decode(value,{stream:true});
@@ -1444,7 +1448,10 @@ async function ask(text){
         setCites(hits);frame();EL('src').innerHTML=srcHtml;paint();pending();
       }else if(ev.event==='token'){
         if(!started){started=true;clearInterval(timer)}
-        answer+=ev.text;paint();
+        answer+=ev.text;
+        // One repaint per frame, however many chunks arrived: markdown over the
+        // whole answer per token is what made the page stutter while writing.
+        if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;paint()})}
       }else if(ev.event==='done'){clearInterval(timer);rolling(false);timings=ev.timings;
         answer=answer.trimEnd();paint(false);
         addHist({id:String(Date.now()),q:text,mode:'ask',ts:Date.now(),
