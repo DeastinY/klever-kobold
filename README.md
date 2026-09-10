@@ -1,10 +1,13 @@
-# pf2etune
+# The Klever Kobold
+
+Quick, keen, and wrong often enough that every answer shows the entries it was
+read from. (The package is `pf2etune`; the kobold is what you run.)
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Runs offline](https://img.shields.io/badge/runs-fully%20offline-2f6b4f)
 ![Runtime deps](https://img.shields.io/badge/runtime%20deps-4%20(no%20torch)-2f6b4f)
-![Memory](https://img.shields.io/badge/RAM-7.2%20GB-informational)
-![Model](https://img.shields.io/badge/model-Qwen3.5--9B%20Q4-8a1b2e)
+![Memory](https://img.shields.io/badge/RAM-5.6%20GB%20(4B)-informational)
+![Model](https://img.shields.io/badge/model-Qwen3.5--4B%20Q4%20(9B%20optional)-8a1b2e)
 ![Corpus](https://img.shields.io/badge/corpus-41%2C743%20AoN%20entries-8a1b2e)
 ![Index](https://img.shields.io/badge/index-v2-8a1b2e)
 ![Lookups](https://img.shields.io/badge/hand--written%20lookups-91.7%25-2f6b4f)

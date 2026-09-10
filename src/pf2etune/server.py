@@ -417,7 +417,7 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
 
     server = ThreadingHTTPServer((host, port), make_handler(pool, threading.Lock(), health))
     shown = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
-    print(f"PF2e rules on http://{shown}:{port}  (ctrl-c to stop)")
+    print(f"The Klever Kobold on http://{shown}:{port}  (ctrl-c to stop)")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

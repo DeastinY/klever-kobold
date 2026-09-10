@@ -36,7 +36,7 @@ _ERATHIAN = base64.b64encode(
 _PAGE = r"""<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PF2e Rules</title>
+<title>The Klever Kobold</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='#8a1b2e'/%3E%3Cpolygon points='16,1.6 7.6,11.9 24.4,11.9' fill='#fff' opacity='0.42'/%3E%3Cpolygon points='3.4,8.8 16,1.6 7.6,11.9' fill='#fff' opacity='0.28'/%3E%3Cpolygon points='16,1.6 28.6,8.8 24.4,11.9' fill='#fff' opacity='0.34'/%3E%3Cpolygon points='3.4,8.8 7.6,11.9 3.4,23.2' fill='#fff' opacity='0.2'/%3E%3Cpolygon points='28.6,8.8 28.6,23.2 24.4,11.9' fill='#fff' opacity='0.26'/%3E%3Cpolygon points='3.4,23.2 7.6,11.9 16,26.4' fill='#fff' opacity='0.16'/%3E%3Cpolygon points='24.4,11.9 28.6,23.2 16,26.4' fill='#fff' opacity='0.22'/%3E%3Cpolygon points='3.4,23.2 16,26.4 16,30.4' fill='#fff' opacity='0.12'/%3E%3Cpolygon points='16,26.4 28.6,23.2 16,30.4' fill='#fff' opacity='0.18'/%3E%3Cpolygon points='7.6,11.9 24.4,11.9 16,26.4' fill='#fff' opacity='0.07'/%3E%3Cpolygon points='16,1.6 28.6,8.8 28.6,23.2 16,30.4 3.4,23.2 3.4,8.8' fill='none' stroke='#fff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M16,1.6 L7.6,11.9 M16,1.6 L24.4,11.9 M7.6,11.9 L24.4,11.9 M7.6,11.9 L16,26.4 M24.4,11.9 L16,26.4 M3.4,8.8 L7.6,11.9 M28.6,8.8 L24.4,11.9 M3.4,23.2 L7.6,11.9 M28.6,23.2 L24.4,11.9 M3.4,23.2 L16,26.4 M28.6,23.2 L16,26.4 M16,30.4 L16,26.4' fill='none' stroke='#fff' stroke-width='1.1' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 @font-face{font-family:"Erathian";src:url(data:font/woff2;base64,__ERATHIAN__) format("woff2");font-display:block}
@@ -419,7 +419,7 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 .ob .row .note{margin:0;flex:1;grid-column:auto}
 </style></head><body><div class="wrap">
 <header><a href="/" id="home-link" title="Start over"><span class="d20" id="d20" aria-hidden="true"></span>
-<h1>Pathfinder 2e rules <small>— Archives of Nethys, offline</small></h1></a>
+<h1>The Klever Kobold <small>— Pathfinder 2e rules, offline</small></h1></a>
 <button id="hist" title="Questions you have asked" aria-expanded="false" aria-controls="history"></button>
 <button id="gear" title="Settings" aria-expanded="false" aria-controls="settings"></button>
 <button id="help" title="How this works" aria-expanded="false">?</button>
@@ -444,10 +444,12 @@ thing again is instant — until you press <b>Ask again</b>.</p>
 <div id="onboard" hidden>
 <div class="ob" role="dialog" aria-modal="true" aria-labelledby="ob-h">
 <h2 id="ob-h"><span class="d20" aria-hidden="true"></span>Well met, adventurer.</h2>
-<p class="lead">A Pathfinder 2e rules reference that runs entirely on this machine. It carries
-its own copy of the Archives of Nethys — 41,743 entries — so nothing you type leaves your
-computer, and it works without a connection. Each entry links to its page on the live Archives,
-should you want to check. No account, no cloud, no dice tax.</p>
+<p class="lead">The Klever Kobold is a Pathfinder 2e rules reference that runs entirely on this
+machine. It carries its own copy of the Archives of Nethys — 41,743 entries — so nothing you
+type leaves your computer, and it works without a connection. Each entry links to its page on
+the live Archives, should you want to check. No account, no cloud, no dice tax.</p>
+<p class="lead">It is a kobold: quick, keen, and wrong more often than it would like to admit —
+which is why every answer shows the entries it was read from.</p>
 <ol>
  <li><b>Type a question and press Enter.</b> It finds the relevant entries in the local copy
   and a local model writes a short answer that cites them.</li>
@@ -1433,10 +1435,10 @@ const LINES={
  search:['Consulting the Archives','Thumbing through the index','Searching the stacks'],
  find:['Consulting the Archives','Rolling Recall Knowledge','Finding the right page',
        'Asking the librarian','Checking the errata','Pondering the orb','Waking the archivist'],
- write:['The scribe is writing','Pondering the orb','Questioning the dead','Consulting the oracle',
+ write:['The kobold is writing','Pondering the orb','Questioning the dead','Consulting the oracle',
         'Leafing through the Player Core','Arguing with the GM','Sharpening the quill',
         'Casting Read Aura','Counting the action icons','Rolling a secret check'],
- fun:['Pondering the orb','Questioning the dead','Consulting the oracle','Arguing with the GM',
+ fun:['The kobold is thinking','Pondering the orb','Questioning the dead','Consulting the oracle','Arguing with the GM',
       'Leafing through the Player Core','Sharpening the quill','Casting Read Aura',
       'Rolling a secret check','Bribing the librarian','Checking the errata',
       'Asking Nethys nicely','Reading the fine print']};
@@ -1472,13 +1474,17 @@ function streamed(answer){
   while(old>0&&old<answer.length&&!/\s/.test(answer[old]))old--;
   if(old>=answer.length)return md(answer,true);
   const settled=md(answer.slice(0,old),true);
+  // The Source line and anything after it is citation, not prose: it fades
+  // in as itself. Only the rules text is shown in Erathian first.
+  const srcMatch=answer.match(/(^|\n)\s*Source:/i);
+  const srcAt=srcMatch?srcMatch.index:Infinity;
   // Runs of characters that share a look become one span: the look is the
   // face (Erathian or settled) and the opacity in twentieths.
   let tail='',key=null;
   for(let i=old;i<answer.length;i++){
     const ch=answer[i],age=now-(times[i]||now);
     const op=Math.min(20,Math.round(20*age/FADE_MS)),f=Math.min(1,age/SETTLE_MS);
-    const er=!/\s/.test(ch)&&f<.25+.75*hash(i);
+    const er=i<srcAt&&!/\s/.test(ch)&&f<.25+.75*hash(i);
     const k=(er?'e':'s')+op;
     if(k!==key){if(key!==null)tail+='</span>';
       tail+='<span class="'+(er?'er':'st')+'" style="opacity:'+(op/20).toFixed(2)+'">';key=k}
@@ -1544,7 +1550,7 @@ let CURRENT=null;   // {q, answer, sources, model} of the answer on screen
 function reportBody(correction,source){
   return {question:CURRENT.q,answer:CURRENT.answer,correction,source_url:source||'',
     sources:(CURRENT.sources||[]).map(h=>({name:h.name,url:h.url})),
-    model:CURRENT.model||'',index_tag:INDEX_TAG,app:'pf2e serve'};
+    model:CURRENT.model||'',index_tag:INDEX_TAG,app:'The Klever Kobold'};
 }
 function reportMarkdown(b){
   return '**Question:** '+b.question+'\n\n**Answer given** ('+b.model+', '+b.index_tag+'):\n\n'+
