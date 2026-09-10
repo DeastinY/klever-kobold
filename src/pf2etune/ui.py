@@ -299,18 +299,12 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
    the SVG's parts did -- ten facets re-rasterised per frame, which stuttered
    on a laptop already busy running the model. */
 /* While a question runs, the model owns the GPU that macOS also composites
-   with, so every continuous animation on screen stutters -- this one included,
-   however it is built. So the roll has no continuous motion: the die shows a
-   new face six times a second, like a stop-motion tumble. A dropped frame
-   only delays the next face; there is no half-way state to judge. */
-.d20.rolling{animation:tumble 1.5s steps(9,end) infinite}
-@keyframes tumble{
- 0%{transform:rotate(0) scale(1)}
- 22%{transform:rotate(80deg) scale(1.06)}
- 44%{transform:rotate(200deg) scale(1.1)}
- 66%{transform:rotate(300deg) scale(1.04)}
- 88%{transform:rotate(340deg) scale(1)}
- 100%{transform:rotate(360deg) scale(1)}}
+   with, so any motion on screen drops frames -- a roll shows every dropped
+   frame as a jump. A slow breath does not: opacity and a hair of scale, both
+   composited, and a late frame lands on a slightly different shade of the
+   same thing. */
+.d20.rolling{animation:breathe 1.8s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.9)}}
 
 @media(prefers-reduced-motion:reduce){.d20.rolling{animation:none}}
 #help,#hist{padding:.35rem .65rem;font-size:.8rem;border:1px solid var(--line);
