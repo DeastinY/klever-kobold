@@ -82,10 +82,10 @@ pf2e serve                      # http://localhost:8765
 `pf2e setup` is idempotent. Without `--install-ollama` it prints the one command
 for your platform and stops. `pf2e doctor` checks each moving part separately.
 
-Every answer has a **Wrong? Report it** button. With `--report-url` (a free
-Cloudflare Worker, see [`deploy/report-worker`](deploy/report-worker/README.md))
-the report goes to your mailbox; without one it opens a pre-filled GitHub issue
-or copies the report. Nothing is sent unless someone fills the form and presses Send.
+Every answer has a **Wrong? Report it** button. Reports go to this project's
+mailbox (a free Cloudflare Worker, see [`deploy/report-worker`](deploy/report-worker/README.md));
+`--report-url` points it elsewhere and `--report-url ''` turns it into a GitHub
+issue instead. Nothing is sent unless someone fills the form and presses Send.
 
 The 4B answers by default: 93/109 on the holdout against the 9B's 100, at twice
 the speed and half the memory, and a 16 GB laptop stays usable while it thinks.

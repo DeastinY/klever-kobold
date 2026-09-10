@@ -32,6 +32,11 @@ from .ui import PAGE
 # and out of any access log anyone ever adds to this handler.
 KEY_HEADER = "X-PF2E-Key"
 
+# Where "Wrong? Report it" goes unless --report-url / PF2E_REPORT_URL say
+# otherwise: this project's own mailbox (deploy/report-worker). Set either to
+# "" to disable the Send button and fall back to a GitHub issue.
+DEFAULT_REPORT_URL = "https://pf2e-reports.deastiny.workers.dev"
+
 
 @dataclass(frozen=True)
 class Config:
@@ -335,6 +340,14 @@ def _random_entries(assistant: Assistant, n: int = 8) -> list[dict]:
     return out
 
 
+def _report_url(flag: str | None) -> str:
+    """The flag, else the environment, else the default; an explicit '' disables."""
+    if flag is not None:
+        return flag
+    env = os.environ.get("PF2E_REPORT_URL")
+    return env if env is not None else DEFAULT_REPORT_URL
+
+
 def _hits(hits) -> list[dict]:
     return [{"name": h.name, "category": h.category.replace("-", " "), "level": h.level,
              "url": h.url, "text": h.text[:9000], "summary": h.summary or "",
@@ -371,7 +384,7 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
                            "auto_model": auto_model,
                            # Where "Report a wrong answer" posts. Nothing is sent
                            # unless someone fills the form and presses Send.
-                           "report_url": (report_url or os.environ.get("PF2E_REPORT_URL") or "").rstrip("/"),
+                           "report_url": _report_url(report_url).rstrip("/"),
                            "index_tag": INDEX_URL.split("/releases/download/")[1].split("/")[0]
                            if "/releases/download/" in INDEX_URL else "",
                            "context_chars": assistant.context_chars,

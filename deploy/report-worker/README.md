@@ -16,7 +16,8 @@ wrangler secret put SALT                 # anything; salts the IP hash used for 
 wrangler deploy                          # prints https://pf2e-reports.<you>.workers.dev
 ```
 
-Then run the app with that URL, and the form appears under every answer:
+This project's own deployment is `https://pf2e-reports.deastiny.workers.dev` and is
+the app's default. To use your own, run the app with that URL:
 
 ```bash
 pf2e serve --report-url https://pf2e-reports.<you>.workers.dev

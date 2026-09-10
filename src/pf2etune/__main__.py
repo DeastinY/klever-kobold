@@ -411,8 +411,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--report-url", default=None,
                    help="where the page's 'Report a wrong answer' form posts (see "
-                        "deploy/report-worker); or PF2E_REPORT_URL. Without one the form "
-                        "opens a GitHub issue or copies the report.")
+                        "deploy/report-worker); or PF2E_REPORT_URL. Defaults to this "
+                        "project's mailbox; pass '' to disable and fall back to a GitHub issue.")
     p.add_argument("--context-chars", type=int, default=None,
                    help="characters of each entry shown to the model (default 1600). "
                         "1000 scored the same on the holdout and cuts prompt-processing "
