@@ -76,17 +76,14 @@ It is a lookup tool, not a rules judge. This is measured, not modest:
 
 On 109 hand-written questions the default model gets 93 right; on questions real
 tables ask, retrieval finds the answer outright only about a third of the time.
-The full accounting is in [Building the brain](docs/building-the-brain.md).
+How it works, and what it took to find out, is a story for a blog post.
 
 ## Documentation
 
 - [Running it](docs/running.md) — every way to install and run, all the options, Docker, MCP.
-- [Building the brain](docs/building-the-brain.md) — how retrieval works, what was
-  measured, what fine-tuning did and did not do, how to rebuild the index.
 - [Reporting wrong answers](docs/reporting.md) — what a report contains, where it goes, what it is used for.
 - [Licensing](docs/LICENSING.md) — what the content licences allow, and the grey areas, named.
-- [Contributing](CONTRIBUTING.md) — mostly measurement discipline.
-- [The full experiment record](notes/experiments.md) — everything that was tried, including what failed.
+- [Contributing](CONTRIBUTING.md) — how to help, from a one-minute report to a pull request.
 
 ## Attribution
 

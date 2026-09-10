@@ -37,8 +37,7 @@ The 4B answers by default: 93/109 on the hand-written holdout against the 9B's
 100, at twice the speed and half the memory. `--llm-model qwen3.5:9b` runs the
 9B from the command line; in the web UI it is the **Better** preset under
 Settings, and the first choice is made on the onboarding card. Below 4B the
-models start answering Pathfinder questions with D&D 5e rules; the numbers for
-every size are in [Building the brain](building-the-brain.md).
+models start answering Pathfinder questions with D&D 5e rules.
 
 Any OpenAI-compatible server can do the answering instead — LM Studio,
 llama.cpp, vLLM, a hosted API — via Settings → Expert mode, or
@@ -118,5 +117,23 @@ git clone https://github.com/DeastinY/klever-kobold && cd klever-kobold
 uv sync && uv run kobold serve
 ```
 
-Rebuilding the index from a fresh Archives dump needs a GPU and is described in
-[Building the brain](building-the-brain.md#rebuilding-the-index).
+## Rebuilding the index
+
+Needs a GPU for the two embedding passes and the build extras:
+
+```bash
+uv sync --extra corpus --extra retrieval --extra local
+uv run scripts/rebuild_index.sh          # dump -> chunks -> embed -> package, with checks
+```
+
+Output lands in `dist/kobold-index`. Run the test set on it (see
+[CONTRIBUTING.md](../CONTRIBUTING.md)), then publish:
+
+```bash
+tar czf kobold-index.tar.gz -C dist kobold-index
+gh release create index-vN kobold-index.tar.gz --title "Packaged index vN"
+```
+
+and point `INDEX_URL` in `src/kleverkobold/app.py` at the new tag. `kobold setup`
+everywhere then fetches it. The build scripts read the Archives of Nethys and
+PathfinderWiki: run them rarely, and never in a loop.
