@@ -345,7 +345,8 @@ def cmd_serve(args) -> int:
     model, auto = _llm(args)
     serve(args.index, args.ollama, args.host, args.port, args.backend,
           model, getattr(args, "embed_override", None),
-          context_chars=getattr(args, "context_chars", None), auto_model=auto)
+          context_chars=getattr(args, "context_chars", None), auto_model=auto,
+          report_url=getattr(args, "report_url", None))
     return 0
 
 
@@ -408,6 +409,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--host", default="127.0.0.1",
                    help="0.0.0.0 to let other devices on your network reach it")
     p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--report-url", default=None,
+                   help="where the page's 'Report a wrong answer' form posts (see "
+                        "deploy/report-worker); or PF2E_REPORT_URL. Without one the form "
+                        "opens a GitHub issue or copies the report.")
     p.add_argument("--context-chars", type=int, default=None,
                    help="characters of each entry shown to the model (default 1600). "
                         "1000 scored the same on the holdout and cuts prompt-processing "

@@ -42,6 +42,7 @@ RE_ROW = re.compile(r"<tr\b[^>]*>(.*?)</tr>", re.S)
 RE_TABLE_WRAP = re.compile(r"</?(?:table|thead|tbody|tfoot|summary)\b[^>]*>")
 RE_ANY_TAG = re.compile(r"</?[a-zA-Z][\w-]*\b[^>]*>")
 RE_BLANKS = re.compile(r"\n{3,}")
+RE_NETHYS_NOTE = re.compile(r"^[ \t]*_?\*?Nethys Note:[^\n]*\n?", re.M | re.I)
 
 
 def _render_title(match: re.Match[str]) -> str:
@@ -97,6 +98,9 @@ def to_markdown(raw: str, keep_embeds: bool = False) -> str:
     # noise to an embedder and cost the answering model tokens.
     text = RE_LINK.sub(_render_link, text)
     text = html.unescape(text)
+    # "Nethys Note: No description has been provided for this creature." is site
+    # housekeeping, and a small model reads it as "this creature does not exist".
+    text = RE_NETHYS_NOTE.sub("", text)
     text = RE_BLANKS.sub("\n\n", text)
     return "\n".join(line.rstrip() for line in text.splitlines()).strip()
 

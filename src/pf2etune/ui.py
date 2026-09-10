@@ -350,6 +350,16 @@ kbd{font:inherit;font-size:.75rem;background:var(--chip);border:1px solid var(--
  color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:.45rem .8rem;
  margin:.2rem 0 .6rem}
 .from button{padding:.25rem .6rem;font-size:.78rem}
+.answer .flag .report{margin-left:auto;padding:.2rem .55rem;font-size:.74rem;white-space:nowrap;
+ border-color:var(--warn-line);background:var(--warn-bg);color:var(--warn)}
+.answer .flag .report:hover{border-color:var(--warn)}
+.r-label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:.7rem 0 .2rem}
+.r-quote{margin:0;font-size:.88rem;color:var(--soft);background:var(--code);border:1px solid var(--line);
+ border-radius:6px;padding:.45rem .6rem;white-space:pre-wrap}
+.r-quote.clipq{max-height:9rem;overflow:auto}
+#report-wrap textarea,#report-wrap input{width:100%;padding:.5rem .6rem;font:inherit;font-size:.9rem;
+ border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:6px}
+#r-stat.ok{color:var(--ok)}#r-stat.bad{color:var(--accent)}#r-stat.wait{color:var(--muted)}
 .from .ok{color:var(--ok)}
 
 /* ---- onboarding ---- */
@@ -446,6 +456,23 @@ the MCP setup for Claude Desktop and Claude Code: Settings →
 <button type="button" class="link" id="ob-settings">Expert mode</button>.</p>
 <div class="row"><button class="primary" type="button" id="ob-go">Roll for initiative</button>
 <p class="note">Press <kbd>?</kbd> any time to see this again.</p></div>
+</div></div>
+
+<div id="report-wrap" class="ov" hidden><div class="pop" role="dialog" aria-modal="true" aria-label="Report a wrong answer">
+<button type="button" class="x" data-close="report-wrap" title="Close (Esc)" aria-label="Close">×</button>
+<p class="set-h">Report a wrong answer</p>
+<p class="note" id="r-where" style="margin:.2rem 0 .7rem"></p>
+<p class="r-label">Question</p><p class="r-quote" id="r-q"></p>
+<p class="r-label">Answer given</p><p class="r-quote clipq" id="r-a"></p>
+<p class="r-label"><label for="r-fix">What is wrong, and what is right</label></p>
+<textarea id="r-fix" rows="5" placeholder="e.g. Sneak Attack applies to the rogue's own Strikes, not to an ally's Reactive Strike."></textarea>
+<p class="r-label"><label for="r-src">Where it says so (optional)</label></p>
+<input id="r-src" placeholder="https://2e.aonprd.com/… or a page number">
+<div class="row" style="margin-top:.8rem">
+ <button type="button" class="primary" id="r-send">Send</button>
+ <button type="button" class="primary" id="r-issue">Open as GitHub issue</button>
+ <button type="button" id="r-copy">Copy as text</button>
+ <span id="r-stat" class="note" style="margin:0"></span></div>
 </div></div>
 
 <div id="favs" hidden><p class="tryh">★ Favourites</p><div class="tiles" id="fav-tiles"></div></div>
@@ -1057,6 +1084,7 @@ function seedFromServer(health){
   if(d.llm_model)SDEF.model=d.llm_model;
   if(d.k)SDEF.k=d.k;
   if(d.rerank!==undefined)SDEF.rerank=!!d.rerank;
+  REPORT_URL=d.report_url||'';INDEX_TAG=d.index_tag||'';
   AUTO_MODEL=!!d.auto_model;
   if(d.context_chars)SDEF.ctx=d.context_chars;
   if(d.answer_tokens)SDEF.tokens=d.answer_tokens;
@@ -1403,11 +1431,71 @@ function setCites(hits){
 function answerCard(answer,timings,live){
   return '<div class="card answer"><div class="flag"><span>⚠</span>'+
     '<span>Generated from the entries below — verify against the citations, '+
-    'especially for rule interactions.</span></div>'+
+    'especially for rule interactions.</span>'+
+    (live?'':'<button type="button" class="report" id="report-btn">Wrong? Report it</button>')+
+    '</div>'+
     '<div class="body">'+(answer?md(answer,true)+(live?'<span class="caret"></span>':'')
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>')+'</div>'+
     stamp(timings||{})+'</div>';
 }
+/* ---------- reporting a wrong answer ----------
+   The one place this page sends anything anywhere: a form, filled in by hand,
+   posted on Send to the report URL the server was started with. Without a
+   report URL it opens a pre-filled GitHub issue or copies the report. What is
+   sent is exactly what the form shows. */
+let REPORT_URL='',INDEX_TAG='';
+let CURRENT=null;   // {q, answer, sources, model} of the answer on screen
+function reportBody(correction,source){
+  return {question:CURRENT.q,answer:CURRENT.answer,correction,source_url:source||'',
+    sources:(CURRENT.sources||[]).map(h=>({name:h.name,url:h.url})),
+    model:CURRENT.model||'',index_tag:INDEX_TAG,app:'pf2e serve'};
+}
+function reportMarkdown(b){
+  return '**Question:** '+b.question+'\n\n**Answer given** ('+b.model+', '+b.index_tag+'):\n\n'+
+    b.answer+'\n\n**Correction:**\n\n'+b.correction+'\n\n'+(b.source_url?'Source: '+b.source_url+'\n\n':'')+
+    'Retrieved: '+b.sources.map(s=>s.name).join(', ')+'\n';
+}
+function openReport(){
+  if(!CURRENT)return;
+  const wrap=EL('report-wrap');wrap.hidden=false;lockScroll();
+  EL('r-q').textContent=CURRENT.q;EL('r-a').textContent=CURRENT.answer;
+  EL('r-fix').value='';EL('r-src').value='';EL('r-stat').textContent='';
+  EL('r-send').hidden=!REPORT_URL;EL('r-issue').hidden=!!REPORT_URL;
+  EL('r-where').textContent=REPORT_URL
+    ?'Sent to '+REPORT_URL.replace(/^https?:\/\//,'')+' — the question, the answer, your correction and the names of the entries used. Nothing else.'
+    :'No report server is configured, so this opens a GitHub issue with the report filled in, or copies it.';
+  EL('r-fix').focus();
+}
+async function sendReport(){
+  const fix=EL('r-fix').value.trim();if(!fix){EL('r-fix').focus();return}
+  const b=reportBody(fix,EL('r-src').value.trim()),st=EL('r-stat');
+  st.className='wait';st.textContent='sending…';
+  try{
+    const res=await fetch(REPORT_URL+'/report',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(b)});
+    const d=await res.json();
+    if(!res.ok||!d.ok){st.className='bad';st.textContent=d.error||('server said '+res.status);return}
+    st.className='ok';st.textContent='Sent — thank you. Report #'+d.id+'.';
+    setTimeout(closeOverlays,1400);
+  }catch(e){st.className='bad';st.textContent='could not send: '+e}
+}
+function issueReport(){
+  const fix=EL('r-fix').value.trim();if(!fix){EL('r-fix').focus();return}
+  const b=reportBody(fix,EL('r-src').value.trim());
+  const u='https://github.com/DeastinY/pf2etune/issues/new?title='+
+    encodeURIComponent('Wrong answer: '+b.question.slice(0,80))+'&body='+encodeURIComponent(reportMarkdown(b));
+  window.open(u,'_blank','noreferrer');
+}
+async function copyReport(){
+  const fix=EL('r-fix').value.trim();if(!fix){EL('r-fix').focus();return}
+  const text=reportMarkdown(reportBody(fix,EL('r-src').value.trim())),st=EL('r-stat');
+  try{await navigator.clipboard.writeText(text);st.className='ok';st.textContent='Copied.'}
+  catch(e){st.className='bad';st.textContent='Clipboard unavailable — select the text above.'}
+}
+out.addEventListener('click',e=>{if(e.target.closest('#report-btn'))openReport()});
+EL('r-send').addEventListener('click',sendReport);
+EL('r-issue').addEventListener('click',issueReport);
+EL('r-copy').addEventListener('click',copyReport);
 function fromBanner(r){
   return '<div class="from"><span><span class="ok">✓</span> From your history — '+
     (r.mode==='ask'?'asked ':'looked up ')+ago(r.ts)+(r.model?' with '+esc(r.model):'')+
@@ -1416,6 +1504,7 @@ function fromBanner(r){
 }
 function replay(r){
   showHome(false);setCites(r.hits);EXTRA=r.mentions||[];
+  CURRENT=r.mode==='ask'?{q:r.q,answer:r.answer,sources:r.hits,model:r.model}:null;
   out.innerHTML=fromBanner(r)+(r.mode==='ask'?answerCard(r.answer,r.timings,false):'')+
     cards(r.hits);
   const b=out.querySelector('.answer .body');if(b)b.innerHTML=linkNames(b.innerHTML);
@@ -1482,7 +1571,8 @@ async function ask(text){
         // whole answer per token is what made the page stutter while writing.
         if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;paint()})}
       }else if(ev.event==='done'){clearInterval(timer);rolling(false);timings=ev.timings;
-        EXTRA=ev.mentions||[];answer=answer.trimEnd();paint(false);
+        EXTRA=ev.mentions||[];answer=answer.trimEnd();
+        CURRENT={q:text,answer,sources:hits,model:SET.model||SDEF.model};paint(false);
         addHist({id:String(Date.now()),q:text,mode:'ask',ts:Date.now(),
           model:SET.model||SDEF.model,answer,hits,timings,mentions:EXTRA});
       }else if(ev.event==='error'){clearInterval(timer);rolling(false);

@@ -1,0 +1,11 @@
+# Cloudflare Worker + D1: a mailbox for wrong-answer reports from pf2e serve.
+# Free tier: 100k requests/day, 5 GB of D1. Deploy once; the URL goes into
+# `pf2e serve --report-url` (or PF2E_REPORT_URL).
+name = "pf2e-reports"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pf2e-reports"
+database_id = "REPLACE-WITH-THE-ID-wrangler-d1-create-PRINTS"

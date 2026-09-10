@@ -163,6 +163,7 @@ ANSWER_SYSTEM = (
     "with a line 'Source:' giving the URL of each excerpt you used, and nothing after it."
 )
 
+RE_NETHYS_NOTE = re.compile(r"^[ \t]*_?\*?Nethys Note:[^\n]*\n?", re.M | re.I)
 RE_CLEAN = re.compile(r"^[\s\-*\d.)]+|[\s;:]+$")
 
 # The TREC default of 60 flattens rank differences almost to nothing when fusing a
@@ -806,7 +807,10 @@ class Assistant:
             if h.level is not None:
                 head += f", level {h.level}"
             head += f") — {h.url}"
-            blocks.append(head + "\n" + retrieval.plain(h.text)[:max_chars].strip())
+            # The shipped index still carries AoN's "Nethys Note: No description…"
+            # housekeeping line, which a small model reads as "does not exist".
+            body = RE_NETHYS_NOTE.sub("", retrieval.plain(h.text))
+            blocks.append(head + "\n" + body[:max_chars].strip())
         return "<rules_excerpts>\n" + "\n\n".join(blocks) + "\n</rules_excerpts>"
 
     def retrieve(self, question: str, k: int = DEFAULT_K, rerank: bool = True,

@@ -16,14 +16,15 @@ from __future__ import annotations
 import collections
 import hashlib
 import json
+import os
 import pathlib
 import threading
 import urllib.parse
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from .app import (BIG_LLM, DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, SMALL_LLM, Assistant,
-                  OllamaError, probe_backend)
+from .app import (BIG_LLM, DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, INDEX_URL, SMALL_LLM,
+                  Assistant, OllamaError, probe_backend)
 from .ui import PAGE
 
 # The header the API key travels in. A header rather than a query parameter so it
@@ -343,7 +344,8 @@ def _hits(hits) -> list[dict]:
 def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLLAMA,
           host: str = "127.0.0.1", port: int = 8765, backend: str = "ollama",
           llm_model: str | None = None, embed_model: str | None = None,
-          context_chars: int | None = None, auto_model: bool = False) -> None:
+          context_chars: int | None = None, auto_model: bool = False,
+          report_url: str | None = None) -> None:
     assistant = Assistant(index_dir, ollama_url, backend=backend,
                           llm_model=llm_model, embed_model=embed_model,
                           **({"context_chars": context_chars} if context_chars else {}))
@@ -367,6 +369,11 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
                            "k": DEFAULT_K,
                            "rerank": assistant.manifest["ollama_llm"] != SMALL_LLM,
                            "auto_model": auto_model,
+                           # Where "Report a wrong answer" posts. Nothing is sent
+                           # unless someone fills the form and presses Send.
+                           "report_url": (report_url or os.environ.get("PF2E_REPORT_URL") or "").rstrip("/"),
+                           "index_tag": INDEX_URL.split("/releases/download/")[1].split("/")[0]
+                           if "/releases/download/" in INDEX_URL else "",
                            "context_chars": assistant.context_chars,
                            "answer_tokens": assistant.answer_tokens},
               # Drives how loudly the panel warns about typing an API key into a
