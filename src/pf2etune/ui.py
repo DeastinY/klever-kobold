@@ -29,7 +29,7 @@ _PAGE = r"""<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PF2e Rules</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='#8a1b2e'/%3E%3Cpolygon points='16,1.6 7.6,11.9 24.4,11.9' fill='#fff' opacity='0.42'/%3E%3Cpolygon points='3.4,8.8 16,1.6 7.6,11.9' fill='#fff' opacity='0.28'/%3E%3Cpolygon points='16,1.6 28.6,8.8 24.4,11.9' fill='#fff' opacity='0.34'/%3E%3Cpolygon points='3.4,8.8 7.6,11.9 3.4,23.2' fill='#fff' opacity='0.2'/%3E%3Cpolygon points='28.6,8.8 28.6,23.2 24.4,11.9' fill='#fff' opacity='0.26'/%3E%3Cpolygon points='3.4,23.2 7.6,11.9 16,26.4' fill='#fff' opacity='0.16'/%3E%3Cpolygon points='24.4,11.9 28.6,23.2 16,26.4' fill='#fff' opacity='0.22'/%3E%3Cpolygon points='3.4,23.2 16,26.4 16,30.4' fill='#fff' opacity='0.12'/%3E%3Cpolygon points='16,26.4 28.6,23.2 16,30.4' fill='#fff' opacity='0.18'/%3E%3Cpolygon points='7.6,11.9 24.4,11.9 16,26.4' fill='#fff' opacity='0.07'/%3E%3Cpolygon points='16,1.6 28.6,8.8 28.6,23.2 16,30.4 3.4,23.2 3.4,8.8' fill='none' stroke='#fff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M16,1.6 L7.6,11.9 M16,1.6 L24.4,11.9 M7.6,11.9 L24.4,11.9 M7.6,11.9 L16,26.4 M24.4,11.9 L16,26.4 M3.4,8.8 L7.6,11.9 M28.6,8.8 L24.4,11.9 M3.4,23.2 L7.6,11.9 M28.6,23.2 L24.4,11.9 M3.4,23.2 L16,26.4 M28.6,23.2 L16,26.4 M16,30.4 L16,26.4' fill='none' stroke='#fff' stroke-width='1.1' stroke-linejoin='round' stroke-linecap='round'/%3E%3Ctext x='16' y='20.6' font-size='8.2' font-family='Georgia,'Iowan Old Style',serif' font-weight='700' text-anchor='middle' fill='#fff'%3E20%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='#8a1b2e'/%3E%3Cpolygon points='16,1.6 7.6,11.9 24.4,11.9' fill='#fff' opacity='0.42'/%3E%3Cpolygon points='3.4,8.8 16,1.6 7.6,11.9' fill='#fff' opacity='0.28'/%3E%3Cpolygon points='16,1.6 28.6,8.8 24.4,11.9' fill='#fff' opacity='0.34'/%3E%3Cpolygon points='3.4,8.8 7.6,11.9 3.4,23.2' fill='#fff' opacity='0.2'/%3E%3Cpolygon points='28.6,8.8 28.6,23.2 24.4,11.9' fill='#fff' opacity='0.26'/%3E%3Cpolygon points='3.4,23.2 7.6,11.9 16,26.4' fill='#fff' opacity='0.16'/%3E%3Cpolygon points='24.4,11.9 28.6,23.2 16,26.4' fill='#fff' opacity='0.22'/%3E%3Cpolygon points='3.4,23.2 16,26.4 16,30.4' fill='#fff' opacity='0.12'/%3E%3Cpolygon points='16,26.4 28.6,23.2 16,30.4' fill='#fff' opacity='0.18'/%3E%3Cpolygon points='7.6,11.9 24.4,11.9 16,26.4' fill='#fff' opacity='0.07'/%3E%3Cpolygon points='16,1.6 28.6,8.8 28.6,23.2 16,30.4 3.4,23.2 3.4,8.8' fill='none' stroke='#fff' stroke-width='1.5' stroke-linejoin='round'/%3E%3Cpath d='M16,1.6 L7.6,11.9 M16,1.6 L24.4,11.9 M7.6,11.9 L24.4,11.9 M7.6,11.9 L16,26.4 M24.4,11.9 L16,26.4 M3.4,8.8 L7.6,11.9 M28.6,8.8 L24.4,11.9 M3.4,23.2 L7.6,11.9 M28.6,23.2 L24.4,11.9 M3.4,23.2 L16,26.4 M28.6,23.2 L16,26.4 M16,30.4 L16,26.4' fill='none' stroke='#fff' stroke-width='1.1' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 @font-face{font-family:"Pathfinder-Icons";src:url(data:font/ttf;base64,__ICON_FONT__) format("truetype");font-display:block}
 /* Light is the base palette; the two blocks after it redefine only the tokens,
@@ -291,9 +291,20 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
    answer, which is the one bit of this page that must stay plain. */
 .d20{width:1.6rem;height:1.6rem;flex:none;align-self:center;color:var(--accent)}
 .d20 svg{width:100%;height:100%;display:block}
-.d20.rolling svg{animation:roll 1.4s cubic-bezier(.4,.1,.3,1) infinite}
-@keyframes roll{0%{transform:rotate(0)}70%{transform:rotate(360deg)}100%{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.d20.rolling svg{animation:none}}
+.d20 svg{transform-origin:50% 52%;will-change:transform}
+.d20.rolling svg{animation:roll 1.9s cubic-bezier(.3,.05,.2,1) infinite}
+.d20.rolling polygon:nth-child(1),.d20.rolling polygon:nth-child(3),.d20.rolling polygon:nth-child(5),
+.d20.rolling polygon:nth-child(7){animation:glint 1.9s ease-in-out infinite}
+@keyframes roll{
+ 0%{transform:translateY(0) rotate(0) scale(1)}
+ 18%{transform:translateY(-.32em) rotate(150deg) scale(1.08)}
+ 42%{transform:translateY(-.06em) rotate(345deg) scale(1)}
+ 52%{transform:translateY(0) rotate(372deg) scale(.94,1.04)}
+ 60%{transform:translateY(-.04em) rotate(357deg) scale(1.02,.98)}
+ 68%{transform:translateY(0) rotate(361deg) scale(1)}
+ 100%{transform:translateY(0) rotate(360deg) scale(1)}}
+@keyframes glint{0%,100%{opacity:.42}45%{opacity:.12}55%{opacity:.55}}
+@media(prefers-reduced-motion:reduce){.d20.rolling svg,.d20.rolling polygon{animation:none}}
 #help,#hist{padding:.35rem .65rem;font-size:.8rem;border:1px solid var(--line);
  background:var(--card);color:var(--soft);border-radius:6px;cursor:pointer;
  display:flex;align-items:center;gap:.35rem}
@@ -411,11 +422,11 @@ should you want to check. No account, no cloud, no dice tax.</p>
 </div>
 <p class="tryh" style="margin-top:.2rem">Which model answers</p>
 <div class="trust models">
- <span class="ok">Better</span><span>qwen3.5:9b — 100 of 109 on the hand-written holdout.
-  The default on a machine with room for it; expect a minute per answer on a laptop.</span>
- <span class="so">Faster</span><span>qwen3.5:4b — about twice the speed for 93 of 109, and the
-  default on a 16 GB laptop, where the 9B makes everything lag. Either is one click in
-  <button type="button" class="link" id="ob-settings">Settings</button>.</span>
+ <span class="so">Faster</span><span>qwen3.5:4b, the default — 93 of 109 on the hand-written
+  holdout, about twice the speed of the 9B, and it leaves a 16 GB laptop usable.</span>
+ <span class="ok">Better</span><span>qwen3.5:9b — 100 of 109, at half the speed and twice the
+  memory. One click in <button type="button" class="link" id="ob-settings">Settings</button>;
+  it is pulled the first time you pick it.</span>
  <span class="ext">Your own</span><span>Any OpenAI-compatible server — LM Studio, llama.cpp, a
   hosted API — as the answering model; retrieval stays local. Or skip this page and use the
   <b>MCP server</b> from Claude Desktop or Claude Code: <code>pf2e mcp</code> exposes the
@@ -437,10 +448,10 @@ should you want to check. No account, no cloud, no dice tax.</p>
 <div id="settings">
 <p class="set-h">Preset</p>
 <div class="presets">
+ <button type="button" class="preset" id="p-faster"><b>Faster</b>
+  <span>qwen3.5:4b · 93/109 on the holdout · ~3.4 GB · default</span></button>
  <button type="button" class="preset" id="p-better"><b>Better</b>
   <span>qwen3.5:9b · 100/109 on the holdout · ~6.6 GB</span></button>
- <button type="button" class="preset" id="p-faster"><b>Faster</b>
-  <span>qwen3.5:4b · 93/109 on the holdout · ~3.4 GB</span></button>
 </div>
 <p class="note" id="p-note"></p>
 
@@ -516,7 +527,7 @@ const out=document.getElementById('out'),q=document.getElementById('q'),
  st=document.getElementById('status'),stt=document.getElementById('statustext'),
  look=document.getElementById('lookbtn'),askBtn=document.getElementById('askbtn'),
  themeBtn=document.getElementById('theme'),d20=document.getElementById('d20');
-const D20='<svg viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,1.6 7.6,11.9 24.4,11.9" fill="currentColor" opacity="0.42"/><polygon points="3.4,8.8 16,1.6 7.6,11.9" fill="currentColor" opacity="0.28"/><polygon points="16,1.6 28.6,8.8 24.4,11.9" fill="currentColor" opacity="0.34"/><polygon points="3.4,8.8 7.6,11.9 3.4,23.2" fill="currentColor" opacity="0.2"/><polygon points="28.6,8.8 28.6,23.2 24.4,11.9" fill="currentColor" opacity="0.26"/><polygon points="3.4,23.2 7.6,11.9 16,26.4" fill="currentColor" opacity="0.16"/><polygon points="24.4,11.9 28.6,23.2 16,26.4" fill="currentColor" opacity="0.22"/><polygon points="3.4,23.2 16,26.4 16,30.4" fill="currentColor" opacity="0.12"/><polygon points="16,26.4 28.6,23.2 16,30.4" fill="currentColor" opacity="0.18"/><polygon points="7.6,11.9 24.4,11.9 16,26.4" fill="currentColor" opacity="0.07"/><polygon points="16,1.6 28.6,8.8 28.6,23.2 16,30.4 3.4,23.2 3.4,8.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M16,1.6 L7.6,11.9 M16,1.6 L24.4,11.9 M7.6,11.9 L24.4,11.9 M7.6,11.9 L16,26.4 M24.4,11.9 L16,26.4 M3.4,8.8 L7.6,11.9 M28.6,8.8 L24.4,11.9 M3.4,23.2 L7.6,11.9 M28.6,23.2 L24.4,11.9 M3.4,23.2 L16,26.4 M28.6,23.2 L16,26.4 M16,30.4 L16,26.4" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round"/><text x="16" y="20.6" font-size="8.2" font-family="Georgia,serif" font-weight="700" text-anchor="middle" fill="currentColor">20</text></svg>';
+const D20='<svg viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,1.6 7.6,11.9 24.4,11.9" fill="currentColor" opacity="0.42"/><polygon points="3.4,8.8 16,1.6 7.6,11.9" fill="currentColor" opacity="0.28"/><polygon points="16,1.6 28.6,8.8 24.4,11.9" fill="currentColor" opacity="0.34"/><polygon points="3.4,8.8 7.6,11.9 3.4,23.2" fill="currentColor" opacity="0.2"/><polygon points="28.6,8.8 28.6,23.2 24.4,11.9" fill="currentColor" opacity="0.26"/><polygon points="3.4,23.2 7.6,11.9 16,26.4" fill="currentColor" opacity="0.16"/><polygon points="24.4,11.9 28.6,23.2 16,26.4" fill="currentColor" opacity="0.22"/><polygon points="3.4,23.2 16,26.4 16,30.4" fill="currentColor" opacity="0.12"/><polygon points="16,26.4 28.6,23.2 16,30.4" fill="currentColor" opacity="0.18"/><polygon points="7.6,11.9 24.4,11.9 16,26.4" fill="currentColor" opacity="0.07"/><polygon points="16,1.6 28.6,8.8 28.6,23.2 16,30.4 3.4,23.2 3.4,8.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M16,1.6 L7.6,11.9 M16,1.6 L24.4,11.9 M7.6,11.9 L24.4,11.9 M7.6,11.9 L16,26.4 M24.4,11.9 L16,26.4 M3.4,8.8 L7.6,11.9 M28.6,8.8 L24.4,11.9 M3.4,23.2 L7.6,11.9 M28.6,23.2 L24.4,11.9 M3.4,23.2 L16,26.4 M28.6,23.2 L16,26.4 M16,30.4 L16,26.4" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round"/></svg>';
 d20.innerHTML=D20;document.querySelector('.ob .d20').innerHTML=D20;
 
 /* ---------- theme: auto / light / dark, remembered per browser ---------- */
@@ -943,12 +954,12 @@ const PRESETS={
  better:{model:'qwen3.5:9b',rerank:true,k:8,ctx:1600,tokens:400},
  faster:{model:'qwen3.5:4b',rerank:false,k:8,ctx:1600,tokens:400}};
 const PRESET_NOTE={
- better:'The shipped configuration — 100/109 on the hand-written holdout.',
- faster:'93/109 on the same holdout, against 100 for Better: seven items worse, and that '
+ better:'The 9B — 100/109 on the hand-written holdout, seven items better than Faster, at '
+  +'half the speed and twice the memory. On a 16 GB laptop it makes the whole machine lag.',
+ faster:'The default. 93/109 on the same holdout, against 100 for Better: seven items, and that '
   +'gap is the trade. Rerank is off because it removes a whole model call at no measurable '
   +'cost — the 4B scores the same with it and without it, once the same configuration is run '
-  +'more than once. Half the weights should mean roughly twice the decode rate; that is '
-  +'projected from model size, not a figure measured here.',
+  +'more than once. Measured on an M3: 22 tokens/s against the 9B\'s 12.',
  custom:'Custom — the fields below match neither preset.'};
 function currentPreset(){
   for(const name in PRESETS){
@@ -985,9 +996,7 @@ function paintSettings(){
   const now=currentPreset();
   EL('p-better').classList.toggle('on',now==='better');
   EL('p-faster').classList.toggle('on',now==='faster');
-  EL('p-note').textContent=PRESET_NOTE[now]+
-    (AUTO_MODEL&&now==='faster'&&SET.model===SDEF.model
-      ?' Chosen for this machine: under 20 GB of memory, and the 9B makes it lag.':'');
+  EL('p-note').textContent=PRESET_NOTE[now];
   const openai=SET.backend==='openai';
   EL('s-keylabel').hidden=!openai;EL('s-key').hidden=!openai;
   const warn=EL('s-keywarn');warn.hidden=!openai;warn.className='note warnbox';

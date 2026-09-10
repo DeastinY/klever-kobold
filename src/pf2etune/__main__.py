@@ -25,8 +25,8 @@ import time
 
 import orjson
 
-from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, SMALL_LLM, Assistant, Ollama,
-                  OllamaError, default_llm)
+from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, Assistant, Ollama, OllamaError,
+                  default_llm)
 
 
 def _llm(args) -> tuple[str | None, bool]:
@@ -40,8 +40,7 @@ def _llm(args) -> tuple[str | None, bool]:
     if override or getattr(args, "backend", "ollama") != "ollama":
         return override, False
     model, why = default_llm()
-    if model == SMALL_LLM:
-        print(f"answering model  {why}", file=sys.stderr)
+    print(f"answering model  {why}", file=sys.stderr)
     return model, True
 
 
@@ -366,11 +365,11 @@ def main(argv: list[str] | None = None) -> int:
                     help="'openai' points at any OpenAI-compatible server "
                          "(mlx-serve, vllm-mlx, LM Studio, llama.cpp)")
     ap.add_argument("--llm-model", dest="llm_override",
-                    help="the answering model. Default: qwen3.5:9b (100/109 on the "
-                         "holdout), or qwen3.5:4b (93/109, half the memory, twice the "
-                         "speed) on a machine with under 20 GB, where the 9B makes the "
-                         "whole machine lag. Below 4b it starts answering PF2e questions "
-                         "with D&D 5e rules -- see notes/experiments.md.")
+                    help="the answering model. Default qwen3.5:4b (93/109 on the holdout, "
+                         "half the memory and twice the speed of qwen3.5:9b, which scores "
+                         "100/109 and is the 'Better' preset in the web UI). Below 4b it "
+                         "starts answering PF2e questions with D&D 5e rules -- see "
+                         "notes/experiments.md.")
     ap.add_argument("--embed-model", dest="embed_override",
                     help="override the embedding model — must be the one the index "
                          "was built with, and is checked at startup")
@@ -394,8 +393,8 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("setup", help="pull the models and fetch the index")
     p.add_argument("--llm-model", default=None,
-                   help="answering model to pull (default: qwen3.5:9b, or qwen3.5:4b "
-                        "on a machine with under 20 GB)")
+                   help="answering model to pull (default qwen3.5:4b; qwen3.5:9b is the "
+                        "web UI's 'Better' preset and is pulled on first use)")
     p.add_argument("--embed-model", default="qwen3-embedding:0.6b")
     p.add_argument("--install-ollama", action="store_true",
                    help="install Ollama too (brew on macOS, the official script on Linux)")

@@ -318,12 +318,11 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
               "defaults": {"backend": backend, "base_url": assistant.base_url,
                            "llm_model": assistant.manifest["ollama_llm"],
                            "embed_model": assistant.manifest["ollama_embed"],
-                           # The machine's 4B runs as the Faster preset, rerank off:
+                           # The default 4B runs as the Faster preset, rerank off:
                            # measured the same with and without it, and it is one
-                           # whole model call fewer on a laptop that is already busy.
+                           # whole model call fewer.
                            "k": DEFAULT_K,
-                           "rerank": not (auto_model and
-                                          assistant.manifest["ollama_llm"] == SMALL_LLM),
+                           "rerank": assistant.manifest["ollama_llm"] != SMALL_LLM,
                            "auto_model": auto_model,
                            "context_chars": assistant.context_chars,
                            "answer_tokens": assistant.answer_tokens},

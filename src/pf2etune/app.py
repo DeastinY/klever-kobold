@@ -48,14 +48,15 @@ DEFAULT_OLLAMA = "http://localhost:11434"
 # someone thinks of something is the difference between useful and abandoned.
 KEEP_ALIVE = "2h"
 
-# Which model answers by default depends on the machine. The 9B needs 6.6 GB
-# resident next to a 2.2 GB embedder; on a 16 GB laptop that leaves the OS and a
-# browser fighting over what is left, and the whole machine lags for the minute
-# each answer takes. The 4B fits with room to spare and scores 93/109 against
-# the 9B's 100 (notes/experiments.md). 20 GB is the line: below it, 4B.
-SMALL_MACHINE_GB = 20
+# The 4B answers by default, everywhere. It scores 93/109 on the hand-written
+# holdout against the 9B's 100 and runs at twice the speed in half the memory;
+# in use the difference in speed is felt on every question and the seven items
+# are not. The 9B stays one flag away (--llm-model qwen3.5:9b) and is the
+# "Better" preset in the web UI. On a 16 GB laptop the 9B also makes the
+# whole machine lag, which is where this started.
 BIG_LLM = "qwen3.5:9b"
 SMALL_LLM = "qwen3.5:4b"
+DEFAULT_LLM = SMALL_LLM
 
 
 def machine_memory_gb() -> float:
@@ -80,13 +81,12 @@ def machine_memory_gb() -> float:
 
 
 def default_llm() -> tuple[str, str]:
-    """The answering model this machine should run, and one line on why."""
+    """The default answering model, and one line on it."""
     gb = machine_memory_gb()
-    if gb and gb < SMALL_MACHINE_GB:
-        return SMALL_LLM, (f"{SMALL_LLM} — this machine has {gb:.0f} GB; the 9B would swap and "
-                           f"the whole machine would lag. Pass --llm-model {BIG_LLM} to insist.")
-    return BIG_LLM, (f"{BIG_LLM} — {gb:.0f} GB of memory is room for it" if gb
-                     else f"{BIG_LLM} — could not read this machine's memory, so the full model")
+    room = (f"; this machine's {gb:.0f} GB would fit it" if gb >= 20 else
+            f"; on this machine's {gb:.0f} GB it makes everything lag" if gb else "")
+    return DEFAULT_LLM, (f"{DEFAULT_LLM} — the default (93/109 on the holdout, twice the 9B's "
+                         f"speed). --llm-model {BIG_LLM} for the 9B, 100/109{room}.")
 
 
 INDEX_URL = ("https://github.com/DeastinY/pf2etune/releases/download/"

@@ -82,9 +82,9 @@ pf2e serve                      # http://localhost:8765
 `pf2e setup` is idempotent. Without `--install-ollama` it prints the one command
 for your platform and stops. `pf2e doctor` checks each moving part separately.
 
-On a machine with under 20 GB of memory the 4B answers by default — 93/109 on the
-holdout against the 9B's 100, and the 9B makes a 16 GB laptop lag for the minute
-each answer takes. `--llm-model qwen3.5:9b` insists; Settings in the web UI switches too.
+The 4B answers by default: 93/109 on the holdout against the 9B's 100, at twice
+the speed and half the memory, and a 16 GB laptop stays usable while it thinks.
+`--llm-model qwen3.5:9b` runs the 9B; the web UI's Settings has it as the Better preset.
 
 Also: `pf2e ask "…"`, `pf2e search "…"`, `pf2e mcp` (stdio MCP server for Claude
 Desktop / Claude Code). Docker for Linux and Windows is in
