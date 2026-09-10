@@ -48,6 +48,47 @@ DEFAULT_OLLAMA = "http://localhost:11434"
 # someone thinks of something is the difference between useful and abandoned.
 KEEP_ALIVE = "2h"
 
+# Which model answers by default depends on the machine. The 9B needs 6.6 GB
+# resident next to a 2.2 GB embedder; on a 16 GB laptop that leaves the OS and a
+# browser fighting over what is left, and the whole machine lags for the minute
+# each answer takes. The 4B fits with room to spare and scores 93/109 against
+# the 9B's 100 (notes/experiments.md). 20 GB is the line: below it, 4B.
+SMALL_MACHINE_GB = 20
+BIG_LLM = "qwen3.5:9b"
+SMALL_LLM = "qwen3.5:4b"
+
+
+def machine_memory_gb() -> float:
+    """Physical memory in GiB (the number on the box), or 0.0 when it cannot be read (then nothing is assumed)."""
+    try:
+        return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 2**30
+    except (AttributeError, ValueError, OSError):
+        pass
+    try:  # Windows
+        import ctypes
+        class Status(ctypes.Structure):
+            _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong),
+                        ("ullTotalPhys", ctypes.c_ulonglong), ("ullAvailPhys", ctypes.c_ulonglong),
+                        ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
+                        ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
+                        ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
+        st = Status(); st.dwLength = ctypes.sizeof(Status)
+        ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(st))
+        return st.ullTotalPhys / 2**30
+    except Exception:
+        return 0.0
+
+
+def default_llm() -> tuple[str, str]:
+    """The answering model this machine should run, and one line on why."""
+    gb = machine_memory_gb()
+    if gb and gb < SMALL_MACHINE_GB:
+        return SMALL_LLM, (f"{SMALL_LLM} — this machine has {gb:.0f} GB; the 9B would swap and "
+                           f"the whole machine would lag. Pass --llm-model {BIG_LLM} to insist.")
+    return BIG_LLM, (f"{BIG_LLM} — {gb:.0f} GB of memory is room for it" if gb
+                     else f"{BIG_LLM} — could not read this machine's memory, so the full model")
+
+
 INDEX_URL = ("https://github.com/DeastinY/pf2etune/releases/download/"
              "index-v2/pf2e-index.tar.gz")
 

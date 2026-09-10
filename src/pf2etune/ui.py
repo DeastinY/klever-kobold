@@ -142,10 +142,38 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .body li.sub{margin-left:1.1rem;list-style:circle;color:var(--muted)}
 .body a{color:var(--accent)}
 .body .clip{max-height:16rem;overflow:auto}
+.tw{overflow-x:auto;margin:.45rem 0}
+.body table{border-collapse:collapse;font-size:.85rem;min-width:50%}
+.body th,.body td{border:1px solid var(--line);padding:.25rem .55rem;text-align:left;
+ white-space:nowrap;font-variant-numeric:tabular-nums}
+.body th{background:var(--chip);font-weight:600}
+.body tr:nth-child(even) td{background:color-mix(in srgb,var(--chip) 45%,transparent)}
 .deg{display:block;margin-top:.3rem}
 .deg .field{color:var(--ok)}
 .deg.f .field{color:var(--fail)}
 .deg.cf .field{color:var(--crit-fail)}
+
+/* ---- tiles ---- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(15.5rem,1fr));gap:.55rem;
+ margin:.4rem 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:8px;
+ padding:.6rem .75rem;cursor:pointer;transition:border-color .15s,transform .15s}
+.tile:hover{border-color:var(--accent)}
+.tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tile .thead{display:flex;gap:.5rem;align-items:baseline}
+.tile .tname{font-family:ui-serif,Georgia,"Iowan Old Style",serif;font-weight:600;
+ font-size:.98rem;flex:1;min-width:0}
+.tile .rank{font-size:.78rem;margin-left:auto}
+.tile .traits{margin:.3rem 0 .1rem}
+.tile .trait{font-size:.6rem;padding:.1rem .35rem}
+.snip-t{margin:.3rem 0 0;font-size:.82rem;color:var(--soft);line-height:1.4}
+.tile.open{grid-column:1/-1;cursor:default;border-color:var(--accent)}
+.tile.open .snip-t,.tile.open .traits,.tile.open .thead{display:none}
+.tile.open .full .card{margin:0;border:0;padding:0;background:none}
+.tile.open .full .body.clip{max-height:none}
+.tile.open .full .head{cursor:pointer}
+.tile.open .full .head::after{content:"fold";margin-left:.6rem;font-size:.72rem;
+ color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-weight:400}
 
 /* ---- generated answer ---- */
 .answer{border-left:3px solid var(--warn)}
@@ -272,12 +300,15 @@ thing again is instant — until you press <b>Ask again</b>.</p>
 <div id="onboard" hidden>
 <div class="ob" role="dialog" aria-modal="true" aria-labelledby="ob-h">
 <h2 id="ob-h"><span class="d20" aria-hidden="true"></span>Well met, adventurer.</h2>
-<p class="lead">This is a Pathfinder 2e rules reference that runs on this machine, searches the
-Archives of Nethys, and cites its sources. No account, no cloud, no dice tax.</p>
+<p class="lead">A Pathfinder 2e rules reference that runs entirely on this machine. It carries
+its own copy of the Archives of Nethys — 41,743 entries — so nothing you type leaves your
+computer, and it works without a connection. Each entry links to its page on the live Archives,
+should you want to check. No account, no cloud, no dice tax.</p>
 <ol>
- <li><b>Type a question and press Enter.</b> It finds the relevant entries and writes a short
-  answer with links back to the Archives.</li>
- <li><b>Shift+Enter shows only the entries</b> — faster, and often all you need.</li>
+ <li><b>Type a question and press Enter.</b> It finds the relevant entries in the local copy
+  and a local model writes a short answer that cites them.</li>
+ <li><b>Shift+Enter shows only the entries</b> — faster, and often all you need. Click an
+  entry to read the whole thing.</li>
  <li><b>Everything you ask is kept in this browser.</b> The history button brings it back
   instantly; the same question twice costs nothing.</li>
 </ol>
@@ -288,11 +319,11 @@ Archives of Nethys, and cites its sources. No account, no cloud, no dice tax.</p
 </div>
 <p class="tryh" style="margin-top:.2rem">Which model answers</p>
 <div class="trust models">
- <span class="ok">Better</span><span>qwen3.5:9b, the default — 100 of 109 on the hand-written
-  holdout. Slow on a laptop: expect a minute per answer.</span>
- <span class="so">Faster</span><span>qwen3.5:4b, about twice the speed for 93 of 109. Pick it
-  in <button type="button" class="link" id="ob-settings">Settings</button> when the wait
-  hurts more than seven misses.</span>
+ <span class="ok">Better</span><span>qwen3.5:9b — 100 of 109 on the hand-written holdout.
+  The default on a machine with room for it; expect a minute per answer on a laptop.</span>
+ <span class="so">Faster</span><span>qwen3.5:4b — about twice the speed for 93 of 109, and the
+  default on a 16 GB laptop, where the 9B makes everything lag. Either is one click in
+  <button type="button" class="link" id="ob-settings">Settings</button>.</span>
  <span class="ext">Your own</span><span>Any OpenAI-compatible server — LM Studio, llama.cpp, a
   hosted API — as the answering model; retrieval stays local. Or skip this page and use the
   <b>MCP server</b> from Claude Desktop or Claude Code: <code>pf2e mcp</code> exposes the
@@ -477,6 +508,22 @@ function md(src,cites){
     if(/^(---|\*\*\*|___)$/.test(line)){closeList();flush();html+='<hr>';continue}
     if(/^#{1,6}\s/.test(line)){closeList();flush();
       html+='<p><b>'+inline(line.replace(/^#{1,6}\s*/,''),cites)+'</b></p>';continue}
+    // "**Proficiency** | **DC** | …" then one row per line: a table the corpus
+    // flattened to pipes. Consecutive piped lines become one <table>; a row of
+    // bold cells is the header.
+    if(line.includes(' | ')){
+      closeList();flush();
+      const rows=[];
+      while(i<lines.length&&lines[i].trim().includes(' | ')){rows.push(lines[i].trim());i++}
+      i--;
+      html+='<div class="tw"><table>'+rows.map((r,n)=>{
+        const cells=r.split(/\s*\|\s*/);
+        const head=n===0&&cells.every(c=>/^\*\*.+\*\*$/.test(c));
+        const tag=head?'th':'td';
+        return '<tr>'+cells.map(c=>'<'+tag+'>'+inline(c,cites)+'</'+tag+'>').join('')+'</tr>';
+      }).join('')+'</table></div>';
+      continue;
+    }
     const li=lines[i].match(/^(\s*)[-*•]\s+(.*)$/);
     if(li){
       flush();
@@ -551,10 +598,59 @@ function statblock(h){
     (pills?'<div class="traits">'+pills+'</div>':'')+
     '<div class="body clip">'+md(text)+'</div></div>';
 }
+/* ---------- tiles ----------
+   Eight full stat blocks are a wall; eight tiles are a glance. A tile shows the
+   name, kind, traits and the first line; clicking it opens the whole entry in
+   place, spanning the grid, and clicking again folds it. The rendered block is
+   the same statblock() as before, produced on demand. */
+let SHOWN=[];
+function firstLine(text){
+  let t=(text||'').replace(/\r/g,'').split('\n').map(l=>l.trim())
+    .filter(l=>l&&!/^(#|\*\*[^*]+\*\*\s*$|---|\*\*(Traits|Source|Requirements|Trigger|Frequency|Prerequisites)\*\*)/.test(l)
+      &&!l.includes(' | '));
+  t=(t[0]||'').replace(/\*\*?/g,'').replace(/^\*\*[^*]+\*\*\s*/,'');
+  return t.length>150?t.slice(0,150).replace(/\s+\S*$/,'')+'…':t;
+}
+function tile(h,i){
+  let text=(h.text||'').replace(/\r/g,'');
+  const head=text.match(/^#\s*([^\n]*)/);let title=h.name,kind='';
+  if(head){let t=head[1].replace(/\[[^\]]*\]/g,'');
+    const k=t.match(/\(([^)]+)\)\s*$/);if(k){kind=k[1];t=t.replace(k[0],'')}
+    title=t.trim()||h.name}
+  const tr=text.match(/^\*\*Traits\*\*\s*([^\n]+)/m);
+  const traits=tr?tr[1].split(',').map(x=>x.trim()).filter(Boolean).slice(0,4):[];
+  const rank=kind||(h.level!==null&&h.level!==undefined?'Level '+h.level:h.category);
+  return '<div class="tile" data-i="'+i+'" role="button" tabindex="0" aria-expanded="false">'+
+    '<div class="thead"><span class="tname">'+esc(title)+'</span>'+
+    '<span class="rank">'+esc(rank)+'</span></div>'+
+    (traits.length?'<div class="traits">'+traits.map(t=>'<span class="trait">'+esc(t)+
+      '</span>').join('')+'</div>':'')+
+    '<p class="snip-t">'+esc(firstLine(text))+'</p>'+
+    '<div class="full" hidden></div></div>';
+}
 function cards(hits){
   if(!hits||!hits.length)return '';
-  return '<p class="sources-h">Entries · Archives of Nethys</p>'+hits.map(statblock).join('');
+  SHOWN=hits;
+  return '<p class="sources-h">Entries · from the local copy of the Archives of Nethys — '+
+    'click one to read it</p><div class="tiles">'+hits.map(tile).join('')+'</div>';
 }
+function toggleTile(el){
+  const open=!el.classList.contains('open'),full=el.querySelector('.full');
+  if(open&&!full.innerHTML){const h=SHOWN[+el.dataset.i];if(h)full.innerHTML=statblock(h)}
+  el.classList.toggle('open',open);full.hidden=!open;
+  el.setAttribute('aria-expanded',String(open));
+  if(open)el.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+out.addEventListener('click',e=>{
+  if(e.target.closest('a'))return;
+  const t=e.target.closest('.tile');if(!t)return;
+  if(e.target.closest('.full')&&!e.target.closest('.thead,.tname'))return;
+  toggleTile(t);
+});
+out.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('tile')){
+    e.preventDefault();toggleTile(e.target)}
+});
 </script>
 <script>
 /* ---------- settings ----------
@@ -571,7 +667,7 @@ function cards(hits){
 const EL=id=>document.getElementById(id);
 const SDEF={backend:'ollama',base:'http://localhost:11434',model:'',key:'',
  k:8,rerank:true,ctx:1600,tokens:400,embed:'server'};
-let SET=Object.assign({},SDEF),SEEDED=false,LOCAL_ONLY=true,EMBED_MODEL='';
+let SET=Object.assign({},SDEF),SEEDED=false,LOCAL_ONLY=true,EMBED_MODEL='',AUTO_MODEL=false;
 let STORED=false;
 try{const raw=localStorage.getItem('pf2e-settings');
     if(raw){SET=Object.assign({},SDEF,JSON.parse(raw));STORED=true}}catch(e){}
@@ -660,7 +756,9 @@ function paintSettings(){
   const now=currentPreset();
   EL('p-better').classList.toggle('on',now==='better');
   EL('p-faster').classList.toggle('on',now==='faster');
-  EL('p-note').textContent=PRESET_NOTE[now];
+  EL('p-note').textContent=PRESET_NOTE[now]+
+    (AUTO_MODEL&&now==='faster'&&SET.model===SDEF.model
+      ?' Chosen for this machine: under 20 GB of memory, and the 9B makes it lag.':'');
   const openai=SET.backend==='openai';
   EL('s-keylabel').hidden=!openai;EL('s-key').hidden=!openai;
   const warn=EL('s-keywarn');warn.hidden=!openai;warn.className='note warnbox';
@@ -688,6 +786,8 @@ function seedFromServer(health){
   if(d.base_url)SDEF.base=d.base_url;
   if(d.llm_model)SDEF.model=d.llm_model;
   if(d.k)SDEF.k=d.k;
+  if(d.rerank!==undefined)SDEF.rerank=!!d.rerank;
+  AUTO_MODEL=!!d.auto_model;
   if(d.context_chars)SDEF.ctx=d.context_chars;
   if(d.answer_tokens)SDEF.tokens=d.answer_tokens;
   if(!STORED)SET=Object.assign({},SDEF);

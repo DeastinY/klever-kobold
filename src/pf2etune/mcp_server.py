@@ -63,13 +63,13 @@ def _result(text: str, is_error: bool = False) -> dict:
     return {"content": [{"type": "text", "text": text}], "isError": is_error}
 
 
-def serve(index_dir: pathlib.Path, ollama_url: str) -> None:
+def serve(index_dir: pathlib.Path, ollama_url: str, llm_model: str | None = None) -> None:
     assistant: Assistant | None = None
 
     def get() -> Assistant:
         nonlocal assistant
         if assistant is None:
-            assistant = Assistant(index_dir, ollama_url)
+            assistant = Assistant(index_dir, ollama_url, llm_model=llm_model)
         return assistant
 
     def handle(request: dict) -> dict | None:

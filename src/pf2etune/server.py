@@ -22,7 +22,7 @@ import urllib.parse
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, Assistant, OllamaError,
+from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, SMALL_LLM, Assistant, OllamaError,
                   probe_backend)
 from .ui import PAGE
 
@@ -277,7 +277,7 @@ def _hits(hits) -> list[dict]:
 def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLLAMA,
           host: str = "127.0.0.1", port: int = 8765, backend: str = "ollama",
           llm_model: str | None = None, embed_model: str | None = None,
-          context_chars: int | None = None) -> None:
+          context_chars: int | None = None, auto_model: bool = False) -> None:
     assistant = Assistant(index_dir, ollama_url, backend=backend,
                           llm_model=llm_model, embed_model=embed_model,
                           **({"context_chars": context_chars} if context_chars else {}))
@@ -295,7 +295,13 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
               "defaults": {"backend": backend, "base_url": assistant.base_url,
                            "llm_model": assistant.manifest["ollama_llm"],
                            "embed_model": assistant.manifest["ollama_embed"],
-                           "k": DEFAULT_K, "rerank": True,
+                           # The machine's 4B runs as the Faster preset, rerank off:
+                           # measured the same with and without it, and it is one
+                           # whole model call fewer on a laptop that is already busy.
+                           "k": DEFAULT_K,
+                           "rerank": not (auto_model and
+                                          assistant.manifest["ollama_llm"] == SMALL_LLM),
+                           "auto_model": auto_model,
                            "context_chars": assistant.context_chars,
                            "answer_tokens": assistant.answer_tokens},
               # Drives how loudly the panel warns about typing an API key into a

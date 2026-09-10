@@ -25,12 +25,29 @@ import time
 
 import orjson
 
-from .app import DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, Assistant, Ollama, OllamaError
+from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, SMALL_LLM, Assistant, Ollama,
+                  OllamaError, default_llm)
+
+
+def _llm(args) -> tuple[str | None, bool]:
+    """The answering model to use: the override, else the one this machine should run.
+
+    Returns (model, auto): `auto` says the machine picked it, so the caller can
+    say so once -- a 16 GB laptop silently running the 4B would look like a
+    quality bug to anyone who read the README's 9B numbers.
+    """
+    override = getattr(args, "llm_override", None)
+    if override or getattr(args, "backend", "ollama") != "ollama":
+        return override, False
+    model, why = default_llm()
+    if model == SMALL_LLM:
+        print(f"answering model  {why}", file=sys.stderr)
+    return model, True
 
 
 def _assistant(args) -> Assistant:
-    return Assistant(args.index, args.ollama, backend=args.backend,
-                     llm_model=getattr(args, "llm_override", None),
+    model, _ = _llm(args)
+    return Assistant(args.index, args.ollama, backend=args.backend, llm_model=model,
                      embed_model=getattr(args, "embed_override", None))
 
 
@@ -235,11 +252,17 @@ def cmd_setup(args) -> int:
     tags = httpx.get(f"{args.ollama.rstrip('/')}/api/tags", timeout=10.0).json()
     present = {m["name"] for m in tags.get("models", [])}
 
-    for model in (args.embed_model, args.llm_model):
+    llm = args.llm_model
+    if not llm:
+        llm, why = default_llm()
+        print(f"answering model  {why}")
+    for model in (args.embed_model, llm):
         if model in present:
             print(f"  ok   {model}")
             continue
-        size = " (~5.7 GB)" if "9b" in model.lower() else " (~0.6 GB)"
+        low = model.lower()
+        size = (" (~5.7 GB)" if "9b" in low else " (~3.4 GB)" if "4b" in low
+                else " (~0.6 GB)")
         print(f"  pulling {model}{size} — first run only")
         with httpx.stream("POST", f"{args.ollama.rstrip('/')}/api/pull",
                           json={"model": model}, timeout=None) as r:
@@ -320,15 +343,17 @@ def cmd_setup(args) -> int:
 
 def cmd_serve(args) -> int:
     from .server import serve
+    model, auto = _llm(args)
     serve(args.index, args.ollama, args.host, args.port, args.backend,
-          getattr(args, "llm_override", None), getattr(args, "embed_override", None),
-          context_chars=getattr(args, "context_chars", None))
+          model, getattr(args, "embed_override", None),
+          context_chars=getattr(args, "context_chars", None), auto_model=auto)
     return 0
 
 
 def cmd_mcp(args) -> int:
     from .mcp_server import serve
-    serve(args.index, args.ollama)
+    model, _ = _llm(args)
+    serve(args.index, args.ollama, llm_model=model)
     return 0
 
 
@@ -341,11 +366,11 @@ def main(argv: list[str] | None = None) -> int:
                     help="'openai' points at any OpenAI-compatible server "
                          "(mlx-serve, vllm-mlx, LM Studio, llama.cpp)")
     ap.add_argument("--llm-model", dest="llm_override",
-                    help="override the answering model. qwen3.5:4b is the measured "
-                         "lighter option: 84.4%% on the holdout against 89.9%%, half "
-                         "the memory, and roughly twice the decode rate on a laptop. "
-                         "Below 4b it starts answering PF2e questions with D&D 5e "
-                         "rules -- see notes/experiments.md.")
+                    help="the answering model. Default: qwen3.5:9b (100/109 on the "
+                         "holdout), or qwen3.5:4b (93/109, half the memory, twice the "
+                         "speed) on a machine with under 20 GB, where the 9B makes the "
+                         "whole machine lag. Below 4b it starts answering PF2e questions "
+                         "with D&D 5e rules -- see notes/experiments.md.")
     ap.add_argument("--embed-model", dest="embed_override",
                     help="override the embedding model — must be the one the index "
                          "was built with, and is checked at startup")
@@ -368,9 +393,9 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=cmd_search)
 
     p = sub.add_parser("setup", help="pull the models and fetch the index")
-    p.add_argument("--llm-model", default="qwen3.5:9b",
-                   help="answering model to pull (default qwen3.5:9b; "
-                        "qwen3.5:4b for a smaller machine)")
+    p.add_argument("--llm-model", default=None,
+                   help="answering model to pull (default: qwen3.5:9b, or qwen3.5:4b "
+                        "on a machine with under 20 GB)")
     p.add_argument("--embed-model", default="qwen3-embedding:0.6b")
     p.add_argument("--install-ollama", action="store_true",
                    help="install Ollama too (brew on macOS, the official script on Linux)")
