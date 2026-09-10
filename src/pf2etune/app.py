@@ -840,12 +840,32 @@ class Assistant:
     def prompt(self, question: str, hits: Iterable[Hit]) -> str:
         return self.context(hits) + "\n\nQuestion: " + question
 
+    @staticmethod
+    def named_last(question: str, hits: list[Hit]) -> list[Hit]:
+        """Put the entries the question names by name at the end of the excerpts.
+
+        Asked "What level is Gurglegut?" with Gurglegut as excerpt [1] of eight,
+        the 4B answered that no such creature exists -- consistently, with the
+        excerpt's header saying "Gurglegut (creature, level 12)". Moved to
+        excerpt [8], next to the question, it answered "level 12" every time;
+        a sentence pointing at [1] changed nothing. Small models read the end
+        of a long context better than its start, so the entry the question is
+        plainly about goes last. Only names of four characters or more, matched
+        verbatim; everything else keeps its retrieval order.
+        """
+        q = question.lower()
+        named = [h for h in hits if len(h.name or "") >= 4 and h.name.lower() in q]
+        if not named:
+            return hits
+        return [h for h in hits if h not in named] + named
+
     def ask(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
             pool: int | None = None, expand: int = DEFAULT_EXPAND,
             max_tokens: int | None = None) -> dict:
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
                                             pool=pool, expand=expand)
+        hits = self.named_last(question, hits)
         t = time.time()
         answer = self.ollama.chat(ANSWER_SYSTEM, self.prompt(question, hits),
                                   self.manifest["ollama_llm"], max_tokens=max_tokens)
@@ -927,6 +947,7 @@ class Assistant:
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
                                             pool=pool, expand=expand)
+        hits = self.named_last(question, hits)
         # `hits` carries the Hit objects (full body text) for a caller that wants
         # to render cards; `sources` is the JSON-safe citation list.
         yield {"event": "sources", "plan": plan, "timings": dict(timings), "hits": hits,
