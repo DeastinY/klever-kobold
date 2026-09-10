@@ -287,7 +287,8 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .err{color:var(--accent);white-space:pre-wrap}
 .timing{color:var(--muted);font-size:.72rem;margin-top:.7rem;
  font-variant-numeric:tabular-nums}
-.rune{color:var(--accent);opacity:.75;letter-spacing:.02em}
+.rune{color:var(--accent);letter-spacing:.02em;transition:opacity .4s}
+.rune.r0{opacity:.28}.rune.r1{opacity:.55}.rune.r2{opacity:.85}
 .caret{display:inline-block;width:.45em;height:1em;vertical-align:text-bottom;
  background:var(--warn);animation:blink 1s steps(2,start) infinite}
 @keyframes blink{to{visibility:hidden}}
@@ -1436,7 +1437,7 @@ const LINES={
    while fresh, half resolved in the middle, plain once old. Everything older
    than that is rendered as markdown as before, so the settled text never
    flickers. Cut at a space so a markdown marker is never split. */
-const RUNES='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ✦✧᛭';
+const RUNES='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ';
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 let ARRIVALS=[];   // [time, answer length at that time]
 function noteArrival(len){ARRIVALS.push([Date.now(),len]);if(ARRIVALS.length>400)ARRIVALS.splice(0,200)}
@@ -1445,24 +1446,37 @@ function stableLength(answer,age){
   for(const [t,len] of ARRIVALS){if(t<=cutoff)n=len;else break}
   return n;
 }
-function runes(text,ratio){
-  let out='';
-  for(const ch of text){
-    if(/\s/.test(ch)||Math.random()>ratio)out+=esc(ch);
-    else out+=RUNES[Math.floor(Math.random()*RUNES.length)];
-  }
-  return out;
+// Each character keeps one rune (chosen from its position) until it resolves,
+// and resolves at its own moment spread across the window, so the band settles
+// like frost clearing rather than static flickering. The newest text is faint
+// and fades in as it ages.
+const SETTLE_MS=1500;
+// A small integer mix (xorshift-style): stable per position, no visible period.
+const hash=i=>{let x=(i+0x9e3779b9)>>>0;x^=x>>>16;x=Math.imul(x,0x85ebca6b)>>>0;x^=x>>>13;
+  x=Math.imul(x,0xc2b2ae35)>>>0;x^=x>>>16;return (x>>>0)/4294967296};
+function charTimes(){
+  // arrival time of each character, from the per-token record
+  const t=[];let from=0;
+  for(const [time,len] of ARRIVALS){for(let i=from;i<len;i++)t[i]=time;from=Math.max(from,len)}
+  return t;
 }
 function streamed(answer){
   if(REDUCED||!ARRIVALS.length)return md(answer,true);
-  let old=stableLength(answer,520),mid=stableLength(answer,260);
-  // back both cuts up to a space, so markdown markers are never split
-  const back=i=>{while(i>0&&i<answer.length&&!/\s/.test(answer[i]))i--;return i};
-  old=back(old);mid=Math.max(old,back(mid));
+  const times=charTimes(),now=Date.now();
+  let old=stableLength(answer,SETTLE_MS);
+  while(old>0&&old<answer.length&&!/\s/.test(answer[old]))old--;
   if(old>=answer.length)return md(answer,true);
   const settled=md(answer.slice(0,old),true);
-  const tail='<span class="rune">'+runes(answer.slice(old,mid),.5)+runes(answer.slice(mid),.9)+'</span>';
-  // into the last open block, not after it
+  let tail='',band=-1,open=false;
+  for(let i=old;i<answer.length;i++){
+    const ch=answer[i],age=now-(times[i]||now),f=Math.min(1,age/SETTLE_MS);
+    const b=f<.34?0:f<.67?1:2;           // faint, half, nearly there
+    if(b!==band){if(open)tail+='</span>';tail+='<span class="rune r'+b+'">';band=b;open=true}
+    if(/\s/.test(ch))tail+=ch;
+    else if(f>=hash(i))tail+=esc(ch);
+    else tail+=RUNES[Math.floor(hash(i*7+3)*RUNES.length)];
+  }
+  if(open)tail+='</span>';
   const m=settled.match(/((?:<\/(?:p|li|ul|b|i)>\s*)+)$/);
   return m?settled.slice(0,m.index)+tail+m[1]:settled+tail;
 }
@@ -1476,7 +1490,7 @@ function funStart(){
   clearInterval(funTimer);
   funTimer=setInterval(()=>{const el=document.getElementById('fun');
     if(el)el.textContent=pool[Math.floor((Date.now()-t0)/2600)%pool.length]+'…';
-    if(typeof settle==='function')settle()},120);
+    if(typeof settle==='function')settle()},160);
 }
 let settle=null;   // set by the running ask: repaints so the runes keep settling
 function funStop(){clearInterval(funTimer);funTimer=null}
