@@ -125,7 +125,8 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .rank{margin-left:auto;font-family:ui-serif,Georgia,serif;font-size:.9rem;
  color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
 .acts{display:inline-flex;gap:.1rem;align-items:center;vertical-align:-.08em}
-.acts svg{width:.82em;height:.82em;fill:var(--ink)}
+.acts svg{width:.86em;height:.86em;fill:var(--ink)}
+.acts{gap:.06em}
 .traits{display:flex;flex-wrap:wrap;gap:.25rem;margin:0 0 .5rem}
 .trait{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600;
  padding:.14rem .42rem;border-radius:2px;background:#5d0000;color:#fff;border:1px solid #3d0000}
@@ -153,27 +154,75 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .deg.f .field{color:var(--fail)}
 .deg.cf .field{color:var(--crit-fail)}
 
-/* ---- tiles ---- */
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(15.5rem,1fr));gap:.55rem;
+/* ---- tiles ----
+   Colour says what a thing *is* before the name is read: the stripe and badge
+   follow the entry's kind, the border follows its rarity in the Archives'
+   own colours (uncommon orange, rare blue, unique purple). */
+:root{--k-spell:#5b3fa6;--k-feat:#2f6b4f;--k-action:#8a1b2e;--k-skill:#0e6e75;
+ --k-rules:#5a4d44;--k-item:#9a6a12;--k-creature:#3d5a1e;--k-condition:#b3541e;
+ --k-class:#2c4a8a;--k-other:#6b6560}
+:root[data-theme=dark],:root:not([data-theme=light]){}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--k-spell:#a68cf0;--k-feat:#74b894;
+ --k-action:#e0788a;--k-skill:#5fc3cb;--k-rules:#b8a99c;--k-item:#e0b45a;--k-creature:#9ccf6a;
+ --k-condition:#f0965a;--k-class:#86a5ec;--k-other:#a39c96}}
+:root[data-theme=dark]{--k-spell:#a68cf0;--k-feat:#74b894;--k-action:#e0788a;--k-skill:#5fc3cb;
+ --k-rules:#b8a99c;--k-item:#e0b45a;--k-creature:#9ccf6a;--k-condition:#f0965a;--k-class:#86a5ec;
+ --k-other:#a39c96}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(15.5rem,1fr));gap:.6rem;
  margin:.4rem 0}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:8px;
- padding:.6rem .75rem;cursor:pointer;transition:border-color .15s,transform .15s}
-.tile:hover{border-color:var(--accent)}
+.tile{--k:var(--k-other);position:relative;background:var(--card);border:1px solid var(--line);
+ border-top:3px solid var(--k);border-radius:8px;padding:.6rem .75rem .65rem;cursor:pointer;
+ transition:transform .12s,box-shadow .12s,border-color .12s;display:flex;flex-direction:column}
+.tile:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.10);border-color:var(--k)}
 .tile:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.tile .thead{display:flex;gap:.5rem;align-items:baseline}
+.tile.uncommon{border-color:#c45500;border-top-color:var(--k)}
+.tile.rare{border-color:#0c1466;border-top-color:var(--k)}
+.tile.unique{border-color:#800080;border-top-color:var(--k)}
+.tile .kind{display:inline-flex;align-items:center;gap:.3rem;font-size:.66rem;letter-spacing:.07em;
+ text-transform:uppercase;font-weight:700;color:var(--k);margin-bottom:.25rem}
+.tile .kind svg{width:.9rem;height:.9rem;fill:currentColor}
+.tile .kind .lvl{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;
+ color:var(--muted);font-size:.72rem;font-variant-numeric:tabular-nums}
+.tile .thead{display:flex;gap:.45rem;align-items:baseline}
 .tile .tname{font-family:ui-serif,Georgia,"Iowan Old Style",serif;font-weight:600;
  font-size:.98rem;flex:1;min-width:0}
-.tile .rank{font-size:.78rem;margin-left:auto}
+.tile .acts{font-size:1.05em;margin-left:auto}
 .tile .traits{margin:.3rem 0 .1rem}
 .tile .trait{font-size:.6rem;padding:.1rem .35rem}
 .snip-t{margin:.3rem 0 0;font-size:.82rem;color:var(--soft);line-height:1.4}
-.tile.open{grid-column:1/-1;cursor:default;border-color:var(--accent)}
-.tile.open .snip-t,.tile.open .traits,.tile.open .thead{display:none}
-.tile.open .full .card{margin:0;border:0;padding:0;background:none}
-.tile.open .full .body.clip{max-height:none}
-.tile.open .full .head{cursor:pointer}
-.tile.open .full .head::after{content:"fold";margin-left:.6rem;font-size:.72rem;
- color:var(--muted);font-family:ui-sans-serif,system-ui,sans-serif;font-weight:400}
+.tile .more{position:absolute;right:.6rem;bottom:.45rem;font-size:.7rem;color:var(--muted);
+ opacity:0;transition:opacity .12s}
+.tile:hover .more{opacity:1}
+
+/* ---- popouts: entries, settings, history ---- */
+.ov,#sheet{position:fixed;inset:0;background:rgba(20,17,19,.5);display:flex;align-items:flex-start;
+ justify-content:center;padding:3vh 1rem;z-index:15;overflow:auto}
+#sheet[hidden],.ov[hidden]{display:none}
+.pop.wide{max-width:50rem}
+.ov #settings,.ov #history{border:0;background:none;padding:0;margin:0}
+.ov .set-h:first-child{padding-right:2.4rem}
+.ov #history .top{padding-right:2.4rem}
+.pop{--k:var(--k-other);position:relative;background:var(--card);color:var(--ink);
+ border:1px solid var(--line);border-top:4px solid var(--k);border-radius:12px;
+ max-width:44rem;width:100%;padding:1.1rem 1.3rem 1.2rem;
+ box-shadow:0 24px 70px rgba(0,0,0,.35);animation:pop .16s ease-out}
+@keyframes pop{from{transform:translateY(8px) scale(.985);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.pop{animation:none}}
+.pop .card{border:0;margin:0;padding:0;background:none}
+.pop .body.clip{max-height:none}
+.pop .kind{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;letter-spacing:.07em;
+ text-transform:uppercase;font-weight:700;color:var(--k);margin-bottom:.2rem}
+.pop .kind svg{width:.95rem;height:.95rem;fill:currentColor}
+.pop .name{padding-right:2.4rem}
+.pop .acts{font-size:1.15em}
+.pop .x{position:absolute;top:.6rem;right:.6rem;width:2rem;height:2rem;border-radius:50%;
+ border:1px solid var(--line);background:var(--card);color:var(--soft);font-size:1.1rem;
+ line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.pop .x:hover{border-color:var(--accent);color:var(--accent)}
+.pop .nav{display:flex;gap:.5rem;justify-content:space-between;margin-top:.9rem;
+ border-top:1px solid var(--line);padding-top:.7rem}
+.pop .nav button{padding:.35rem .7rem;font-size:.8rem}
+.pop .nav .aon{margin-left:auto;margin-right:auto}
 
 /* ---- generated answer ---- */
 .answer{border-left:3px solid var(--warn)}
@@ -289,13 +338,15 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 lookups, unreliable for rule interactions; check the citation. <kbd>Shift</kbd>+<kbd>Enter</kbd>
 just shows the entries. <kbd>↑</kbd> brings back an earlier question.</p>
 
-<div id="history" hidden>
+<div id="history-wrap" class="ov" hidden><div class="pop" role="dialog" aria-modal="true" aria-label="Asked before">
+<button type="button" class="x" data-close="history-wrap" title="Close (Esc)" aria-label="Close">×</button>
+<div id="history">
 <div class="top"><p class="set-h">Asked before</p>
  <button type="button" id="h-clear">Forget all</button></div>
 <p class="note" style="margin:0 0 .5rem">Answers are kept in this browser, so asking the same
 thing again is instant — until you press <b>Ask again</b>.</p>
 <ul class="recent" id="h-list"></ul>
-</div>
+</div></div></div>
 
 <div id="onboard" hidden>
 <div class="ob" role="dialog" aria-modal="true" aria-labelledby="ob-h">
@@ -339,7 +390,9 @@ should you want to check. No account, no cloud, no dice tax.</p>
 <div id="recent-wrap" hidden><p class="tryh">Asked before</p><ul class="recent" id="recent"></ul></div>
 </div>
 
-<div id="settings" hidden>
+<div id="settings-wrap" class="ov" hidden><div class="pop wide" role="dialog" aria-modal="true" aria-label="Settings">
+<button type="button" class="x" data-close="settings-wrap" title="Close (Esc)" aria-label="Close">×</button>
+<div id="settings">
 <p class="set-h">Preset</p>
 <div class="presets">
  <button type="button" class="preset" id="p-better"><b>Better</b>
@@ -412,7 +465,7 @@ choice when the caller is a strong model).</p>
 <code>"command": "/path/to/.venv/bin/python", "args": ["-m", "pf2etune", "mcp"]</code>.
 Both accept <code>--index</code> and <code>--ollama</code> before <code>mcp</code>. These
 settings do not travel to it — the MCP server uses its own command-line flags.</p>
-</div>
+</div></div></div>
 
 <div id="out"></div>
 </div><script>
@@ -598,35 +651,68 @@ function statblock(h){
     (pills?'<div class="traits">'+pills+'</div>':'')+
     '<div class="body clip">'+md(text)+'</div></div>';
 }
-/* ---------- tiles ----------
+/* ---------- tiles and the popout ----------
    Eight full stat blocks are a wall; eight tiles are a glance. A tile shows the
-   name, kind, traits and the first line; clicking it opens the whole entry in
-   place, spanning the grid, and clicking again folds it. The rendered block is
-   the same statblock() as before, produced on demand. */
-let SHOWN=[];
-function firstLine(text){
-  let t=(text||'').replace(/\r/g,'').split('\n').map(l=>l.trim())
-    .filter(l=>l&&!/^(#|\*\*[^*]+\*\*\s*$|---|\*\*(Traits|Source|Requirements|Trigger|Frequency|Prerequisites)\*\*)/.test(l)
-      &&!l.includes(' | '));
-  t=(t[0]||'').replace(/\*\*?/g,'').replace(/^\*\*[^*]+\*\*\s*/,'');
-  return t.length>150?t.slice(0,150).replace(/\s+\S*$/,'')+'…':t;
-}
-function tile(h,i){
+   kind (coloured), the name with its action cost, up to four traits and the
+   first line. Clicking opens the whole entry in a popout with an × in the
+   corner; ← → step through the eight without closing it. */
+let SHOWN=[],OPEN=-1;
+const KIND_ICON={
+ spell:'<svg viewBox="0 0 16 16"><path d="M8 0l1.6 4.9L14.5 5l-3.9 3 1.5 4.9L8 10l-4.1 2.9L5.4 8 1.5 5l4.9-.1z"/></svg>',
+ feat:'<svg viewBox="0 0 16 16"><path d="M8 1l6 2.2v4.1c0 3.6-2.5 6.3-6 7.7-3.5-1.4-6-4.1-6-7.7V3.2zM6.9 10.4l4.2-4.2-1.1-1.1-3.1 3.1-1.4-1.4-1.1 1.1z"/></svg>',
+ action:'<svg viewBox="0 0 16 16"><path d="M8 1l7 7-7 7-7-7z"/></svg>',
+ skill:'<svg viewBox="0 0 16 16"><path d="M2 2h5.2c.7 0 1.3.3 1.8.8.5-.5 1.1-.8 1.8-.8H14v10h-4.4c-.6 0-1.1.3-1.6.8-.5-.5-1-.8-1.6-.8H2zm1.4 1.4v7.2H6c.6 0 1.1.1 1.3.4V4.4c-.3-.6-.8-1-1.3-1zm5.3 1v6.6c.2-.3.7-.4 1.3-.4h2.6V3.4H10c-.5 0-1 .4-1.3 1z"/></svg>',
+ rules:'<svg viewBox="0 0 16 16"><path d="M3 1h8.5A1.5 1.5 0 0113 2.5V13H4.3a1 1 0 000 2H13v-1H4.3a2.3 2.3 0 010-4.6H11.5V2.4H3.5c-.3 0-.5.2-.5.5V11h-1V2.9A1.9 1.9 0 013 1z"/></svg>',
+ item:'<svg viewBox="0 0 16 16"><path d="M5 4V3a3 3 0 016 0v1h2.2l.8 10H2l.8-10zm1.4 0h3.2V3a1.6 1.6 0 00-3.2 0z"/></svg>',
+ creature:'<svg viewBox="0 0 16 16"><circle cx="4" cy="5" r="1.7"/><circle cx="12" cy="5" r="1.7"/><circle cx="7" cy="2.6" r="1.5"/><circle cx="9.6" cy="2.6" r="1.5"/><path d="M8 7c2.6 0 4.5 2.1 4.5 4.2 0 1.7-1.4 2.6-2.6 2.1-.9-.4-2.9-.4-3.8 0-1.2.5-2.6-.4-2.6-2.1C3.5 9.1 5.4 7 8 7z"/></svg>',
+ condition:'<svg viewBox="0 0 16 16"><path d="M8 14.5S1.5 10.2 1.5 5.6A3.4 3.4 0 018 3.7a3.4 3.4 0 016.5 1.9c0 4.6-6.5 8.9-6.5 8.9z"/></svg>',
+ class:'<svg viewBox="0 0 16 16"><path d="M8 1.2l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.5l-4 2.1.8-4.5L1.5 5.9 6 5.3z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
+ other:'<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.2"/></svg>'};
+const KIND_OF={spell:'spell',ritual:'spell',feat:'feat',action:'action',
+ 'skill general action':'action',skill:'skill',rules:'rules',sidebar:'rules',
+ 'category page':'rules',equipment:'item',weapon:'item',armor:'item',shield:'item',
+ creature:'creature',hazard:'creature','creature family':'creature',condition:'condition',
+ trait:'condition','class feature':'class',class:'class',archetype:'class',
+ background:'class',heritage:'class',ancestry:'class',deity:'other'};
+function kindOf(cat){return KIND_OF[(cat||'').toLowerCase()]||'other'}
+function parseHead(h){
   let text=(h.text||'').replace(/\r/g,'');
-  const head=text.match(/^#\s*([^\n]*)/);let title=h.name,kind='';
-  if(head){let t=head[1].replace(/\[[^\]]*\]/g,'');
+  const head=text.match(/^#\s*([^\n]*(?:\n\[[^\]]*\][^\n]*)?)/);
+  let title=h.name,cost='',kind='';
+  if(head){let t=head[1].replace(/\n/g,' ').replace(/\[\s*\]/,'');
+    const c=t.match(/\[([^\]]+)\]/);if(c){cost=c[1];t=t.replace(c[0],'')}
     const k=t.match(/\(([^)]+)\)\s*$/);if(k){kind=k[1];t=t.replace(k[0],'')}
     title=t.trim()||h.name}
   const tr=text.match(/^\*\*Traits\*\*\s*([^\n]+)/m);
-  const traits=tr?tr[1].split(',').map(x=>x.trim()).filter(Boolean).slice(0,4):[];
-  const rank=kind||(h.level!==null&&h.level!==undefined?'Level '+h.level:h.category);
-  return '<div class="tile" data-i="'+i+'" role="button" tabindex="0" aria-expanded="false">'+
-    '<div class="thead"><span class="tname">'+esc(title)+'</span>'+
-    '<span class="rank">'+esc(rank)+'</span></div>'+
-    (traits.length?'<div class="traits">'+traits.map(t=>'<span class="trait">'+esc(t)+
-      '</span>').join('')+'</div>':'')+
-    '<p class="snip-t">'+esc(firstLine(text))+'</p>'+
-    '<div class="full" hidden></div></div>';
+  const traits=tr?tr[1].split(',').map(x=>x.trim()).filter(Boolean):[];
+  const rarity=traits.map(t=>t.toLowerCase()).find(t=>RARITY.includes(t)&&t!=='common')||'';
+  return {title,cost,kind,traits,rarity,text};
+}
+function kindBadge(h,p){
+  const k=kindOf(h.category);
+  const label=p.kind?p.kind.replace(/\s+\d+$/,''):(h.category||'entry');
+  const lvl=(p.kind||'').match(/\d+$/);
+  return '<span class="kind">'+KIND_ICON[k]+esc(label)+
+    (lvl?'<span class="lvl">Level '+lvl[0]+'</span>':
+     (h.level!==null&&h.level!==undefined?'<span class="lvl">Level '+h.level+'</span>':''))+
+    '</span>';
+}
+function firstLine(text){
+  let t=(text||'').split('\n').map(l=>l.trim())
+    .filter(l=>l&&!/^(#|\*\*[^*]+\*\*\s*$|---|\*\*(Traits|Source|Requirements|Trigger|Frequency|Prerequisites|Access|Cast|Range|Area|Targets|Duration|Saving Throw|Price|Bulk|Usage|Hands)\*\*)/.test(l)
+      &&!l.includes(' | '));
+  t=(t[0]||'').replace(/\*\*?/g,'');
+  return t.length>150?t.slice(0,150).replace(/\s+\S*$/,'')+'…':t;
+}
+function tile(h,i){
+  const p=parseHead(h),k=kindOf(h.category);
+  return '<div class="tile'+(p.rarity?' '+p.rarity:'')+'" style="--k:var(--k-'+k+')" data-i="'+i+
+    '" role="button" tabindex="0" title="Open">'+kindBadge(h,p)+
+    '<div class="thead"><span class="tname">'+esc(p.title)+'</span>'+glyphs(p.cost)+'</div>'+
+    (p.traits.length?'<div class="traits">'+p.traits.slice(0,4).map(t=>{
+      const l=t.toLowerCase(),cls=RARITY.includes(l)?l:(SIZES.includes(l)?'size':'');
+      return '<span class="trait'+(cls?' '+cls:'')+'">'+esc(t)+'</span>'}).join('')+'</div>':'')+
+    '<p class="snip-t">'+esc(firstLine(p.text))+'</p><span class="more">open ↗</span></div>';
 }
 function cards(hits){
   if(!hits||!hits.length)return '';
@@ -634,23 +720,44 @@ function cards(hits){
   return '<p class="sources-h">Entries · from the local copy of the Archives of Nethys — '+
     'click one to read it</p><div class="tiles">'+hits.map(tile).join('')+'</div>';
 }
-function toggleTile(el){
-  const open=!el.classList.contains('open'),full=el.querySelector('.full');
-  if(open&&!full.innerHTML){const h=SHOWN[+el.dataset.i];if(h)full.innerHTML=statblock(h)}
-  el.classList.toggle('open',open);full.hidden=!open;
-  el.setAttribute('aria-expanded',String(open));
-  if(open)el.scrollIntoView({block:'nearest',behavior:'smooth'});
+const sheet=document.createElement('div');sheet.id='sheet';sheet.hidden=true;
+document.body.appendChild(sheet);
+function openEntry(i){
+  const h=SHOWN[i];if(!h)return;
+  const p=parseHead(h),k=kindOf(h.category);OPEN=i;
+  sheet.innerHTML='<div class="pop'+(p.rarity?' '+p.rarity:'')+'" style="--k:var(--k-'+k+')" '+
+    'role="dialog" aria-modal="true" aria-label="'+esc(p.title)+'">'+
+    '<button type="button" class="x" id="sheet-x" title="Close (Esc)" aria-label="Close">×</button>'+
+    kindBadge(h,p)+statblock(h)+
+    '<div class="nav"><button type="button" id="sheet-prev"'+(i?'':' disabled')+'>← previous</button>'+
+    '<a class="cite aon" href="'+esc(h.url)+'" target="_blank" rel="noreferrer">Open on Archives of Nethys ↗</a>'+
+    '<button type="button" id="sheet-next"'+(i<SHOWN.length-1?'':' disabled')+'>next →</button></div></div>';
+  sheet.hidden=false;lockScroll();
+  EL('sheet-x').addEventListener('click',closeEntry);
+  EL('sheet-prev').addEventListener('click',()=>openEntry(i-1));
+  EL('sheet-next').addEventListener('click',()=>openEntry(i+1));
+  EL('sheet-x').focus();
 }
+function closeEntry(){
+  if(sheet.hidden)return;
+  sheet.hidden=true;lockScroll();
+  const t=document.querySelector('.tile[data-i="'+OPEN+'"]');if(t)t.focus();OPEN=-1;
+}
+sheet.addEventListener('click',e=>{if(e.target===sheet)closeEntry()});
 out.addEventListener('click',e=>{
   if(e.target.closest('a'))return;
-  const t=e.target.closest('.tile');if(!t)return;
-  if(e.target.closest('.full')&&!e.target.closest('.thead,.tname'))return;
-  toggleTile(t);
+  const t=e.target.closest('.tile');if(t)openEntry(+t.dataset.i);
 });
 out.addEventListener('keydown',e=>{
   if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('tile')){
-    e.preventDefault();toggleTile(e.target)}
+    e.preventDefault();openEntry(+e.target.dataset.i)}
 });
+document.addEventListener('keydown',e=>{
+  if(sheet.hidden)return;
+  if(e.key==='Escape'){e.preventDefault();closeEntry()}
+  else if(e.key==='ArrowRight'&&OPEN<SHOWN.length-1)openEntry(OPEN+1);
+  else if(e.key==='ArrowLeft'&&OPEN>0)openEntry(OPEN-1);
+},true);
 </script>
 <script>
 /* ---------- settings ----------
@@ -843,10 +950,14 @@ async function copySnip(id,btn){
 }
 
 const GEAR='<svg viewBox="0 0 16 16"><path d="M8 5.2A2.8 2.8 0 108 10.8 2.8 2.8 0 008 5.2zm0 1.5a1.3 1.3 0 110 2.6 1.3 1.3 0 010-2.6z"/><path d="M6.9.8h2.2l.3 1.7 1.2.5 1.4-1 1.5 1.5-1 1.4.5 1.2 1.7.3v2.2l-1.7.3-.5 1.2 1 1.4-1.5 1.5-1.4-1-1.2.5-.3 1.7H6.9l-.3-1.7-1.2-.5-1.4 1-1.5-1.5 1-1.4-.5-1.2L.8 9.1V6.9l1.7-.3.5-1.2-1-1.4L3.5 2.5l1.4 1 1.2-.5z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
-const gear=EL('gear'),panel=EL('settings');
+const gear=EL('gear'),panel=EL('settings-wrap');
 gear.innerHTML=GEAR+'<span>Settings</span>';
+function lockScroll(){document.body.style.overflow=
+  [...document.querySelectorAll('.ov,#sheet,#onboard')].some(el=>!el.hidden)?'hidden':''}
 gear.addEventListener('click',()=>{
   const open=panel.hidden;panel.hidden=!open;gear.setAttribute('aria-expanded',String(open));
+  if(open){EL('history-wrap').hidden=true;EL('hist').setAttribute('aria-expanded','false')}
+  lockScroll();
   // Fill the model list the first time it is opened, not on every page load:
   // it is one request to the backend and nobody who never opens this needs it.
   if(open&&!EL('s-models').children.length)probeModels(true);
@@ -947,11 +1058,22 @@ EL('h-clear').addEventListener('click',()=>{
   if(!HIST.length||confirm('Forget all '+HIST.length+' questions kept in this browser?')){
     HIST=[];saveHist();paintHist();}
 });
-const histBtn=EL('hist'),histPanel=EL('history');
+const histBtn=EL('hist'),histPanel=EL('history-wrap');
 histBtn.addEventListener('click',()=>{
   const open=histPanel.hidden;histPanel.hidden=!open;
   histBtn.setAttribute('aria-expanded',String(open));
   if(open){panel.hidden=true;gear.setAttribute('aria-expanded','false')}
+  lockScroll();
+});
+function closeOverlays(){
+  for(const el of document.querySelectorAll('.ov'))el.hidden=true;
+  gear.setAttribute('aria-expanded','false');histBtn.setAttribute('aria-expanded','false');
+  lockScroll();
+}
+document.addEventListener('click',e=>{
+  const x=e.target.closest('[data-close]');
+  if(x){closeOverlays();return}
+  if(e.target.classList&&e.target.classList.contains('ov'))closeOverlays();
 });
 
 /* ---------- empty state ---------- */
@@ -974,14 +1096,13 @@ paintHist();showHome(true);
 
 /* ---------- onboarding ---------- */
 const ob=EL('onboard');
-function openHelp(){ob.hidden=false;EL('help').setAttribute('aria-expanded','true');
+function openHelp(){closeOverlays();ob.hidden=false;lockScroll();EL('help').setAttribute('aria-expanded','true');
   EL('ob-go').focus()}
-function closeHelp(){ob.hidden=true;EL('help').setAttribute('aria-expanded','false');
+function closeHelp(){ob.hidden=true;lockScroll();EL('help').setAttribute('aria-expanded','false');
   try{localStorage.setItem('pf2e-onboarded','1')}catch(e){}
   if(ready)q.focus()}
 EL('ob-go').addEventListener('click',closeHelp);
-EL('ob-settings').addEventListener('click',()=>{closeHelp();
-  if(panel.hidden)gear.click();panel.scrollIntoView({behavior:'smooth'})});
+EL('ob-settings').addEventListener('click',()=>{closeHelp();if(panel.hidden)gear.click()});
 EL('help').addEventListener('click',()=>ob.hidden?openHelp():closeHelp());
 ob.addEventListener('click',e=>{if(e.target===ob)closeHelp()});
 let seen=false;try{seen=!!localStorage.getItem('pf2e-onboarded')}catch(e){}
@@ -1032,7 +1153,7 @@ function replay(r){
   out.innerHTML=fromBanner(r)+(r.mode==='ask'?answerCard(r.answer,r.timings,false):'')+
     cards(r.hits);
   EL('again').addEventListener('click',()=>go(r.mode,true));
-  histPanel.hidden=true;histBtn.setAttribute('aria-expanded','false');
+  closeOverlays();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 async function search(text){
@@ -1110,7 +1231,8 @@ q.addEventListener('keydown',e=>{
   if(e.key.length===1)hpos=-1;
 });
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(!ob.hidden)closeHelp();return}
+  if(e.key==='Escape'){if(!ob.hidden)closeHelp();else closeOverlays();return}
+  if(!sheet.hidden)return;
   if(document.activeElement===q||e.metaKey||e.ctrlKey||e.altKey)return;
   if(e.key==='/'){e.preventDefault();q.focus();q.select()}
   else if(e.key==='?'){e.preventDefault();ob.hidden?openHelp():closeHelp()}
