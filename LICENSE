@@ -19,11 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-This licence covers the code in this repository. It does not cover the game
-content the code works with: rules text from the Archives of Nethys is under the
-ORC License and Paizo's Community Use Policy, lore from PathfinderWiki is under
-the Community Use Policy, and both are non-commercial. See NOTICE.md and
-docs/LICENSING.md. The bundled fonts carry their own licences, listed in NOTICE.md.
