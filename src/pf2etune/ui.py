@@ -1432,6 +1432,10 @@ const LINES={
 let funTimer=null;
 function funStart(){
   const t0=Date.now(),pool=LINES.fun.slice().sort(()=>Math.random()-.5);
+  // The footer line starts with the first token; before that the body's own
+  // waiting line is the only one, so nothing is said twice.
+  const foot=document.querySelector('.answer .foot');
+  if(foot&&!document.getElementById('fun'))foot.innerHTML=stamp({},true);
   clearInterval(funTimer);
   funTimer=setInterval(()=>{const el=document.getElementById('fun');
     if(el)el.textContent=pool[Math.floor((Date.now()-t0)/2600)%pool.length]+'…'},250);
@@ -1465,7 +1469,7 @@ function answerCard(answer,timings,live){
   return '<div class="card answer">'+
     '<div class="body">'+(answer?md(answer,true)+(live?'<span class="caret"></span>':'')
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>')+'</div>'+
-    '<div class="foot">'+stamp(timings||{},live)+
+    '<div class="foot">'+(answer||!live?stamp(timings||{},live):'')+
     (live?'':'<button type="button" class="report" id="report-btn">Wrong? Report it</button>')+
     '</div></div>';
 }
