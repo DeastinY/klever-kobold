@@ -7,9 +7,11 @@ Ask "How does Treat Wounds work?" and get a short answer with the Archives of
 Nethys entries it was read from, right underneath, in under fifteen seconds on a
 laptop. No account, no cloud, nothing you type leaves the machine.
 
-| light | dark |
+![The Klever Kobold answering "How does Treat Wounds work?"](docs/img/kobold-light.png)
+
+| An entry, opened | The dark side |
 | --- | --- |
-| ![Light theme](docs/img/ui-light.png) | ![Dark theme](docs/img/ui-dark.png) |
+| ![An entry opened in the popout](docs/img/kobold-entry.png) | ![Dark theme](docs/img/kobold-dark.png) |
 
 ![Runs offline](https://img.shields.io/badge/runs-fully%20offline-2f6b4f)
 ![Memory](https://img.shields.io/badge/needs-6%20GB%20RAM-informational)

@@ -930,11 +930,19 @@ function tile(h,i,src){
       return '<span class="trait'+(cls?' '+cls:'')+'">'+esc(t)+'</span>'}).join('')+'</div>':'')+
     '<p class="snip-t">'+esc(snippet)+'</p><span class="more">open ↗</span></div>';
 }
-function cards(hits){
+function cards(hits,question){
   if(!hits||!hits.length)return '';
   SHOWN=hits;
+  // The prompt puts the entry the question names last, where a small model
+  // reads best; a person wants it first. Display order only -- data-i keeps
+  // the real index, so citations and the popout still line up.
+  const ql=(question||q.value||'').toLowerCase();
+  const order=hits.map((h,i)=>i).sort((a,b)=>{
+    const na=hits[a].name&&hits[a].name.length>=4&&ql.includes(hits[a].name.toLowerCase())?0:1;
+    const nb=hits[b].name&&hits[b].name.length>=4&&ql.includes(hits[b].name.toLowerCase())?0:1;
+    return na-nb||a-b});
   return '<p class="sources-h">Found proof · dug out of the Archives of Nethys — '+
-    'poke one to read it</p><div class="tiles">'+hits.map((h,i)=>tile(h,i,'res')).join('')+'</div>';
+    'poke one to read it</p><div class="tiles">'+order.map(i=>tile(hits[i],i,'res')).join('')+'</div>';
 }
 const sheet=document.createElement('div');sheet.id='sheet';sheet.hidden=true;
 document.body.appendChild(sheet);
@@ -1263,6 +1271,9 @@ async function poll(){
     if(d.state==='ready'&&!ready){
       ready=true;enable(true);
       setTimeout(()=>{st.hidden=true},2500);
+      if(LINKED_Q){q.value=LINKED_Q;go('ask').then(()=>{
+        const n=parseInt(PARAMS.get('open')||'',10);
+        if(!isNaN(n)&&SHOWN[n])openEntry(n,'res')})}
       return;
     }
     if(d.state==='error'){enable(false);return}
@@ -1444,7 +1455,14 @@ EL('ob-settings').addEventListener('click',()=>{closeHelp();
 EL('help').addEventListener('click',()=>ob.hidden?openHelp():closeHelp());
 ob.addEventListener('click',e=>{if(e.target===ob)closeHelp()});
 let seen=false;try{seen=!!localStorage.getItem('kobold-onboarded')}catch(e){}
-if(!seen)openHelp();
+/* ---------- a link can carry a question ----------
+   /?q=How%20does%20Treat%20Wounds%20work asks it once the models are up, so
+   an answer can be shared as a link and the screenshots can be made by hand.
+   theme=dark|light sets the theme; open=N opens entry N when the answer is done. */
+const PARAMS=new URLSearchParams(location.search);
+const LINKED_Q=(PARAMS.get('q')||'').trim();
+if(PARAMS.get('theme')&&THEMES.includes(PARAMS.get('theme'))){theme=PARAMS.get('theme');applyTheme()}
+if(!seen&&!LINKED_Q)openHelp();
 
 /* ---------- asking ---------- */
 const LINES={
@@ -1624,7 +1642,7 @@ function replay(r){
   showHome(false);setCites(r.hits);EXTRA=r.mentions||[];
   CURRENT=r.mode==='ask'?{q:r.q,answer:r.answer,sources:r.hits,model:r.model,timings:r.timings}:null;
   out.innerHTML=fromBanner(r)+(r.mode==='ask'?answerCard(r.answer,r.timings,false):'')+
-    cards(r.hits);
+    cards(r.hits,r.q);
   const b=out.querySelector('.answer .body');if(b)b.innerHTML=linkNames(b.innerHTML);
   EL('again').addEventListener('click',()=>go(r.mode,true));
   closeOverlays();
@@ -1671,7 +1689,7 @@ async function ask(text){
     if(live&&answer&&!document.getElementById('fun'))funStart();
     if(!live){
       ans.querySelector('.foot').innerHTML=stamp(timings||{},false)+
-        '<button type="button" class="report" id="report-btn">Wrong? Report it</button>';
+        '<button type="button" class="report" id="report-btn">Wrong? Tell the kobold</button>';
     }
   };
   const pending=()=>{const t0=Date.now();clearInterval(timer);
