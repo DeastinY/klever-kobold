@@ -217,14 +217,14 @@ footer.thanks .sep{margin:0 .4rem}
    own colours (uncommon orange, rare blue, unique purple). */
 :root{--k-spell:#5b3fa6;--k-feat:#2f6b4f;--k-action:#8a1b2e;--k-skill:#0e6e75;
  --k-rules:#5a4d44;--k-item:#9a6a12;--k-creature:#3d5a1e;--k-condition:#b3541e;
- --k-class:#2c4a8a;--k-other:#6b6560}
+ --k-class:#2c4a8a;--k-other:#6b6560;--k-lore:#8f4a6b}
 :root[data-theme=dark],:root:not([data-theme=light]){}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--k-spell:#a68cf0;--k-feat:#74b894;
  --k-action:#e0788a;--k-skill:#5fc3cb;--k-rules:#b8a99c;--k-item:#e0b45a;--k-creature:#9ccf6a;
- --k-condition:#f0965a;--k-class:#86a5ec;--k-other:#a39c96}}
+ --k-condition:#f0965a;--k-class:#86a5ec;--k-other:#a39c96;--k-lore:#d98cb0}}
 :root[data-theme=dark]{--k-spell:#a68cf0;--k-feat:#74b894;--k-action:#e0788a;--k-skill:#5fc3cb;
  --k-rules:#b8a99c;--k-item:#e0b45a;--k-creature:#9ccf6a;--k-condition:#f0965a;--k-class:#86a5ec;
- --k-other:#a39c96}
+ --k-other:#a39c96;--k-lore:#d98cb0}
 .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(15.5rem,1fr));gap:.6rem;
  margin:.4rem 0}
 .tile{--k:var(--k-other);position:relative;background:var(--card);border:1px solid var(--line);
@@ -449,9 +449,10 @@ thing again is instant — until you press <b>Ask again</b>.</p>
 <div class="ob" role="dialog" aria-modal="true" aria-labelledby="ob-h">
 <h2 id="ob-h"><span class="d20" aria-hidden="true"></span>Well met, adventurer.</h2>
 <p class="lead">The Klever Kobold is a Pathfinder 2e rules reference that runs entirely on this
-machine. It carries its own copy of the Archives of Nethys — 41,743 entries — so nothing you
-type leaves your computer, and it works without a connection. Each entry links to its page on
-the live Archives, should you want to check. No account, no cloud, no dice tax.</p>
+machine. It carries its own copy of <span id="ob-corpus">the Archives of Nethys — 41,743
+entries —</span> so nothing you type leaves your computer, and it works without a connection.
+Each entry links to its page on the live site, should you want to check. No account, no
+cloud, no dice tax.</p>
 <p class="lead">It is a kobold: quick, keen, and wrong more often than it would like to admit —
 which is why every answer shows the entries it was read from.</p>
 <p class="lead">Everything it knows, it dug out of the
@@ -470,6 +471,8 @@ team keeps free. If the kobold earns its keep at your table, please
  <span class="ok">Trust it</span><span>“What level is Battle Medicine?” · “How does Treat Wounds work?”</span>
  <span class="so">Mostly</span><span>“Is there a feat that makes falling less dangerous?”</span>
  <span class="no">Read the rule</span><span>“Does X interact with Y?” — it finds the rule fast; you settle the argument.</span>
+ <span class="so" id="trust-lore-h" hidden>Lore, mostly</span><span id="trust-lore" hidden>“Who rules Cheliax?” — from PathfinderWiki, which is thorough on the old
+  books and thin on the newest. A rules question never gets a lore answer.</span>
 </div>
 <p class="tryh" style="margin-top:.2rem">Pick who answers</p>
 <div class="choices" id="ob-choices">
@@ -521,6 +524,18 @@ the MCP setup for Claude Desktop and Claude Code: Settings →
   <span>100 of 109 · half the speed · ~7 GB</span></button>
 </div>
 <p class="note" id="p-note"></p>
+<div id="scope-wrap" hidden>
+<p class="set-h" style="margin-top:.9rem">What it digs through</p>
+<div class="grid">
+ <label for="s-scope">Sources</label>
+ <select id="s-scope">
+  <option value="auto">Rules, and Golarion lore when the question is about the world</option>
+  <option value="rules">Rules only — the Archives of Nethys</option>
+  <option value="lore">Rules and lore together, every time</option>
+ </select>
+ <p class="note" id="s-scopenote"></p>
+</div>
+</div>
 <div class="pair" style="margin-top:.9rem"><label class="tog"><input type="checkbox" id="s-expert">
  Expert mode</label><span class="note" style="margin:0">model servers, retrieval knobs, MCP</span></div>
 
@@ -817,14 +832,18 @@ const KIND_ICON={
  creature:'<svg viewBox="0 0 16 16"><circle cx="4" cy="5" r="1.7"/><circle cx="12" cy="5" r="1.7"/><circle cx="7" cy="2.6" r="1.5"/><circle cx="9.6" cy="2.6" r="1.5"/><path d="M8 7c2.6 0 4.5 2.1 4.5 4.2 0 1.7-1.4 2.6-2.6 2.1-.9-.4-2.9-.4-3.8 0-1.2.5-2.6-.4-2.6-2.1C3.5 9.1 5.4 7 8 7z"/></svg>',
  condition:'<svg viewBox="0 0 16 16"><path d="M8 14.5S1.5 10.2 1.5 5.6A3.4 3.4 0 018 3.7a3.4 3.4 0 016.5 1.9c0 4.6-6.5 8.9-6.5 8.9z"/></svg>',
  class:'<svg viewBox="0 0 16 16"><path d="M8 1.2l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.5l-4 2.1.8-4.5L1.5 5.9 6 5.3z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
- other:'<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.2"/></svg>'};
+ other:'<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.2"/></svg>',
+ lore:'<svg viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm4.9 6.3h-2.2a11 11 0 00-.9-3.6 5.7 5.7 0 013.1 3.6zM8 2.4c.7.9 1.3 2.4 1.5 4.9h-3C6.7 4.8 7.3 3.3 8 2.4zM3.1 8.7h2.2c.1 1.4.4 2.6.9 3.6a5.7 5.7 0 01-3.1-3.6zm2.2-1.4H3.1a5.7 5.7 0 013.1-3.6c-.5 1-.8 2.2-.9 3.6zM8 13.6c-.7-.9-1.3-2.4-1.5-4.9h3c-.2 2.5-.8 4-1.5 4.9zm1.8-1.3c.5-1 .8-2.2.9-3.6h2.2a5.7 5.7 0 01-3.1 3.6z"/></svg>'};
 const KIND_OF={spell:'spell',ritual:'spell',feat:'feat',action:'action',
  'skill general action':'action',skill:'skill',rules:'rules',sidebar:'rules',
  'category page':'rules',equipment:'item',weapon:'item',armor:'item',shield:'item',
  creature:'creature',hazard:'creature','creature family':'creature',condition:'condition',
  trait:'condition','class feature':'class',class:'class',archetype:'class',
  background:'class',heritage:'class',ancestry:'class',deity:'other'};
-function kindOf(cat){return KIND_OF[(cat||'').toLowerCase()]||'other'}
+// A lore entry is its own kind whatever its wiki template says: the stripe
+// colour is the first thing that tells a nation page from a deity stat block.
+function kindOf(cat,h){if(h&&h.corpus==='pathfinderwiki')return 'lore';return KIND_OF[(cat||'').toLowerCase()]||'other'}
+const isLore=h=>!!h&&h.corpus==='pathfinderwiki';
 function parseHead(h){
   let text=(h.text||'').replace(/\r/g,'');
   const head=text.match(/^#\s*([^\n]*(?:\n\[[^\]]*\][^\n]*)?)/);
@@ -840,8 +859,8 @@ function parseHead(h){
   return {title,cost,kind,traits,rarity,text};
 }
 function kindBadge(h,p){
-  const k=kindOf(h.category);
-  const label=p.kind?p.kind.replace(/\s+\d+$/,''):(h.category||'entry');
+  const k=kindOf(h.category,h);
+  const label=isLore(h)?(h.category||'article')+' · lore':(p.kind?p.kind.replace(/\s+\d+$/,''):(h.category||'entry'));
   const lvl=(p.kind||'').match(/\d+$/);
   return '<span class="kind">'+KIND_ICON[k]+esc(label)+
     (lvl?'<span class="lvl">Level '+lvl[0]+'</span>':
@@ -866,7 +885,7 @@ const isFav=h=>FAVS.some(f=>favKey(f)===favKey(h));
 function toggleFav(h){
   if(isFav(h))FAVS=FAVS.filter(f=>favKey(f)!==favKey(h));
   else FAVS.unshift({name:h.name,category:h.category,level:h.level,url:h.url,text:h.text,
-                     summary:h.summary||'',legacy_name:h.legacy_name||[]});
+                     summary:h.summary||'',legacy_name:h.legacy_name||[],corpus:h.corpus||'aon'});
   try{localStorage.setItem(FKEY,JSON.stringify(FAVS))}catch(e){}
   paintFavs();
   for(const b of document.querySelectorAll('.star[data-key]'))
@@ -919,7 +938,7 @@ function formerly(h){
 }
 function tile(h,i,src){
   src=src||'res';
-  const p=parseHead(h),k=kindOf(h.category);
+  const p=parseHead(h),k=kindOf(h.category,h);
   const snippet=h.summary||firstLine(p.text);
   return '<div class="tile'+(p.rarity?' '+p.rarity:'')+'" style="--k:var(--k-'+k+')" data-i="'+i+
     '" data-src="'+src+'" role="button" tabindex="0" title="Open">'+kindBadge(h,p)+starBtn(h)+
@@ -933,6 +952,8 @@ function tile(h,i,src){
 function cards(hits,question){
   if(!hits||!hits.length)return '';
   SHOWN=hits;
+  const lore=hits.some(isLore),rules=hits.some(h=>!isLore(h));
+  const where=lore&&rules?'the Archives of Nethys and PathfinderWiki':lore?'PathfinderWiki':'the Archives of Nethys';
   // The prompt puts the entry the question names last, where a small model
   // reads best; a person wants it first. Display order only -- data-i keeps
   // the real index, so citations and the popout still line up.
@@ -941,7 +962,7 @@ function cards(hits,question){
     const na=hits[a].name&&hits[a].name.length>=4&&ql.includes(hits[a].name.toLowerCase())?0:1;
     const nb=hits[b].name&&hits[b].name.length>=4&&ql.includes(hits[b].name.toLowerCase())?0:1;
     return na-nb||a-b});
-  return '<p class="sources-h">Found proof · dug out of the Archives of Nethys — '+
+  return '<p class="sources-h">Found proof · dug out of '+where+' — '+
     'poke one to read it</p><div class="tiles">'+order.map(i=>tile(hits[i],i,'res')).join('')+'</div>';
 }
 const sheet=document.createElement('div');sheet.id='sheet';sheet.hidden=true;
@@ -949,13 +970,14 @@ document.body.appendChild(sheet);
 function openEntry(i,src){
   src=src||'res';const list=LISTS[src]();
   const h=list[i];if(!h)return;
-  const p=parseHead(h),k=kindOf(h.category);OPEN=i;OPEN_SRC=src;
+  const p=parseHead(h),k=kindOf(h.category,h);OPEN=i;OPEN_SRC=src;
   sheet.innerHTML='<div class="pop'+(p.rarity?' '+p.rarity:'')+'" style="--k:var(--k-'+k+')" '+
     'role="dialog" aria-modal="true" aria-label="'+esc(p.title)+'">'+
     '<button type="button" class="x" id="sheet-x" title="Close (Esc)" aria-label="Close">×</button>'+
     starBtn(h)+kindBadge(h,p)+statblock(h).replace('</div><div class="body',formerly(h)+'</div><div class="body')+
     '<div class="nav"><button type="button" id="sheet-prev"'+(i?'':' disabled')+'>← previous</button>'+
-    '<a class="cite aon" href="'+esc(h.url)+'" target="_blank" rel="noreferrer">See it in the Archives ↗</a>'+
+    '<a class="cite aon" href="'+esc(h.url)+'" target="_blank" rel="noreferrer">'+
+      (isLore(h)?'See it on PathfinderWiki ↗':'See it in the Archives ↗')+'</a>'+
     '<button type="button" id="sheet-next"'+(i<list.length-1?'':' disabled')+'>next →</button></div></div>';
   sheet.hidden=false;lockScroll();
   EL('sheet-x').addEventListener('click',closeEntry);
@@ -1017,8 +1039,12 @@ document.addEventListener('keydown',e=>{
    so "this server's own" is the default and the alternative is fingerprinted
    against the index before the first question. */
 const SDEF={backend:'ollama',base:'http://localhost:11434',model:'',key:'',
- k:8,rerank:true,ctx:1600,tokens:400,embed:'server'};
+ k:8,rerank:true,ctx:1600,tokens:400,embed:'server',scope:'auto'};
 let SET=Object.assign({},SDEF),SEEDED=false,LOCAL_ONLY=true,EMBED_MODEL='',AUTO_MODEL=false;
+// Whether the index this server loaded carries PathfinderWiki. Without it the
+// scope control, the lore examples and the trust line stay hidden: nothing to
+// choose, and nothing to promise.
+let LORE=false;
 let STORED=false;
 try{const raw=localStorage.getItem('kobold-settings');
     if(raw){SET=Object.assign({},SDEF,JSON.parse(raw));STORED=true}}catch(e){}
@@ -1035,6 +1061,7 @@ function settingsQuery(extra){
   p.set('k',SET.k);p.set('rerank',SET.rerank?'1':'0');
   p.set('ctx',SET.ctx);p.set('tokens',SET.tokens);
   p.set('embed',SET.embed);
+  if(LORE)p.set('scope',SET.scope||'auto');
   return p.toString();
 }
 function settingsHeaders(){
@@ -1083,6 +1110,7 @@ function writeForm(){
   EL('s-k').value=SET.k;EL('s-rerank').checked=!!SET.rerank;
   EL('s-ctx').value=SET.ctx;EL('s-tokens').value=SET.tokens;
   EL('s-embed').value=SET.embed;
+  EL('s-scope').value=SET.scope||'auto';
   paintSettings();
 }
 function readForm(){
@@ -1095,6 +1123,7 @@ function readForm(){
   SET.ctx=+EL('s-ctx').value||SDEF.ctx;
   SET.tokens=+EL('s-tokens').value||SDEF.tokens;
   SET.embed=EL('s-embed').value;
+  SET.scope=EL('s-scope').value||'auto';
   saveSettings();paintSettings();
 }
 function paintSettings(){
@@ -1116,6 +1145,11 @@ function paintSettings(){
   EL('s-embednote').textContent=SET.embed==='backend'
     ? 'Must serve '+(EMBED_MODEL||'the index’s encoder')+'; checked against the index first.'
     : 'Leave it here unless this server has no local models.';
+  EL('scope-wrap').hidden=!LORE;
+  EL('s-scopenote').textContent={
+    auto:'The kobold reads each question and decides. When it is not sure, it sticks to the rules.',
+    rules:'What every number in the docs was measured on. Lore questions will come back thin.',
+    lore:'Every question sees the wiki too. A rules question may pick up a lore paragraph.'}[SET.scope||'auto'];
 }
 function seedFromServer(health){
   // The panel shows what `kobold serve` was actually launched with rather than a
@@ -1132,6 +1166,13 @@ function seedFromServer(health){
   AUTO_MODEL=!!d.auto_model;
   if(d.context_chars)SDEF.ctx=d.context_chars;
   if(d.answer_tokens)SDEF.tokens=d.answer_tokens;
+  LORE=!!d.lore;if(d.scope)SDEF.scope=d.scope;
+  if(LORE){
+    const c=d.corpus||{};
+    if(c.aon&&c.pathfinderwiki)EL('ob-corpus').textContent='the Archives of Nethys and PathfinderWiki — '+
+      c.aon.toLocaleString()+' rules entries and '+c.pathfinderwiki.toLocaleString()+' entries of Golarion lore —';
+    EL('trust-lore-h').hidden=false;EL('trust-lore').hidden=false;
+  }
   if(!STORED)SET=Object.assign({},SDEF);
   else for(const key in SDEF)if(SET[key]===''||SET[key]==null)SET[key]=SDEF[key];
   writeForm();
@@ -1198,7 +1239,7 @@ gear.addEventListener('click',()=>{
   if(open&&!EL('s-models').children.length)probeModels(true);
 });
 for(const id of ['s-backend','s-base','s-model','s-key','s-k','s-rerank','s-ctx','s-tokens',
-                 's-embed'])
+                 's-embed','s-scope'])
   EL(id).addEventListener('change',readForm);
 for(const name of ['better','faster'])
   // Writing the values into the fields rather than holding a hidden mode: the
@@ -1382,6 +1423,12 @@ const POOL=[
  'What does Cat Fall do?','How does Sneak differ from Hide?',
  'What are the rules for falling damage?','How does Wounded interact with Dying?'];
 const LOOKUPS=['grabbed','flat-footed','Force Barrage','off-guard','Sudden Charge','Lay on Hands'];
+// Offered only when the index carries PathfinderWiki.
+const LORE_POOL=['Who rules Cheliax?','What happened when Aroden died?','Where is Sandpoint?',
+ 'Who is the Whispering Tyrant?','What is the Pathfinder Society?','What is the Worldwound?',
+ 'Which gods passed the Test of the Starstone?','What is Absalom known for?',
+ 'Who are the Hellknights?','What is Numeria famous for?','Who is Baba Yaga to Irrisen?',
+ 'What is the Starstone?','Which god judges the dead?','What was Thassilon?'];
 const MADE={
  feat:n=>['What level is '+n+'?','What does the '+n+' feat do?'],
  spell:n=>['How does the spell '+n+' work?','What rank is '+n+'?'],
@@ -1403,7 +1450,8 @@ async function drawExamples(){
       made.push(pick(f(e.name),1)[0]);
     }
   }catch(e){}
-  EXAMPLES=pick(pick(POOL,4).concat(pick(made,3)),6).map(t=>[t,'ask']);
+  EXAMPLES=(LORE?pick(pick(POOL,3).concat(pick(made,2)).concat(pick(LORE_POOL,2)),6)
+               :pick(pick(POOL,4).concat(pick(made,3)),6)).map(t=>[t,'ask']);
   EXAMPLES.push([pick(LOOKUPS,1)[0],'search']);
   EL('examples').innerHTML=EXAMPLES.map(([t,m],i)=>
     '<button type="button" class="chip" data-i="'+i+'">'+esc(t)+

@@ -25,7 +25,7 @@ Ollama server if it is installed but not running, which is the step people miss.
 | --- | --- |
 | Ollama | its own installer; models under `~/.ollama` |
 | Models | `qwen3.5:4b` (3.4 GB) answers, `qwen3-embedding:0.6b` (0.6 GB) retrieves; `qwen3.5:9b` (6.6 GB) is pulled the first time you choose **Better** |
-| The index | 150 MB download, 250 MB unpacked, under `~/Library/Application Support/kleverkobold` on macOS, `~/.local/share/kleverkobold` on Linux, `%LOCALAPPDATA%\kleverkobold` on Windows; `--index` or `KOBOLD_INDEX` override it |
+| The index | 270 MB download, 460 MB unpacked, under `~/Library/Application Support/kleverkobold` on macOS, `~/.local/share/kleverkobold` on Linux, `%LOCALAPPDATA%\kleverkobold` on Windows; `--index` or `KOBOLD_INDEX` override it |
 | The program | four pure-Python dependencies, no torch |
 
 Memory while answering: about 5.6 GB with the default model, 8.8 GB with the 9B.
@@ -52,10 +52,12 @@ index with a different encoder returns plausible, unrelated entries.
 - Entries open in a popout; **←** and **→** step through them; **Esc** closes.
 - **★** on any entry keeps it on the front page. History is under the History
   button; both live in your browser only.
-- **Settings** has the two presets and an **Expert mode** switch for the model
-  server, retrieval knobs (excerpts, rerank, context length, answer length),
-  the embedder, and the MCP snippets. The per-stage timing under each answer
-  appears in expert mode too.
+- **Settings** has the two presets, **What it digs through** (rules only; rules
+  and Golarion lore when the question is about the world, the default; or both
+  every time), and an **Expert mode** switch for the model server, retrieval
+  knobs (excerpts, rerank, context length, answer length), the embedder, and
+  the MCP snippets. The per-stage timing under each answer appears in expert
+  mode too.
 - **Wrong? Report it** under every answer: see [reporting.md](reporting.md).
 
 `kobold serve --host 0.0.0.0` makes it reachable from a phone or tablet on your
@@ -65,13 +67,16 @@ network. There is no login; do not expose it to the internet.
 
 ```bash
 kobold ask "an ogre grabbed my monk, what can she do?"   # streams an answer with sources
+kobold ask "who rules Cheliax?"                           # lore, from PathfinderWiki
 kobold search "grabbed"                                   # what retrieval finds, no answer
+kobold search --scope lore "Desna"                        # the deity's stat block and her wiki page
 kobold doctor                                             # Ollama, models, index
 ```
 
 Global flags go before the subcommand: `--index`, `--ollama`, `--backend`,
-`--llm-model`, `--embed-model`. `serve` adds `--host`, `--port`, `--context-chars`
-and `--report-url`.
+`--llm-model`, `--embed-model`. `ask` and `search` take `--scope rules|lore|auto`
+(default `auto`: the kobold decides per question, and a rules question never
+sees lore). `serve` adds `--host`, `--port`, `--context-chars` and `--report-url`.
 
 ## Claude Desktop and Claude Code
 

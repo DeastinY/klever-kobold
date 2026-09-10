@@ -1,6 +1,6 @@
 # Running on a MacBook
 
-The whole runtime is four pure-Python dependencies and about 250 MB of index.
+The whole runtime is four pure-Python dependencies and about 460 MB of index.
 Ollama does the model work; nothing here needs torch, transformers, or a GPU.
 
 ## Memory budget on a 16 GB machine

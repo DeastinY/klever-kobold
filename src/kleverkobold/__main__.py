@@ -25,8 +25,8 @@ import time
 
 import orjson
 
-from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, Assistant, Ollama, OllamaError,
-                  default_llm)
+from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, DEFAULT_SCOPE, SCOPES, Assistant,
+                  Ollama, OllamaError, default_llm)
 
 
 def _llm(args) -> tuple[str | None, bool]:
@@ -53,7 +53,7 @@ def _assistant(args) -> Assistant:
 def cmd_ask(args) -> int:
     a = _assistant(args)
     if args.json:
-        result = a.ask(args.question, k=args.k, rerank=not args.no_rerank)
+        result = a.ask(args.question, k=args.k, rerank=not args.no_rerank, scope=args.scope)
         result.pop("hits", None)   # Hit bodies would bloat the JSON; sources cover it
         sys.stdout.write(orjson.dumps(result, option=orjson.OPT_INDENT_2).decode() + "\n")
         return 0
@@ -61,9 +61,12 @@ def cmd_ask(args) -> int:
     # Streamed, because on a laptop the answer decodes at reading speed and a
     # silent terminal for half a minute is indistinguishable from a hang.
     sources, timings = [], {}
-    for event in a.ask_stream(args.question, k=args.k, rerank=not args.no_rerank):
+    for event in a.ask_stream(args.question, k=args.k, rerank=not args.no_rerank,
+                              scope=args.scope):
         if event["event"] == "sources":
             sources = event["sources"]
+            if event.get("scope") == "lore":
+                print("(answering from Golarion lore as well as the rules)\n", file=sys.stderr)
         elif event["event"] == "token":
             sys.stdout.write(event["text"])
             sys.stdout.flush()
@@ -71,7 +74,8 @@ def cmd_ask(args) -> int:
             timings = event["timings"]
     print("\n\nsources:")
     for s in sources:
-        print(f"  {s['name']} ({s['category']}) — {s['url']}")
+        lore = ", lore" if s.get("corpus") == "pathfinderwiki" else ""
+        print(f"  {s['name']} ({s['category']}{lore}) — {s['url']}")
     if args.timings:
         parts = " · ".join(f"{k.replace('_', ' ')} {v:.1f}s" for k, v in timings.items())
         print(f"\n{parts}", file=sys.stderr)
@@ -81,11 +85,14 @@ def cmd_ask(args) -> int:
 def cmd_search(args) -> int:
     a = _assistant(args)
     plan = a.rewrite(args.question)
-    hits = a.search(args.question, k=args.k, plan=plan, rerank=not args.no_rerank)
-    print(f"interpreted as: {plan['summary']!r}  kinds={plan['categories']}\n")
+    hits = a.search(args.question, k=args.k, plan=plan, rerank=not args.no_rerank,
+                    scope=args.scope)
+    scope = "lore" if a.resolve_scope(args.scope, plan) else "rules"
+    print(f"interpreted as: {plan['summary']!r}  kinds={plan['categories']}  scope={scope}\n")
     for n, h in enumerate(hits, 1):
         level = f" (level {h.level})" if h.level is not None else ""
-        print(f"{n}. {h.name} [{h.category}]{level}\n   {h.url}")
+        lore = ", lore" if h.lore else ""
+        print(f"{n}. {h.name} [{h.category}{lore}]{level}\n   {h.url}")
     return 0
 
 
@@ -145,12 +152,22 @@ def cmd_doctor(args) -> int:
 
     if ok:
         a = _assistant(args)
+        by_corpus = manifest.get("chunks_by_corpus") or {"aon": manifest.get("chunks")}
+        print("  ok   corpus             " + ", ".join(f"{v:,} {k}" for k, v in by_corpus.items())
+              + ("" if a.has_lore else "  (no lore in this index)"))
         hits = a.search("a feat that makes falling less dangerous", k=3)
         names = ", ".join(h.name for h in hits)
         print(f"\n  retrieval smoke test -> {names}")
+        if a.has_lore:
+            hits = a.search("Who rules Cheliax?", k=3, scope="lore")
+            print(f"  lore smoke test      -> {', '.join(h.name for h in hits)}")
         print("\nall good.")
     return 0 if ok else 1
 
+
+SCOPE_HELP = ("what to answer from: 'rules' is the Archives of Nethys alone, 'lore' adds "
+              "PathfinderWiki, 'auto' (default) decides per question and never gives a "
+              "rules question lore")
 
 INSTALL_HINT = {
     "darwin": "brew install ollama\n  or download the app from https://ollama.com/download",
@@ -279,7 +296,7 @@ def cmd_setup(args) -> int:
     if (index / "manifest.json").exists():
         print("  ok   already present")
     else:
-        print("  downloading (~143 MB)")
+        print("  downloading (~270 MB)")
         index.parent.mkdir(parents=True, exist_ok=True)
         # The release lives on a private repository, so an anonymous GET returns
         # 404 rather than 403. Try a token if one is around, then fall back to the
@@ -384,12 +401,14 @@ def main(argv: list[str] | None = None) -> int:
                    help="skip the listwise rerank; slightly faster, worse on hard questions")
     p.add_argument("--timings", action="store_true",
                    help="print seconds spent per stage to stderr")
+    p.add_argument("--scope", choices=SCOPES, default=DEFAULT_SCOPE, help=SCOPE_HELP)
     p.set_defaults(func=cmd_ask)
 
     p = sub.add_parser("search", help="show what retrieval finds, without answering")
     p.add_argument("question")
     p.add_argument("-k", type=int, default=DEFAULT_K)
     p.add_argument("--no-rerank", action="store_true")
+    p.add_argument("--scope", choices=SCOPES, default=DEFAULT_SCOPE, help=SCOPE_HELP)
     p.set_defaults(func=cmd_search)
 
     p = sub.add_parser("setup", help="pull the models and fetch the index")

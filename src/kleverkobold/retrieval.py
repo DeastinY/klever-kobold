@@ -15,6 +15,12 @@ to be on a comparable scale.
 
 41,743 chunks is small. Brute-force cosine over a float32 matrix is ~60 MB and a
 few milliseconds per query, so there is no vector database here on purpose.
+
+**Two corpora, one index.** Golarion lore from PathfinderWiki sits in the same
+matrices as the Archives of Nethys rules, with a ``corpus`` field on every row.
+A rules question is answered with the lore masked out, so the measured rules
+path is untouched; a lore question sees both, because "who is Desna?" is
+answered by the wiki page and the deity's stat block together.
 """
 
 from __future__ import annotations
@@ -62,6 +68,10 @@ def chunk_text(chunk: dict, max_chars: int = 1200) -> str:
     old = [old] if isinstance(old, str) else [n for n in old if n]
     if old:
         head.append("formerly " + ", ".join(old))
+    # Lore rows say so in the header: the embedder then has one token that
+    # separates "Desna (deity)" the stat block from "Desna" the wiki article.
+    if chunk.get("corpus") == "pathfinderwiki":
+        head.append("Golarion lore")
     body = (chunk.get("summary") or "") + "\n" + plain(chunk.get("text") or "")
     return " | ".join(h for h in head if h) + "\n" + body[:max_chars].strip()
 
@@ -73,6 +83,8 @@ class Index:
     ids: list[str]
     meta: list[dict]
     canonical: list[int] = field(default_factory=list, repr=False)
+    lore_mask: np.ndarray | None = field(default=None, repr=False)
+    has_lore: bool = False
     embeddings: np.ndarray | None = None
     summary_embeddings: np.ndarray | None = None
     bm25: object | None = None
@@ -85,14 +97,22 @@ class Index:
         # a creature ability shared by several monsters. Left alone they split an
         # entity's evidence across two rows during rank fusion, so a result that is
         # ranked first by two views can lose to one that is ranked fifth by three.
-        # Map every row to a single canonical row per (name, category).
-        canonical: dict[tuple[str, str], int] = {}
+        # Map every row to a single canonical row per (name, category, corpus).
+        # The corpus is part of the key: the Archives' "Desna" (deity) and the
+        # wiki's "Desna" (deity) are different documents, and pooling them would
+        # let the stat block swallow the lore or the reverse.
+        canonical: dict[tuple[str, str, str], int] = {}
         self.canonical = list(range(len(self.ids)))
         for i, meta in enumerate(self.meta):
-            key = ((meta.get("name") or "").lower(), meta.get("category") or "")
+            key = ((meta.get("name") or "").lower(), meta.get("category") or "",
+                   meta.get("corpus") or "aon")
             if not key[0]:
                 continue
             self.canonical[i] = canonical.setdefault(key, i)
+        # Which rows are lore, once, as a mask: `allowed` is called per query.
+        self.lore_mask = np.array([m.get("corpus") == "pathfinderwiki" for m in self.meta],
+                                  dtype=bool)
+        self.has_lore = bool(self.lore_mask.any())
 
     def __len__(self) -> int:
         return len(self.ids)
@@ -103,19 +123,29 @@ class Index:
     # --- candidate filtering -------------------------------------------------
 
     def allowed(self, exclude_legacy: bool = True,
-                categories: Sequence[str] | None = None) -> np.ndarray:
+                categories: Sequence[str] | None = None,
+                lore: bool = False) -> np.ndarray:
         """Boolean mask of chunks a query is allowed to retrieve.
 
         Legacy entries are excluded by default: they are the pre-Remaster text,
         they are what stale training data already contains, and surfacing them
         as current rules is the exact failure the benchmark measures.
+
+        Lore is excluded by default for the same reason in a different coat: a
+        wiki paragraph about the Grab an Edge feat's namesake must never be
+        served as its rules text. With ``lore`` the wiki rows are in, and a
+        category narrowing keeps them in -- the rewriter's entry kinds are rules
+        kinds, and "nation" is not among them.
         """
         mask = np.ones(len(self.ids), dtype=bool)
         if exclude_legacy:
             mask &= np.array([m.get("remaster_status") != "legacy" for m in self.meta])
         if categories:
             wanted = set(categories)
-            mask &= np.array([m.get("category") in wanted for m in self.meta])
+            wanted_mask = np.array([m.get("category") in wanted for m in self.meta])
+            mask &= (wanted_mask | self.lore_mask) if lore else wanted_mask
+        if not lore:
+            mask &= ~self.lore_mask
         return mask
 
     # --- retrieval -----------------------------------------------------------
@@ -236,8 +266,8 @@ def follow_remaster(index: Index, order: Sequence[int]) -> list[int]:
 
 def search(index: Index, query: str, query_vec: np.ndarray | None, k: int = 5,
            mode: str = "hybrid", pool: int = 50,
-           exclude_legacy: bool = True) -> list[tuple[str, dict]]:
-    mask = index.allowed(exclude_legacy=exclude_legacy)
+           exclude_legacy: bool = True, lore: bool = False) -> list[tuple[str, dict]]:
+    mask = index.allowed(exclude_legacy=exclude_legacy, lore=lore)
     if mode == "dense":
         order = index.dense(query_vec, mask, k)
     elif mode == "bm25":

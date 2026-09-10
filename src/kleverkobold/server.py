@@ -23,8 +23,8 @@ import urllib.parse
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from .app import (BIG_LLM, DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, INDEX_URL, SMALL_LLM,
-                  Assistant, OllamaError, probe_backend)
+from .app import (BIG_LLM, DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, DEFAULT_SCOPE, INDEX_URL,
+                  SCOPES, SMALL_LLM, Assistant, OllamaError, probe_backend)
 from .ui import PAGE
 
 # The header the API key travels in. A header rather than a query parameter so it
@@ -209,15 +209,22 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
             rerank = (query.get("rerank") or ["1"])[0] != "0"
             max_tokens = _clamp((query.get("tokens") or [None])[0], 32, 4000,
                                 pool.base.answer_tokens)
+            scope = (query.get("scope") or [DEFAULT_SCOPE])[0]
+            if scope not in SCOPES:
+                scope = DEFAULT_SCOPE
             if parsed.path == "/api/ask":
-                self._ask_stream(question, config, api_key, k, rerank, max_tokens)
+                self._ask_stream(question, config, api_key, k, rerank, max_tokens, scope)
                 return
             try:
                 assistant = pool.get(config, api_key)
                 # One model, one card: serialise so two players hitting enter at
                 # the same time queue instead of thrashing Ollama.
                 with lock:
-                    payload = {"hits": _hits(assistant.search(question, k=k, rerank=rerank))}
+                    plan = assistant.rewrite(question)
+                    lore = assistant.resolve_scope(scope, plan)
+                    payload = {"hits": _hits(assistant.search(question, k=k, plan=plan,
+                                                              rerank=rerank, scope=scope)),
+                               "scope": "lore" if lore else "rules"}
             except OllamaError as exc:
                 self._send(503, json.dumps({"error": str(exc)}).encode(), "application/json")
                 return
@@ -276,7 +283,7 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                 self._sse({"event": "error", "error": f"{type(exc).__name__}: {exc}"})
 
         def _ask_stream(self, question: str, config: Config, api_key: str,
-                        k: int, rerank: bool, max_tokens: int) -> None:
+                        k: int, rerank: bool, max_tokens: int, scope: str) -> None:
             """Answer over server-sent events.
 
             The answer is the slow half and it decodes a token at a time. Sending
@@ -295,11 +302,11 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                 assistant = pool.get(config, api_key)
                 with lock:
                     for event in assistant.ask_stream(question, k=k, rerank=rerank,
-                                                      max_tokens=max_tokens):
+                                                      max_tokens=max_tokens, scope=scope):
                         if event["event"] == "sources":
                             shown = event["hits"]
                             event = {"event": "sources", "timings": event["timings"],
-                                     "hits": _hits(shown)}
+                                     "hits": _hits(shown), "scope": event["scope"]}
                         elif event["event"] == "done":
                             event = dict(event)
                             event["mentions"] = _hits(assistant.mentions(
@@ -351,7 +358,7 @@ def _report_url(flag: str | None) -> str:
 def _hits(hits) -> list[dict]:
     return [{"name": h.name, "category": h.category.replace("-", " "), "level": h.level,
              "url": h.url, "text": h.text[:9000], "summary": h.summary or "",
-             "legacy_name": h.legacy_name, "traits": []} for h in hits]
+             "legacy_name": h.legacy_name, "traits": [], "corpus": h.corpus} for h in hits]
 
 
 def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLLAMA,
@@ -388,7 +395,13 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
                            "index_tag": INDEX_URL.split("/releases/download/")[1].split("/")[0]
                            if "/releases/download/" in INDEX_URL else "",
                            "context_chars": assistant.context_chars,
-                           "answer_tokens": assistant.answer_tokens},
+                           "answer_tokens": assistant.answer_tokens,
+                           # Whether this index carries PathfinderWiki, so the
+                           # page can offer the scope control and lore examples.
+                           "lore": assistant.has_lore,
+                           "scope": DEFAULT_SCOPE,
+                           "corpus": assistant.manifest.get("chunks_by_corpus")
+                           or {"aon": assistant.manifest.get("chunks", 0)}},
               # Drives how loudly the panel warns about typing an API key into a
               # page with no authentication in front of it.
               "local_only": host in ("127.0.0.1", "localhost", "::1")}

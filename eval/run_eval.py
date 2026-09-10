@@ -289,7 +289,8 @@ def attach_context(items: list[dict], retriever: str, mode: str, k: int,
 
 def run_app(items: list[dict], index_dir: pathlib.Path, ollama_url: str, k: int,
             rerank: bool = False, pool: int = 24, context_chars: int = 1600,
-            answer_tokens: int = 400, llm_model: str | None = None) -> list[dict]:
+            answer_tokens: int = 400, llm_model: str | None = None,
+            scope: str = "auto", old_rewrite: bool = False) -> list[dict]:
     """Evaluate the shipped runtime itself, not a lab reimplementation of it.
 
     Everything else in this file drives transformers directly. That is fine for
@@ -299,14 +300,18 @@ def run_app(items: list[dict], index_dir: pathlib.Path, ollama_url: str, k: int,
     published program.
     """
     sys.path.insert(0, str(ROOT / "src"))
-    from kleverkobold.app import Assistant
+    from kleverkobold.app import REWRITE_SYSTEM, Assistant
 
     assistant = Assistant(index_dir, ollama_url, context_chars=context_chars,
                           answer_tokens=answer_tokens, llm_model=llm_model)
+    if old_rewrite:
+        # The rules-only rewrite prompt on a lore index: measures what the
+        # SCOPE line costs the rules path, separately from the lore rows.
+        assistant.rewrite_system = REWRITE_SYSTEM
     print(f"  app backend using llm={assistant.manifest['ollama_llm']}", flush=True)
     out, elapsed = [], []
     for n, item in enumerate(items, 1):
-        result = assistant.ask(item["question"], k=k, rerank=rerank, pool=pool)
+        result = assistant.ask(item["question"], k=k, rerank=rerank, pool=pool, scope=scope)
         elapsed.append(result["timings"])
         out.append({"id": item["id"], "family": item["family"], "response": result["answer"],
                     "usage": {}, "timings": result["timings"],
@@ -340,6 +345,10 @@ def main() -> int:
                     help="app backend: the packaged index to run against")
     ap.add_argument("--ollama", default="http://localhost:11434")
     ap.add_argument("--rerank", action="store_true", help="app backend: listwise rerank")
+    ap.add_argument("--scope", default="auto", choices=("auto", "rules", "lore"),
+                    help="app backend: what retrieval may see; 'rules' masks the lore out")
+    ap.add_argument("--old-rewrite", action="store_true",
+                    help="app backend: the rules-only rewrite prompt even on a lore index")
     ap.add_argument("--pool", type=int, default=24, help="candidates handed to the reranker")
     ap.add_argument("--llm-model", default=None,
                     help="app backend: override the answering/rewriting/reranking model")
@@ -418,7 +427,7 @@ def main() -> int:
     elif args.backend == "app":
         rows = run_app(items, args.index_dir, args.ollama, args.retrieve or 5,
                        args.rerank, args.pool, args.app_context_chars, args.answer_tokens,
-                       args.llm_model)
+                       args.llm_model, args.scope, args.old_rewrite)
     else:
         rows = run_hf(items, args.model, args.max_tokens, args.batch_size, not args.no_4bit,
                       json.loads(args.chat_kwargs), system, args.adapter)

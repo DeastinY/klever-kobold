@@ -44,7 +44,7 @@ ollama --version
 say "3/4  The Klever Kobold"
 uv tool install --force "git+$REPO"
 export PATH="$HOME/.local/bin:$PATH"
-kobold setup            # both models (about 4 GB) and the rules index (150 MB); idempotent
+kobold setup            # both models (about 4 GB) and the rules-and-lore index (270 MB); idempotent
 
 say "4/4  Starting"
 echo "Runs at http://localhost:8765 — next time, just:  kobold serve"

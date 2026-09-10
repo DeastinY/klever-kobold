@@ -71,10 +71,12 @@ Four things to try, cheapest first, each measured alone:
 
 ## Tier 2 — coverage and freshness
 
-1. **Index the lore.** 22,604 PathfinderWiki chunks are built and unused by the
-   deployed system, which answers rules questions only. Golarion questions are
-   half of what a GM asks. Needs a source filter so lore never answers a rules
-   question.
+1. ~~**Index the lore.**~~ Done 2026-09-10: PathfinderWiki is in the index
+   as a second corpus (24,409 pages, 32,182 rows, sections and infobox facts),
+   behind a scope the rewriter sets and that defaults to rules when unsure.
+   What is still open: an end-to-end lore holdout with graded answers — only
+   recall and scope accuracy are measured — and the wiki's own thinness on the
+   newest books.
 2. **Structured queries deserve a structured path.** "Level 4 fighter feats with
    the flourish trait" is a database filter wearing a question's clothes; running
    it through semantic search is strictly worse than a `WHERE` clause. The

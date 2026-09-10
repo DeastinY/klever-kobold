@@ -19,7 +19,7 @@ import sys
 
 import orjson
 
-from .app import DEFAULT_K, Assistant, OllamaError
+from .app import DEFAULT_K, DEFAULT_SCOPE, SCOPES, Assistant, OllamaError
 
 PROTOCOL_VERSION = "2024-11-05"
 
@@ -27,15 +27,20 @@ TOOLS = [
     {
         "name": "kobold_ask",
         "description": (
-            "Answer a Pathfinder 2e rules question using the Archives of Nethys, "
-            "with source URLs. Handles natural phrasing: describe a feat instead of "
-            "naming it, ask what to do in a situation, or use pre-Remaster terms."
+            "Answer a Pathfinder 2e question using the Archives of Nethys (rules) and "
+            "PathfinderWiki (Golarion setting lore), with source URLs. Handles natural "
+            "phrasing: describe a feat instead of naming it, ask what to do in a situation, "
+            "use pre-Remaster terms, or ask who rules Cheliax."
         ),
         "inputSchema": {
             "type": "object",
             "properties": {
-                "question": {"type": "string", "description": "The rules question."},
+                "question": {"type": "string", "description": "The question."},
                 "k": {"type": "integer", "description": "Excerpts to retrieve (default 8)."},
+                "scope": {"type": "string", "enum": list(SCOPES),
+                          "description": "rules: Archives of Nethys only. lore: rules and "
+                                         "PathfinderWiki. auto (default): decided per question; "
+                                         "a rules question never sees lore."},
             },
             "required": ["question"],
         },
@@ -43,15 +48,17 @@ TOOLS = [
     {
         "name": "kobold_search",
         "description": (
-            "Retrieve Pathfinder 2e rules excerpts without answering. Returns the "
-            "matching Archives of Nethys entries with their text and URLs, for the "
-            "caller to reason over itself."
+            "Retrieve Pathfinder 2e excerpts without answering: rules entries from the "
+            "Archives of Nethys and, for setting questions, lore from PathfinderWiki, "
+            "each with its text and URL, for the caller to reason over itself."
         ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "question": {"type": "string"},
                 "k": {"type": "integer", "description": "Excerpts to retrieve (default 8)."},
+                "scope": {"type": "string", "enum": list(SCOPES),
+                          "description": "rules, lore, or auto (default)."},
             },
             "required": ["question"],
         },
@@ -87,17 +94,22 @@ def serve(index_dir: pathlib.Path, ollama_url: str, llm_model: str | None = None
             question = (args.get("question") or "").strip()
             if not question:
                 return _result("A question is required.", True)
+            scope = args.get("scope") or DEFAULT_SCOPE
+            if scope not in SCOPES:
+                return _result(f"scope must be one of {', '.join(SCOPES)}.", True)
             try:
                 a = get()
                 if name == "kobold_ask":
-                    out = a.ask(question, k=int(args.get("k") or DEFAULT_K))
+                    out = a.ask(question, k=int(args.get("k") or DEFAULT_K), scope=scope)
                     lines = [out["answer"], "", "Sources:"]
-                    lines += [f"- {s['name']} ({s['category']}) {s['url']}" for s in out["sources"]]
+                    lines += [f"- {s['name']} ({s['category']}"
+                              f"{', lore' if s.get('corpus') == 'pathfinderwiki' else ''}) "
+                              f"{s['url']}" for s in out["sources"]]
                     return _result("\n".join(lines))
                 if name == "kobold_search":
-                    hits = a.search(question, k=int(args.get("k") or DEFAULT_K))
-                    blocks = [f"## {h.name} ({h.category})\n{h.url}\n\n{h.text[:1600]}"
-                              for h in hits]
+                    hits = a.search(question, k=int(args.get("k") or DEFAULT_K), scope=scope)
+                    blocks = [f"## {h.name} ({h.category}{', Golarion lore' if h.lore else ''})"
+                              f"\n{h.url}\n\n{h.text[:1600]}" for h in hits]
                     return _result("\n\n---\n\n".join(blocks) or "Nothing matched.")
                 return _result(f"Unknown tool {name!r}.", True)
             except OllamaError as exc:

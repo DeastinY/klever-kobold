@@ -41,6 +41,8 @@ is one file, `src/kleverkobold/ui.py`, with no build step: edit it, restart, rel
    ```bash
    uv run python eval/run_eval.py --backend app --rerank --benchmark eval/holdout.jsonl --label my-change
    uv run python eval/score.py eval/runs/my-change.jsonl --benchmark eval/holdout.jsonl
+   uv run python eval/lore_answers.py     # lore: thirty checkable facts, end to end
+   uv run python eval/lore_recall.py      # lore: recall@8, and rules controls that saw the wiki
    ```
 
    It is 109 hand-written questions and takes about 20 minutes with the default

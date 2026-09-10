@@ -1,0 +1,7 @@
+{
+  "control": "old prompt vs old prompt, two passes, 100 benchmark items, qwen3.5:4b",
+  "kinds_identical": 1.0,
+  "kinds_jaccard": 1.0,
+  "summary_token_jaccard": 1.0,
+  "seconds": 46
+}

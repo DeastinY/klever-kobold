@@ -1,0 +1,32 @@
+{
+  "model": "qwen3.5:4b",
+  "items": 556,
+  "scope": {
+    "lore": {
+      "n": 50,
+      "right": 48,
+      "acc": 0.96
+    },
+    "rules-control": {
+      "n": 20,
+      "right": 20,
+      "acc": 1.0
+    },
+    "benchmark": {
+      "n": 486,
+      "right": 482,
+      "acc": 0.992
+    }
+  },
+  "rules_sent_to_lore": 4,
+  "drift": {
+    "on": "rules questions only",
+    "n": 506,
+    "kinds_identical": 0.567,
+    "kinds_jaccard": 0.739,
+    "summary_token_jaccard": 0.323,
+    "empty_summary_old": 0,
+    "empty_summary_new": 0
+  },
+  "seconds": 313
+}

@@ -1517,3 +1517,97 @@ that misses what the item wanted).
 **Default stays qwen3.5:9b.** The Faster preset already offers the 4B to anyone
 who needs it, and this is the full number that the instruction asked for before
 changing anything.
+
+
+## Lore: PathfinderWiki as a second corpus, behind a scope
+
+**Date:** 2026-09-10. **Index:** v3, built here — 41,743 Archives rows plus
+32,179 PathfinderWiki rows from 24,409 pages (short pages whole; long ones split
+at their headings, so "Cheliax › Government" is its own row; the infobox written
+into the lead as `**Capital** Egorian` lines). 458 MB unpacked, 272 MB packed.
+
+### The design, and the one rule it exists to keep
+
+A rules question must never be answered from a wiki paragraph. So retrieval has
+a scope: `rules` masks the wiki out and is the path everything above was
+measured on; `lore` lets both corpora in; `auto` adds one line to the rewrite
+prompt (`SCOPE: rules|lore`) and reads anything short of a plain "lore" as
+rules. The canonical key gained the corpus, so the wiki's "Desna" cannot pool
+with the deity's stat block. When a wiki excerpt is among the eight, the answer
+prompt names both sources and allows 150 words.
+
+### Scope: does the rewriter send the right questions to lore?
+
+`eval/scope_probe.py`, qwen3.5:4b, 50 hand-written lore questions, 20 rules
+controls, all 486 generated benchmark items.
+
+| | first prompt | + one named-creature example |
+| --- | ---: | ---: |
+| lore questions sent to lore | 47/50 | 48/50 |
+| rules controls sent to rules | 19/20 | 20/20 |
+| benchmark (all rules) sent to rules | 462/486 | **482/486** |
+
+The first prompt's 24 leaks were one shape: *"what level is the creature
+Armag?"* — a creature with a personal name reads as a person. One example in
+the few-shot ("What level is the creature Daring Danika? → rules") and a clause
+in the instruction took it to 4/486. The two lore questions still sent to rules
+are "What is the Test of the Starstone?" and "What is the Eye of Abendego?",
+both proper nouns with Archives homonyms; not chased, noted.
+
+### Drift: did the extra line change what the rewriter writes?
+
+Yes, and it did not matter. On the 506 rules questions the new prompt produced
+identical KINDS on 57% (Jaccard 0.74) and summaries sharing a third of their
+tokens with the old prompt's. A control — the old prompt against itself, two
+passes, 100 items — scored 1.0 on all three, so this is the prompt, not the
+sampler. Whether it costs anything is a question for the gate, below, which
+was run with the old prompt forced (`--old-rewrite`) as the control.
+
+### Lore recall through the runtime
+
+`eval/lore_recall.py`, k=8, rerank on, scope `auto`, 9B rewriter. Five runs
+while the slot rule below was being settled; the shipped configuration:
+
+| | |
+| --- | ---: |
+| lore questions sent to lore | 48/50 |
+| recall@8 (expected page or a section of it among the eight) | **47/50** |
+| recall@24 (in the pool before the rerank) | 48/50 |
+| rules controls that saw a wiki excerpt | 2/20 |
+
+The two controls are "which domains does Pharasma grant?" and "what are the
+anathema of a champion of Sarenrae?" — deity *mechanics*, which the rewriter
+reads as lore. On the first run they came back with **eight wiki excerpts and
+no stat block**: the wiki has 1,571 deity pages and the Archives one entry per
+god, and fusion is a vote. The fix is two reserved slots for Archives entries
+when lore is in play. Reserving from the whole pool cost two lore questions
+their page at rank eight to a trait that shared a word with the question
+(46/50); reserving only from retrieval's own top k left Pharasma's entry out
+again (it ranks below eight wiki rows); the rule that ships takes an Archives
+entry the *question names* or that retrieval put in its top k. Both controls
+now carry the deity's stat block among the eight, and lore recall is 47/50.
+
+### The gate, 109 hand-written questions, rerank on, index-v3
+
+| model | scope | rewrite prompt | holdout | recorded, index-v2 |
+| --- | --- | --- | ---: | ---: |
+| qwen3.5:9b | auto | new | **101/109** | 100/109 |
+| qwen3.5:9b | rules | new | 98/109 | |
+| qwen3.5:4b | auto | new | **99/109** | 93/109 |
+| qwen3.5:4b | rules | new | 100/109 | |
+| qwen3.5:4b | rules | old, forced | 101/109 | |
+
+Every pair is inside the ±3 floor. The SCOPE line costs the 4B one item on the
+rules path (100 against 101), which is not a result. The 4B's +6 over its
+recorded number is index-v3's other changes — resolved embeds and filled legacy
+names, promised in the last release and landing in this one — and was not
+separated out. Family tables are in `eval/runs/lore-v3-*.scores.json`.
+
+Two things this does not measure: answer *quality* on lore questions (only
+whether the page reaches the model), and the wiki's coverage of the newest
+books, which is thin by inspection.
+
+One more thing found by reading outputs, not scores: on this machine the 4B
+gave the same 99/109 three times in three processes, item for item. The
+"not reproducible across processes" note above is about the MacBook's Ollama;
+here it is exact, which makes the ±3 floor a laptop number, not a law.

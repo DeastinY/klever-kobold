@@ -1,0 +1,70 @@
+{"id": "lore-001", "family": "lore", "question": "Who rules Cheliax?", "expect": ["Cheliax", "Abrogail Thrune II", "House Thrune"]}
+{"id": "lore-002", "family": "lore", "question": "What is the capital of Cheliax?", "expect": ["Cheliax", "Egorian"]}
+{"id": "lore-003", "family": "lore", "question": "Which god did Cheliax's ruling house make its pact with?", "expect": ["Cheliax", "House Thrune", "Asmodeus"]}
+{"id": "lore-004", "family": "lore", "question": "What happened when Aroden died?", "expect": ["Aroden", "Age of Lost Omens", "Death of Aroden"]}
+{"id": "lore-005", "family": "lore", "question": "What is the Test of the Starstone?", "expect": ["Test of the Starstone", "Starstone"]}
+{"id": "lore-006", "family": "lore", "question": "Which mortals became gods by passing the Starstone's test?", "expect": ["Test of the Starstone", "Starstone", "Cayden Cailean", "Iomedae", "Norgorber"]}
+{"id": "lore-007", "family": "lore", "question": "Who is the Whispering Tyrant?", "expect": ["Tar-Baphon", "Whispering Tyrant"]}
+{"id": "lore-008", "family": "lore", "question": "What happened to Lastwall?", "expect": ["Lastwall", "Gravelands"]}
+{"id": "lore-009", "family": "lore", "question": "Which nation is ruled by the dead and feeds the living with its harvests?", "expect": ["Geb"]}
+{"id": "lore-010", "family": "lore", "question": "Where is Sandpoint?", "expect": ["Sandpoint", "Varisia", "Lost Coast"]}
+{"id": "lore-011", "family": "lore", "question": "What was the Worldwound?", "expect": ["Worldwound", "Sarkoris Scar", "Sarkoris"]}
+{"id": "lore-012", "family": "lore", "question": "What does Baba Yaga have to do with Irrisen?", "expect": ["Baba Yaga", "Irrisen"]}
+{"id": "lore-013", "family": "lore", "question": "What is Numeria known for?", "expect": ["Numeria", "Silver Mount", "Technic League"]}
+{"id": "lore-014", "family": "lore", "question": "Who are the Hellknights?", "expect": ["Hellknight", "Hellknights"]}
+{"id": "lore-015", "family": "lore", "question": "What is the Pathfinder Society?", "expect": ["Pathfinder Society"]}
+{"id": "lore-016", "family": "lore", "question": "Which goddess do travellers, dreamers and gamblers pray to?", "expect": ["Desna"]}
+{"id": "lore-017", "family": "lore", "question": "Who are the Red Mantis and which god do they serve?", "expect": ["Red Mantis", "Achaekek"]}
+{"id": "lore-018", "family": "lore", "question": "Why is Absalom called the City at the Center of the World?", "expect": ["Absalom"]}
+{"id": "lore-019", "family": "lore", "question": "Which runelord ruled Shalast?", "expect": ["Karzoug", "Shalast"]}
+{"id": "lore-020", "family": "lore", "question": "What was Thassilon?", "expect": ["Thassilon"]}
+{"id": "lore-021", "family": "lore", "question": "What caused Earthfall?", "expect": ["Earthfall", "Starstone"]}
+{"id": "lore-022", "family": "lore", "question": "Who is Shelyn's brother and what happened to him?", "expect": ["Shelyn", "Zon-Kuthon"]}
+{"id": "lore-023", "family": "lore", "question": "Why does Alkenstar have guns when nowhere else does?", "expect": ["Alkenstar", "Mana Wastes"]}
+{"id": "lore-024", "family": "lore", "question": "Which parts of Cheliax broke away and became free?", "expect": ["Ravounel", "Andoran", "Kintargo", "Cheliax"]}
+{"id": "lore-025", "family": "lore", "question": "What is the Eye of Abendego?", "expect": ["Eye of Abendego"]}
+{"id": "lore-026", "family": "lore", "question": "Is Razmir really a god?", "expect": ["Razmir", "Razmiran"]}
+{"id": "lore-027", "family": "lore", "question": "What is the Mwangi Expanse like?", "expect": ["Mwangi Expanse"]}
+{"id": "lore-028", "family": "lore", "question": "What is the Aspis Consortium?", "expect": ["Aspis Consortium"]}
+{"id": "lore-029", "family": "lore", "question": "Which god judges the souls of the dead?", "expect": ["Pharasma"]}
+{"id": "lore-030", "family": "lore", "question": "What were the Mendevian Crusades fighting against?", "expect": ["Mendevian Crusades", "Mendev", "Worldwound"]}
+{"id": "lore-031", "family": "lore", "question": "What is Kyonin?", "expect": ["Kyonin"]}
+{"id": "lore-032", "family": "lore", "question": "Who lives in the Five Kings Mountains?", "expect": ["Five Kings Mountains"]}
+{"id": "lore-033", "family": "lore", "question": "How is Druma governed?", "expect": ["Druma", "Kalistocracy", "Prophecies of Kalistrade"]}
+{"id": "lore-034", "family": "lore", "question": "What was the Godsrain?", "expect": ["Godsrain", "Godsrain (event)", "War of Immortals", "Gorum"]}
+{"id": "lore-035", "family": "lore", "question": "What is Ustalav like?", "expect": ["Ustalav"]}
+{"id": "lore-036", "family": "lore", "question": "Who is Arazni?", "expect": ["Arazni"]}
+{"id": "lore-037", "family": "lore", "question": "What is Katapesh known for?", "expect": ["Katapesh"]}
+{"id": "lore-038", "family": "lore", "question": "What language do most people around the Inner Sea speak?", "expect": ["Taldane", "Common", "Human languages of Golarion"]}
+{"id": "lore-039", "family": "lore", "question": "Who is Iomedae?", "expect": ["Iomedae"]}
+{"id": "lore-040", "family": "lore", "question": "What is the Grand Lodge?", "expect": ["Grand Lodge"]}
+{"id": "lore-041", "family": "lore", "question": "Which god does Nidal serve, and why?", "expect": ["Nidal", "Zon-Kuthon"]}
+{"id": "lore-042", "family": "lore", "question": "Who are the Gray Gardeners of Galt?", "expect": ["Galt", "Gray Gardeners"]}
+{"id": "lore-043", "family": "lore", "question": "What is going on in Brevoy?", "expect": ["Brevoy"]}
+{"id": "lore-044", "family": "lore", "question": "What happened to Sarkoris?", "expect": ["Sarkoris", "Worldwound", "Sarkoris Scar"]}
+{"id": "lore-045", "family": "lore", "question": "Which city is Magnimar's rival?", "expect": ["Magnimar", "Korvosa"]}
+{"id": "lore-046", "family": "lore", "question": "Who founded Absalom?", "expect": ["Absalom", "Aroden"]}
+{"id": "lore-047", "family": "lore", "question": "What are the Shackles?", "expect": ["Shackles", "The Shackles"]}
+{"id": "lore-048", "family": "lore", "question": "What is the Whispering Way?", "expect": ["Whispering Way"]}
+{"id": "lore-049", "family": "lore", "question": "Who is the god of the Thrice-Damned House of Thrune?", "expect": ["Asmodeus", "House Thrune"]}
+{"id": "lore-050", "family": "lore", "question": "What kind of place is Otari?", "expect": ["Otari"]}
+{"id": "rules-001", "family": "rules-control", "question": "How does Treat Wounds work?", "expect": []}
+{"id": "rules-002", "family": "rules-control", "question": "Is there a feat that makes falling less dangerous?", "expect": []}
+{"id": "rules-003", "family": "rules-control", "question": "An ogre has grabbed my monk. What can she do about it?", "expect": []}
+{"id": "rules-004", "family": "rules-control", "question": "What level is Battle Medicine?", "expect": []}
+{"id": "rules-005", "family": "rules-control", "question": "Does flanking still work if I'm prone?", "expect": []}
+{"id": "rules-006", "family": "rules-control", "question": "Can I cast a spell while grabbed?", "expect": []}
+{"id": "rules-007", "family": "rules-control", "question": "What does the off-guard condition do?", "expect": []}
+{"id": "rules-008", "family": "rules-control", "question": "How much does a longsword cost?", "expect": []}
+{"id": "rules-009", "family": "rules-control", "question": "What is Desna's favored weapon?", "expect": []}
+{"id": "rules-010", "family": "rules-control", "question": "Which domains does Pharasma grant her clerics?", "expect": []}
+{"id": "rules-011", "family": "rules-control", "question": "What's the DC to Recall Knowledge about a level 5 creature?", "expect": []}
+{"id": "rules-012", "family": "rules-control", "question": "How do hero points work?", "expect": []}
+{"id": "rules-013", "family": "rules-control", "question": "What happens on a critical failure when I Climb?", "expect": []}
+{"id": "rules-014", "family": "rules-control", "question": "Which classes get sneak attack?", "expect": []}
+{"id": "rules-015", "family": "rules-control", "question": "How dangerous is a Hellknight armiger as an enemy for a level 3 party?", "expect": []}
+{"id": "rules-016", "family": "rules-control", "question": "Was Magic Missile renamed?", "expect": []}
+{"id": "rules-017", "family": "rules-control", "question": "What does the Cheliax Hellknight archetype give me?", "expect": []}
+{"id": "rules-018", "family": "rules-control", "question": "How many actions does it take to draw a weapon?", "expect": []}
+{"id": "rules-019", "family": "rules-control", "question": "What are the anathema of a champion of Sarenrae?", "expect": []}
+{"id": "rules-020", "family": "rules-control", "question": "How does persistent fire damage end?", "expect": []}

@@ -27,7 +27,7 @@ for model in "$EMBED" "$LLM"; do
 done
 
 if [ ! -f "$INDEX/manifest.json" ]; then
-  echo "fetching the rules index (~143 MB) ..."
+  echo "fetching the index (~270 MB) ..."
   mkdir -p "$(dirname "$INDEX")"
   curl -fL -o /tmp/kobold-index.tar.gz "$KOBOLD_INDEX_URL"
   tar -xzf /tmp/kobold-index.tar.gz -C "$(dirname "$INDEX")"

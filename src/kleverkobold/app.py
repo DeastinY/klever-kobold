@@ -3,7 +3,7 @@
 Everything heavy is delegated to Ollama over HTTP, so this package needs only
 numpy, httpx and orjson -- no torch, no transformers, no CUDA. On a 16 GB
 MacBook the resident cost is the two models Ollama holds (about 6.3 GB) plus
-roughly 250 MB of memory-mapped index.
+roughly 460 MB of memory-mapped index (250 MB before the lore).
 
 The pipeline is the one the benchmark measured, in order:
 
@@ -21,6 +21,13 @@ The pipeline is the one the benchmark measured, in order:
 5. **Answer.** The excerpts are given to the model as authoritative, with an
    instruction to cite the source URL and to say plainly when the answer is not
    among them.
+
+Lore is a second corpus in the same index -- PathfinderWiki, one chunk per
+article or section -- behind a **scope**. ``rules`` never sees it and is the
+path every number in the docs was measured on; ``lore`` sees both corpora;
+``auto`` (the default) lets the rewrite step say which, in one extra line, and
+anything short of a plain "lore" means rules. So a rules question cannot be
+answered from a wiki paragraph, and "who rules Cheliax?" gets the wiki.
 """
 
 from __future__ import annotations
@@ -98,7 +105,7 @@ def default_index() -> pathlib.Path:
 
     Running from a checkout, ``dist/kobold-index`` is right there. Installed with
     ``uv tool install`` or run with ``uvx``, the package sits in a cache that is
-    wiped on upgrade, so a 244 MB index cannot live beside it -- it goes to the
+    wiped on upgrade, so a 460 MB index cannot live beside it -- it goes to the
     user data directory instead and survives.
     """
     repo = pathlib.Path(__file__).resolve().parents[2] / "dist" / "kobold-index"
@@ -133,6 +140,20 @@ CATEGORIES = ("action", "condition", "feat", "spell", "equipment", "weapon", "ar
               "creature", "hazard", "trait", "rules", "class-feature", "ritual",
               "archetype", "background", "heritage", "deity", "shield")
 
+# What a question may be answered from. ``rules`` is the Archives alone and is
+# the measured path; ``lore`` adds PathfinderWiki; ``auto`` asks the rewriter.
+SCOPES = ("auto", "rules", "lore")
+DEFAULT_SCOPE = "auto"
+
+# Excerpts kept for the Archives when a question is answered with lore in play.
+# The wiki has 1,571 deity pages and the Archives one entry per god, so "which
+# domains does Pharasma grant?" -- a mechanics question the rewriter reads as
+# lore -- came back with eight wiki excerpts and no stat block. Two slots keep
+# the entry the answer lives in; they are filled only from Archives entries that
+# retrieval ranked in the top k on its own, so a pure lore question ("who rules
+# Cheliax?") is not charged for them unless the Archives had a real candidate.
+RULES_SLOTS = 2
+
 REWRITE_SYSTEM = (
     "You help search a Pathfinder 2e rules database. Each entry is one game element with a "
     "one-line summary.\n\n"
@@ -151,6 +172,52 @@ REWRITE_SYSTEM = (
     "Question: How much healing does a short rest give my party?\n"
     "SUMMARY: Spend 10 minutes treating an injured creature to restore Hit Points.\n"
     "KINDS: action, feat"
+)
+
+# The same prompt with one more line, used only when the index carries lore.
+# The rules-only prompt above is what the holdout was measured with and stays
+# byte-identical on an index without lore; this one keeps its SUMMARY and KINDS
+# instructions and examples word for word and adds SCOPE after them, so a
+# wrong-scope failure is separable from a rewrite failure.
+REWRITE_SCOPE_SYSTEM = (
+    "You help search a Pathfinder 2e reference. Rules entries come from the Archives of "
+    "Nethys: each is one game element with a one-line summary. Setting lore comes from "
+    "PathfinderWiki: one article per person, place, deity, organization or event of Golarion.\n\n"
+    "Given a player's question, reply with exactly three lines and nothing else:\n"
+    "SUMMARY: the one-line summary you would expect on the database entry that answers this "
+    "question, written the way the rulebook writes summaries. Describe what it does. Do not "
+    "guess at a name.\n"
+    "KINDS: up to three entry kinds that could answer it, comma separated, from: "
+    + ", ".join(CATEGORIES) + "; or none.\n"
+    "SCOPE: rules if the question is about how the game works (mechanics, numbers, what a "
+    "character can do, what a feat, spell, item or creature does; a creature's level, traits, "
+    "rarity or stat block is rules even when the creature has a personal name); lore if it is "
+    "about the setting (who someone is, where a place is, history, gods and their followers, "
+    "what a nation or city is like). When in doubt, rules.\n\n"
+    "Question: An ogre has grabbed my monk. What can she do about it on her turn?\n"
+    "SUMMARY: Attempt to escape from being grabbed, immobilized, or restrained.\n"
+    "KINDS: action, condition\n"
+    "SCOPE: rules\n\n"
+    "Question: Is there a feat that makes falling less dangerous?\n"
+    "SUMMARY: Treat falls as shorter than they are.\n"
+    "KINDS: feat\n"
+    "SCOPE: rules\n\n"
+    "Question: How much healing does a short rest give my party?\n"
+    "SUMMARY: Spend 10 minutes treating an injured creature to restore Hit Points.\n"
+    "KINDS: action, feat\n"
+    "SCOPE: rules\n\n"
+    "Question: What level is the creature Daring Danika?\n"
+    "SUMMARY: A stat block for a named human performer with an acrobatic fighting style.\n"
+    "KINDS: creature\n"
+    "SCOPE: rules\n\n"
+    "Question: Who rules Cheliax these days?\n"
+    "SUMMARY: Cheliax is a diabolist empire ruled by House Thrune from the capital of Egorian.\n"
+    "KINDS: none\n"
+    "SCOPE: lore\n\n"
+    "Question: Which goddess do travellers and dreamers pray to?\n"
+    "SUMMARY: Desna is the goddess of dreams, luck, stars, and travellers.\n"
+    "KINDS: deity\n"
+    "SCOPE: lore"
 )
 
 RERANK_SYSTEM = (
@@ -173,8 +240,46 @@ ANSWER_SYSTEM = (
     "with a line 'Source:' giving the URL of each excerpt you used, and nothing after it."
 )
 
+# Used only when a lore excerpt is among the eight. A lore answer is a short
+# paragraph about a person or a place, not a stat block, so the budget is a
+# little longer and the "key numbers" line is replaced with who-where-when.
+LORE_ANSWER_SYSTEM = (
+    "You are answering questions about the Pathfinder Second Edition tabletop roleplaying game "
+    "and its setting, the world of Golarion. Excerpts are provided below: rules entries from the "
+    "Archives of Nethys and setting lore from PathfinderWiki, each marked. Treat them as "
+    "authoritative and prefer them over your own recollection. If the excerpts do not contain "
+    "the answer, say so plainly rather than guessing.\n"
+    "Keep the answer under 150 words: lead with the direct answer, then the details that "
+    "matter -- who, where, when, and how it bears on play if the question is about a game. No "
+    "headings, and no bullet list unless the question asks for a list. Finish with a line "
+    "'Source:' giving the URL of each excerpt you used, and nothing after it."
+)
+
 RE_NETHYS_NOTE = re.compile(r"^[ \t]*_?\*?Nethys Note:[^\n]*\n?", re.M | re.I)
 RE_CLEAN = re.compile(r"^[\s\-*\d.)]+|[\s;:]+$")
+
+
+def parse_plan(raw: str) -> dict:
+    """The rewriter's reply as a plan: summary, entry kinds, and scope.
+
+    Scope is "lore" only when the line says so outright; a missing line, a
+    hedge, or a reply from the rules-only prompt all read as rules. That is the
+    direction the mistake is allowed to go in.
+    """
+    summary, kinds, scope = "", [], "rules"
+    for line in (raw or "").splitlines():
+        line = line.strip()
+        if line.upper().startswith("SUMMARY:"):
+            summary = RE_CLEAN.sub("", line.split(":", 1)[1]).strip()
+        elif line.upper().startswith("KINDS:"):
+            for part in line.split(":", 1)[1].split(","):
+                part = part.strip().lower().replace(" ", "-")
+                if part in CATEGORIES and part not in kinds:
+                    kinds.append(part)
+        elif line.upper().startswith("SCOPE:"):
+            if line.split(":", 1)[1].strip().lower().rstrip(".") == "lore":
+                scope = "lore"
+    return {"summary": summary[:220], "categories": kinds[:3], "scope": scope}
 
 # The TREC default of 60 flattens rank differences almost to nothing when fusing a
 # handful of 50-item rankings: rank 1 scores 0.0164 and rank 10 scores 0.0143.
@@ -242,6 +347,11 @@ class Hit:
     text: str
     summary: str = ""
     legacy_name: list = None  # names this entry had before the Remaster, if any
+    corpus: str = "aon"       # "aon" (rules) or "pathfinderwiki" (lore)
+
+    @property
+    def lore(self) -> bool:
+        return self.corpus == "pathfinderwiki"
 
 
 class OpenAICompatible:
@@ -481,6 +591,9 @@ class Assistant:
         self.base_url = self.ollama.base_url
         self.context_chars = context_chars
         self.answer_tokens = answer_tokens
+        # Eval-only override: the rewrite prompt to use regardless of the index.
+        # Lets the gate isolate the cost of the SCOPE line from the lore rows.
+        self.rewrite_system: str | None = None
         self._verified = False
         if llm_model:
             self.manifest["ollama_llm"] = llm_model
@@ -513,7 +626,10 @@ class Assistant:
             bm25=BM25.load(index_dir / "bm25.npz"),
             model_name=self.manifest["embed_model"],
         )
-        self._base_mask = self.index.allowed(exclude_legacy=False)
+        # One mask per scope, built once: `allowed` walks every row.
+        self._masks = {False: self.index.allowed(exclude_legacy=False),
+                       True: self.index.allowed(exclude_legacy=False, lore=True)}
+        self._base_mask = self._masks[False]
 
         # Outbound link graph, if the package carries one. Optional so an older
         # index still loads.
@@ -536,7 +652,7 @@ class Assistant:
                 remote_embedder: bool = False) -> "Assistant":
         """A second Assistant over the *same* loaded index, answering elsewhere.
 
-        The index is 250 MB of memory-mapped arrays, a BM25 matrix and 41,743
+        The index is 460 MB of memory-mapped arrays, a BM25 matrix and 73,922
         metadata rows; rebuilding that because someone changed a model name in
         the settings panel would cost a second and the memory twice over. A
         shallow copy shares all of it by reference -- every shared attribute is
@@ -671,25 +787,32 @@ class Assistant:
 
     # --- pipeline ------------------------------------------------------------
 
+    @property
+    def has_lore(self) -> bool:
+        return bool(getattr(self.index, "has_lore", False))
+
     def rewrite(self, question: str) -> dict:
+        system = self.rewrite_system or (REWRITE_SCOPE_SYSTEM if self.has_lore else REWRITE_SYSTEM)
         try:
-            raw = self.ollama.chat(REWRITE_SYSTEM, f"Question: {question}",
-                                   self.manifest["ollama_llm"], max_tokens=90)
+            # One more line to write on a lore index; the rules-only call is untouched.
+            raw = self.ollama.chat(system, f"Question: {question}",
+                                   self.manifest["ollama_llm"],
+                                   max_tokens=100 if self.has_lore else 90)
         except OllamaError:
             raise
         except Exception:
-            return {"summary": "", "categories": []}
-        summary, kinds = "", []
-        for line in raw.splitlines():
-            line = line.strip()
-            if line.upper().startswith("SUMMARY:"):
-                summary = RE_CLEAN.sub("", line.split(":", 1)[1]).strip()
-            elif line.upper().startswith("KINDS:"):
-                for part in line.split(":", 1)[1].split(","):
-                    part = part.strip().lower().replace(" ", "-")
-                    if part in CATEGORIES and part not in kinds:
-                        kinds.append(part)
-        return {"summary": summary[:220], "categories": kinds[:3]}
+            return {"summary": "", "categories": [], "scope": "rules"}
+        return parse_plan(raw)
+
+    def resolve_scope(self, scope: str, plan: dict | None) -> bool:
+        """Whether this question may see lore. Anything unsure is rules."""
+        if scope not in SCOPES:
+            raise ValueError(f"scope must be one of {SCOPES}, not {scope!r}")
+        if not self.has_lore or scope == "rules":
+            return False
+        if scope == "lore":
+            return True
+        return bool(plan) and plan.get("scope") == "lore"
 
     def _embed_queries(self, texts: list[str]) -> np.ndarray:
         prefix = self.manifest["query_prefix"]
@@ -698,7 +821,7 @@ class Assistant:
 
     def search(self, question: str, k: int = DEFAULT_K, plan: dict | None = None,
                rerank: bool = True, pool: int | None = None,
-               expand: int = DEFAULT_EXPAND) -> list[Hit]:
+               expand: int = DEFAULT_EXPAND, scope: str = DEFAULT_SCOPE) -> list[Hit]:
         plan = plan if plan is not None else self.rewrite(question)
         queries = [question]
         if plan.get("summary"):
@@ -706,7 +829,8 @@ class Assistant:
         vecs = self._embed_queries(queries).astype(np.float32)
         qvec, hvec = vecs[0], (vecs[1] if len(vecs) > 1 else None)
 
-        mask = self._base_mask
+        lore = self.resolve_scope(scope, plan)
+        mask = self._masks[lore]
         # Narrowing to the rewriter's entry kinds sharpens entity lookup and blinds
         # concept questions -- the rules chapters are excluded, and that is where
         # "is a critical failure a failure?" is answered. So both rankings are
@@ -715,7 +839,7 @@ class Assistant:
         narrow_mask = None
         if plan.get("categories"):
             narrowed = mask & self.index.allowed(exclude_legacy=False,
-                                                 categories=plan["categories"])
+                                                 categories=plan["categories"], lore=lore)
             if narrowed.sum() >= k:
                 narrow_mask = narrowed
 
@@ -756,19 +880,57 @@ class Assistant:
         order = retrieval.follow_remaster(self.index, order)
         order = retrieval.dedupe(self.index, order)[:take]
 
-        hits = []
-        for i in order:
-            m = self.index.meta[i]
-            hits.append(Hit(chunk_id=self.index.ids[i], name=m.get("name") or "",
-                            category=m.get("category") or "", level=m.get("level"),
-                            url=m.get("url") or "", text=self.body(self.index.ids[i]),
-                            summary=m.get("summary") or "",
-                            legacy_name=[n for n in (m.get("legacy_name") or []) if n]
-                            if isinstance(m.get("legacy_name"), list)
-                            else ([m["legacy_name"]] if m.get("legacy_name") else [])))
+        hits = [self._hit(i) for i in order]
         if rerank:
             hits = self.rerank(question, hits, k)
+        if lore:
+            # Two kinds of Archives entry qualify for a reserved slot: one the
+            # question names outright ("Pharasma", so the deity's stat block),
+            # and one retrieval put in its top k on its own. A trait that merely
+            # shares a word with the question is neither, and was displacing a
+            # lore page at rank eight.
+            q = question.lower()
+            pool = [self._hit(i) for i in order]
+            eligible = [h for n, h in enumerate(pool)
+                        if n < k or (len(h.name or "") >= 4 and h.name.lower() in q)]
+            hits = self.keep_rules(hits, eligible, k)
         return hits
+
+    @staticmethod
+    def keep_rules(hits: list[Hit], candidates: list[Hit], k: int,
+                   slots: int = RULES_SLOTS) -> list[Hit]:
+        """Hold ``slots`` of ``k`` for the best Archives candidates when lore is in play.
+
+        Only when the wiki has taken more than its share: a list that already
+        carries two rules entries is returned as it is, and so is one where no
+        rules entry was retrieved at all. Otherwise the lowest-ranked lore
+        excerpts make room, so the stat block a mechanics question needs is in
+        front of the model alongside the lore the rewriter thought it wanted.
+        """
+        top = hits[:k]
+        rules = [h for h in top if not h.lore]
+        if len(rules) >= slots:
+            return top
+        seen = {h.chunk_id for h in top}
+        extra = [h for h in candidates if not h.lore and h.chunk_id not in seen][:slots - len(rules)]
+        if not extra:
+            return top
+        lore_hits = [h for h in top if h.lore]
+        keep = lore_hits[:max(0, k - len(rules) - len(extra))]
+        # Keep the original order among what survives; the new rules entries
+        # go last, next to the question, where a small model reads best.
+        kept = {h.chunk_id for h in keep}
+        return [h for h in top if not h.lore or h.chunk_id in kept] + extra
+
+    def _hit(self, pos: int) -> Hit:
+        m = self.index.meta[pos]
+        old = m.get("legacy_name") or []
+        old = [n for n in old if n] if isinstance(old, list) else [old]
+        return Hit(chunk_id=self.index.ids[pos], name=m.get("name") or "",
+                   category=m.get("category") or "", level=m.get("level"),
+                   url=m.get("url") or "", text=self.body(self.index.ids[pos]),
+                   summary=m.get("summary") or "", legacy_name=old,
+                   corpus=m.get("corpus") or "aon")
 
     def rerank(self, question: str, hits: list[Hit], k: int) -> list[Hit]:
         """Reorder candidates with the model that is already loaded.
@@ -787,7 +949,7 @@ class Assistant:
         if len(hits) <= k:
             return hits[:k]
         listing = "\n".join(
-            f"{n}. {h.name} ({h.category.replace('-', ' ')})"
+            f"{n}. {h.name} ({h.category.replace('-', ' ')}{', lore' if h.lore else ''})"
             + (f" [level {h.level}]" if h.level is not None else "")
             + f" — {(h.summary or h.text[:110]).strip()}"
             for n, h in enumerate(hits, 1))
@@ -811,20 +973,30 @@ class Assistant:
 
     def context(self, hits: Iterable[Hit], max_chars: int | None = None) -> str:
         max_chars = self.context_chars if max_chars is None else max_chars
+        hits = list(hits)
         blocks = []
         for n, h in enumerate(hits, 1):
             head = f"[{n}] {h.name} ({h.category.replace('-', ' ')}"
             if h.level is not None:
                 head += f", level {h.level}"
+            if h.lore:
+                head += ", Golarion lore from PathfinderWiki"
             head += f") — {h.url}"
             # The shipped index still carries AoN's "Nethys Note: No description…"
             # housekeeping line, which a small model reads as "does not exist".
             body = RE_NETHYS_NOTE.sub("", retrieval.plain(h.text))
             blocks.append(head + "\n" + body[:max_chars].strip())
-        return "<rules_excerpts>\n" + "\n\n".join(blocks) + "\n</rules_excerpts>"
+        # The tag the rules path was measured with, unless lore is among them.
+        tag = "excerpts" if any(h.lore for h in hits) else "rules_excerpts"
+        return f"<{tag}>\n" + "\n\n".join(blocks) + f"\n</{tag}>"
+
+    @staticmethod
+    def system_for(hits: Iterable[Hit]) -> str:
+        return LORE_ANSWER_SYSTEM if any(h.lore for h in hits) else ANSWER_SYSTEM
 
     def retrieve(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
-                 pool: int | None = None, expand: int = DEFAULT_EXPAND) -> tuple:
+                 pool: int | None = None, expand: int = DEFAULT_EXPAND,
+                 scope: str = DEFAULT_SCOPE) -> tuple:
         """Everything up to the answer call, timed per stage.
 
         Split out from `ask` so the web UI can put sources on screen while the
@@ -834,11 +1006,13 @@ class Assistant:
         timings: dict[str, float] = {}
         t = time.time()
         plan = self.rewrite(question)
+        # What the question was actually answered from, for the caller to show.
+        plan["lore"] = self.resolve_scope(scope, plan)
         timings["rewrite"] = round(time.time() - t, 2)
 
         t = time.time()
         hits = self.search(question, k=k, plan=plan, rerank=False,
-                           pool=pool or DEFAULT_POOL, expand=expand)
+                           pool=pool or DEFAULT_POOL, expand=expand, scope=scope)
         timings["retrieve"] = round(time.time() - t, 2)
 
         if rerank:
@@ -871,20 +1045,21 @@ class Assistant:
 
     def ask(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
             pool: int | None = None, expand: int = DEFAULT_EXPAND,
-            max_tokens: int | None = None) -> dict:
+            max_tokens: int | None = None, scope: str = DEFAULT_SCOPE) -> dict:
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
-                                            pool=pool, expand=expand)
+                                            pool=pool, expand=expand, scope=scope)
         hits = self.named_last(question, hits)
         t = time.time()
-        answer = self.ollama.chat(ANSWER_SYSTEM, self.prompt(question, hits),
+        answer = self.ollama.chat(self.system_for(hits), self.prompt(question, hits),
                                   self.manifest["ollama_llm"], max_tokens=max_tokens)
         timings["answer"] = round(time.time() - t, 2)
         timings["total"] = round(sum(timings.values()), 2)
         return {"question": question, "answer": answer, "plan": plan,
+                "scope": "lore" if plan.get("lore") else "rules",
                 "timings": timings, "hits": hits,
-                "sources": [{"name": h.name, "category": h.category, "url": h.url}
-                            for h in hits]}
+                "sources": [{"name": h.name, "category": h.category, "url": h.url,
+                             "corpus": h.corpus} for h in hits]}
 
     _MENTION_KINDS = ("action", "feat", "spell", "condition", "skill", "equipment", "weapon",
                       "armor", "class-feature", "archetype", "trait", "rules")
@@ -912,11 +1087,19 @@ class Assistant:
                 # A short name that is also an ordinary word ("Damage", "Eliminate")
                 # links only when the prose writes it as a name, capitalised.
                 # Conditions are the exception: rules text says "prone".
-                cat = self.index.meta[pos].get("category")
+                meta = self.index.meta[pos]
+                cat = meta.get("category")
                 capitalised = all(w[0].isupper() for w in span)
                 if n <= 2 and cat == "rules" and not capitalised:
                     continue
                 if n == 1 and cat != "condition" and not capitalised:
+                    continue
+                # The wiki has a page for almost any capitalised word ("Following",
+                # "Magic"). A one-word lore name links only where the prose uses
+                # it mid-sentence, where the capital is the name's and not the
+                # sentence's.
+                if n == 1 and meta.get("corpus") == "pathfinderwiki" and not re.search(
+                        r"(?<![.!?:]\s)(?<!\n)\b" + re.escape(span[0]) + r"\b", text[1:]):
                     continue
                 found[key] = pos
         hits = []
@@ -924,12 +1107,7 @@ class Assistant:
             m = self.index.meta[pos]
             if exclude and m.get("url") in exclude:
                 continue
-            hits.append(Hit(chunk_id=self.index.ids[pos], name=m.get("name") or "",
-                            category=m.get("category") or "", level=m.get("level"),
-                            url=m.get("url") or "", text=self.body(self.index.ids[pos]),
-                            summary=m.get("summary") or "",
-                            legacy_name=[x for x in (m.get("legacy_name") or []) if x]
-                            if isinstance(m.get("legacy_name"), list) else []))
+            hits.append(self._hit(pos))
             if len(hits) >= limit:
                 break
         return hits
@@ -940,7 +1118,14 @@ class Assistant:
             table = {}
             for pos, m in enumerate(self.index.meta):
                 name = (m.get("name") or "").strip()
-                if (len(name) < 4 or m.get("category") not in self._MENTION_KINDS
+                # Lore: whole articles only ("Cheliax", not "Cheliax › History"),
+                # of every kind -- a person or a nation named in an answer is as
+                # worth a link as a feat. The rules rows come first in the file,
+                # so on a shared name the Archives' entry keeps the link.
+                lore = m.get("corpus") == "pathfinderwiki"
+                if lore and "#" in (m.get("id") or ""):
+                    continue
+                if (len(name) < 4 or (not lore and m.get("category") not in self._MENTION_KINDS)
                         or m.get("remaster_status") == "legacy"):
                     continue
                 key = " ".join(re.findall(r"[A-Za-z][A-Za-z'’\-]*", name)).lower()
@@ -952,21 +1137,23 @@ class Assistant:
 
     def ask_stream(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
                    pool: int | None = None, expand: int = DEFAULT_EXPAND,
-                   max_tokens: int | None = None) -> Iterator[dict]:
+                   max_tokens: int | None = None,
+                   scope: str = DEFAULT_SCOPE) -> Iterator[dict]:
         """Yield one `sources` event, then `token` events, then `done`."""
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
-                                            pool=pool, expand=expand)
+                                            pool=pool, expand=expand, scope=scope)
         hits = self.named_last(question, hits)
         # `hits` carries the Hit objects (full body text) for a caller that wants
         # to render cards; `sources` is the JSON-safe citation list.
         yield {"event": "sources", "plan": plan, "timings": dict(timings), "hits": hits,
-               "sources": [{"name": h.name, "category": h.category, "url": h.url}
-                           for h in hits]}
+               "scope": "lore" if plan.get("lore") else "rules",
+               "sources": [{"name": h.name, "category": h.category, "url": h.url,
+                            "corpus": h.corpus} for h in hits]}
         t = time.time()
         first = None
         pieces: list[str] = []
-        for piece in self.ollama.stream(ANSWER_SYSTEM, self.prompt(question, hits),
+        for piece in self.ollama.stream(self.system_for(hits), self.prompt(question, hits),
                                         self.manifest["ollama_llm"],
                                         max_tokens=max_tokens):
             if first is None:

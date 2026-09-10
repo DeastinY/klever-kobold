@@ -1,0 +1,23 @@
+{
+  "index": "dist/kobold-index",
+  "model": "qwen3.5:9b",
+  "scope": "auto",
+  "k": 8,
+  "rerank": true,
+  "lore": {
+    "n": 50,
+    "sent_to_lore": 48,
+    "recall@8": 47,
+    "recall@24_pool": 48
+  },
+  "rules_controls": {
+    "n": 20,
+    "sent_to_lore": 2,
+    "with_a_lore_excerpt": 2
+  },
+  "mean_seconds": {
+    "rewrite": 0.38,
+    "retrieve": 1.26,
+    "rerank": 0.07
+  }
+}

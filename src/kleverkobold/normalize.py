@@ -263,9 +263,37 @@ RE_LISTMARK = re.compile(r"^[*#:;]+\s*", re.M)
 RE_FILE_PREFIX = re.compile(r"^(?:file|image|category)\s*:", re.I)
 # Innermost ``[[...]]`` only -- one containing no further link delimiters.
 RE_INNER_LINK = re.compile(r"\[\[((?:(?!\[\[|\]\]).)*)\]\]", re.S)
+# Wikitables and magic words are layout, not lore.
+RE_WIKITABLE = re.compile(r"^[ \t]*\{\|.*?^[ \t]*\|\}", re.S | re.M)
+RE_MAGIC = re.compile(r"__[A-Z]+__")
+RE_MD_HEADING = re.compile(r"^(#{2,6}) (.*)$", re.M)
 
 # Sections that are bibliography, not lore.
-DROP_SECTIONS = {"references", "external links", "see also", "sources", "notes", "further reading"}
+DROP_SECTIONS = {"references", "external links", "see also", "sources", "notes", "further reading",
+                 "gallery"}
+
+# Infobox parameters that carry pictures, citations and layout rather than facts.
+INFOBOX_SKIP = {"image", "caption", "imagesize", "image size", "alt", "name", "title", "titles",
+                "imagecaption", "map", "symbol", "type", "spoiled", "adjective"}
+RE_SKIP_KEY = re.compile(r"source|page|spoil|image|map$|^ref|latlong|^lat$|^long$|coord", re.I)
+# Templates that open a page but are not its infobox: spoiler badges, map
+# embeds, timeline boxes, hatnotes, maintenance. The infobox is the first
+# template that is none of these and has named parameters.
+NON_INFOBOX = {"badges", "displaymap", "yearbox", "update", "ref", "legacy-content", "quote",
+               "characters", "spoiled", "stub", "cleanup", "main", "see-also", "for", "about",
+               "redirect", "dablink", "hatnote", "disambig", "disambiguation", "toc", "clear",
+               "reflist", "wip", "expand", "merge", "delete", "nsfw", "canon", "noncanon",
+               "non-canon", "pathfinderwiki", "infobox-start", "infobox-end", "date", "ordinal",
+               "pronounce", "abbr", "plain", "ill", "lang", "n", "clr", "tabber", "tab", "note",
+               "featured", "good", "sidebar", "navbox", "quotebox", "sic", "adventure-overview-start"}
+# Template names that mean the same page kind as a plainer one.
+CATEGORY_ALIAS = {"creature-tabbed": "creature", "biography": "person",
+                  "adventure-overview": "adventure", "magic-item": "item",
+                  "alchemical-item": "item", "location-tabbed": "location"}
+RE_EMPTY_PARENS = re.compile(r"\s*\((?:aged?)?\s*\)")   # "4692 AR (age )": a template with no year to count from
+RE_HATNOTE = re.compile(r"^(?:- )?(?:This (?:article|page) (?:is|covers|describes|deals|refers)|"
+                        r"For (?:the|other|a|an) |See also |Not to be confused|"
+                        r"\"?[A-Z][\w' ]+\"? redirects here)", re.I)
 
 
 def _strip_templates(text: str) -> str:
@@ -293,6 +321,9 @@ def wiki_infobox(wikitext: str) -> dict[str, str]:
         return {}
     code = mwparserfromhell.parse(wikitext)
     for template in code.filter_templates(recursive=False):
+        name = re.sub(r"[\s_]+", "-", str(template.name).strip().lower())
+        if name in NON_INFOBOX or name.startswith(("cite", "sic", "quote")):
+            continue
         fields = {}
         for param in template.params:
             if not param.showkey:
@@ -300,7 +331,12 @@ def wiki_infobox(wikitext: str) -> dict[str, str]:
             key = str(param.name).strip()
             value = str(param.value).strip()
             value = RE_COMMENT.sub("", value)
-            value = _strip_templates(_resolve_wikilinks(value)).strip()
+            value = RE_REF.sub("", value)
+            value = re.sub(r"<br\s*/?>", ", ", value, flags=re.I)
+            value = _strip_templates(_resolve_wikilinks(value))
+            value = RE_HTML.sub("", value)
+            value = RE_BOLDITAL.sub("", value)
+            value = RE_EMPTY_PARENS.sub("", html.unescape(value)).strip(" ,;")
             if key and value:
                 fields[key] = value
         if fields:
@@ -336,10 +372,12 @@ def wiki_prose(wikitext: str) -> str:
     """Wikitext down to readable prose, keeping section headings."""
     text = RE_COMMENT.sub("", wikitext)
     text = RE_REF.sub("", text)
+    text = RE_WIKITABLE.sub("", text)
     text = _strip_templates(text)
     text = _resolve_wikilinks(text)
     text = RE_EXTLINK.sub(lambda m: m.group(1), text)
     text = RE_HTML.sub("", text)
+    text = RE_MAGIC.sub("", text)
     text = RE_BOLDITAL.sub("", text)
     text = RE_LISTMARK.sub("- ", text)
 
@@ -358,20 +396,173 @@ def wiki_prose(wikitext: str) -> str:
     return RE_BLANKS.sub("\n\n", text).strip()
 
 
+def wiki_category(infobox: dict) -> str:
+    """The page's kind, from its infobox template: person, city, nation, deity..."""
+    name = re.sub(r"[\s_]+", "-", (infobox.get("_template") or "article").strip().lower())
+    return CATEGORY_ALIAS.get(name, name)
+
+
+def wiki_facts(infobox: dict) -> str:
+    """The infobox as ``**Field** value`` lines, the shape an AoN stat block uses.
+
+    A nation's capital, a deity's domains, a person's homeland are the facts a
+    lore question asks for first, and they sit in the infobox rather than the
+    prose. Written as bold-labelled lines they read the same way the runtime's
+    stat-block renderer reads ``**Traits**`` and ``**Source**``, so they need no
+    UI work, and the answering model gets "**Ruler** Abrogail Thrune II" instead
+    of having to find it in a paragraph.
+    """
+    lines = []
+    for key, value in infobox.items():
+        k = key.lower().strip()
+        if k.startswith("_") or k in INFOBOX_SKIP or RE_SKIP_KEY.search(k):
+            continue
+        value = " ".join(value.split())
+        if not value or len(value) > 200 or value.lower() in ("none", "unknown", "n/a", "-"):
+            continue
+        label = key.replace("_", " ").strip()
+        label = label[0].upper() + label[1:]
+        lines.append(f"**{label}** {value}")
+    return "\n".join(lines)
+
+
+def _sentence(text: str, limit: int = 240) -> str:
+    """The first sentence of a passage, for the summary index."""
+    text = " ".join((text or "").split())
+    m = re.match(r"(.+?[.!?])(?:\s|$)", text)
+    first = m.group(1) if m and len(m.group(1)) >= 40 else text
+    return _one_line(first, limit)
+
+
+def _first_paragraph(prose: str) -> str:
+    """The first real paragraph: not a heading, a fact line, a rule, or a hatnote."""
+    for block in prose.split("\n\n"):
+        block = block.strip()
+        if (not block or block.startswith(("#", "**")) or set(block) <= set("-= ")
+                or RE_HATNOTE.match(block)):
+            continue
+        return block
+    return ""
+
+
+def _drop_hatnotes(prose: str) -> str:
+    """Remove the "This article is about X. For Y, see Z." lines that open a page."""
+    blocks = prose.split("\n\n")
+    while blocks and (RE_HATNOTE.match(blocks[0].strip()) or set(blocks[0].strip()) <= set("-= ")):
+        blocks.pop(0)
+    return "\n\n".join(blocks)
+
+
 def wiki_to_chunk(page: dict) -> dict:
-    prose = wiki_prose(page["wikitext"])
+    prose = _drop_hatnotes(wiki_prose(page["wikitext"]))
     infobox = wiki_infobox(page["wikitext"])
     title = page["title"]
     return {
         "id": f"wiki:{page['pageid']}",
         "corpus": "pathfinderwiki",
-        "category": infobox.get("_template", "article").lower(),
+        "category": wiki_category(infobox),
         "name": title,
         "url": "https://pathfinderwiki.com/wiki/" + title.replace(" ", "_"),
         "revid": page.get("revid"),
         "timestamp": page.get("timestamp"),
         "infobox": infobox,
+        "summary": _sentence(_first_paragraph(prose)),
         "text": prose,
         "n_chars": len(prose),
         "license": "Paizo Community Use Policy",
     }
+
+
+def _anchor(title: str) -> str:
+    """MediaWiki's section anchor: spaces to underscores, the rest percent-encoded."""
+    from urllib.parse import quote
+    return quote(title.replace(" ", "_"), safe="_-.:()'")
+
+
+def _split_long(body: str, limit: int) -> list[str]:
+    """Cut a section at paragraph boundaries so no piece exceeds ``limit``."""
+    pieces, current = [], ""
+    for para in body.split("\n\n"):
+        if current and len(current) + len(para) + 2 > limit:
+            pieces.append(current.strip())
+            current = ""
+        current += para + "\n\n"
+    if current.strip():
+        pieces.append(current.strip())
+    return pieces or [body]
+
+
+def wiki_to_chunks(page: dict, split_at: int = 2500, min_section: int = 300,
+                   max_section: int = 6000) -> list[dict]:
+    """A page as retrieval chunks: the lead with its infobox, then one per section.
+
+    AoN entries are atomic, so one chunk each is right. A wiki page is not:
+    Cheliax runs to tens of thousands of characters, and "who rules Cheliax?"
+    is answered in its Government section, which neither the embedder (which
+    reads the first 1,200 characters) nor the answering model (1,600) would ever
+    see. Short pages stay whole; long ones split at their headings, small
+    sections merged into the one before, and each carries the page name so
+    "Cheliax › History" still says what it is about. The lead chunk keeps the
+    page's id and URL, so the whole page is one click away from any of them.
+    """
+    base = wiki_to_chunk(page)
+    prose = base["text"]
+    facts = wiki_facts(base["infobox"])
+
+    def with_facts(text: str) -> str:
+        return (facts + "\n\n" + text).strip() if facts else text
+
+    if len(prose) <= split_at:
+        base["text"] = with_facts(prose)
+        base["n_chars"] = len(base["text"])
+        base["section"] = ""
+        return [base]
+
+    # Split at level-2 and level-3 headings, remembering the level-2 parent.
+    parts: list[tuple[list[str], str]] = []  # (heading path, body)
+    path: list[str] = []
+    pos = 0
+    for m in RE_MD_HEADING.finditer(prose):
+        body = prose[pos:m.start()].strip()
+        if not parts:
+            parts.append(([], body))          # the lead, possibly empty
+        else:
+            parts.append((list(path), body))
+        level, title = len(m.group(1)), m.group(2).strip()
+        path = [title] if level <= 2 else (path[:1] + [title])
+        pos = m.end()
+    parts.append((list(path) if parts else [], prose[pos:].strip()))
+
+    # Merge sections too small to stand alone into the one before them.
+    merged: list[tuple[list[str], str]] = []
+    for heads, body in parts:
+        if merged and len(body) < min_section and merged[-1][0] and heads:
+            prev_heads, prev_body = merged[-1]
+            merged[-1] = (prev_heads, prev_body + "\n\n## " + " › ".join(heads[len(prev_heads):] or heads) + "\n\n" + body)
+        else:
+            merged.append((heads, body))
+
+    chunks: list[dict] = []
+    for heads, body in merged:
+        if not heads:
+            lead = dict(base)
+            lead["text"] = with_facts(body) if body else with_facts("")
+            lead["section"] = ""
+            lead["n_chars"] = len(lead["text"])
+            if lead["n_chars"]:
+                chunks.append(lead)
+            continue
+        for n, piece in enumerate(_split_long(body, max_section)):
+            if len(piece) < 80:
+                continue
+            chunk = {k: v for k, v in base.items() if k != "infobox"}
+            section = " › ".join(heads)
+            chunk["id"] = f"{base['id']}#{_anchor(heads[-1])}" + (f"-{n + 1}" if n else "")
+            chunk["name"] = f"{base['name']} › {section}" + (f" ({n + 1})" if n else "")
+            chunk["section"] = section
+            chunk["url"] = base["url"] + "#" + _anchor(heads[-1])
+            chunk["summary"] = _sentence(_first_paragraph(piece)) or _sentence(piece)
+            chunk["text"] = f"## {section}\n\n{piece}"
+            chunk["n_chars"] = len(chunk["text"])
+            chunks.append(chunk)
+    return chunks or [base]

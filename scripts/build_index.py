@@ -19,7 +19,7 @@ from kleverkobold import retrieval  # noqa: E402
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PROC = ROOT / "data" / "processed"
 
-META_FIELDS = ("id", "name", "category", "level", "traits", "rarity", "book",
+META_FIELDS = ("id", "corpus", "name", "category", "level", "traits", "rarity", "book",
                "remaster_status", "remaster_id", "legacy_id", "legacy_name", "url", "summary")
 
 
@@ -44,7 +44,9 @@ def summary_text(chunk: dict) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", default="Kaylebor/pf2e-codex-embed-xs")
-    ap.add_argument("--chunks", type=pathlib.Path, default=PROC / "aon_chunks.jsonl")
+    # Several files, in this order: the rules first, so on a name collision the
+    # runtime's name table and canonical collapse both prefer the Archives.
+    ap.add_argument("--chunks", type=pathlib.Path, nargs="+", default=[PROC / "aon_chunks.jsonl"])
     ap.add_argument("--out", type=pathlib.Path, default=PROC / "index")
     ap.add_argument("--batch-size", type=int, default=256)
     ap.add_argument("--max-chars", type=int, default=1200)
@@ -54,7 +56,7 @@ def main() -> int:
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
-    rows = [orjson.loads(l) for l in args.chunks.open("rb")]
+    rows = [orjson.loads(l) for path in args.chunks for l in path.open("rb")]
     if args.field == "summary":
         texts = [summary_text(r) for r in rows]
     else:
@@ -63,8 +65,14 @@ def main() -> int:
     ids = [r["id"] for r in rows]
     print(f"{len(rows):,} chunks, mean {sum(map(len, texts)) / len(texts):.0f} chars")
 
-    # BM25 is model-independent, so build it once and share it across embedders.
+    # BM25 is model-independent, so build it once and share it across embedders --
+    # but a cached one from a different chunk set would silently misalign every
+    # lexical hit, so it is only reused when the row count matches.
     bm25_path = args.out / "bm25.pkl"
+    if bm25_path.exists() and len(pickle.loads(bm25_path.read_bytes()).doc_len) != len(rows):
+        print(f"{bm25_path} was built over a different corpus; rebuilding")
+        bm25_path.unlink()
+        (args.out / "bm25.npz").unlink(missing_ok=True)
     if not bm25_path.exists():
         from rank_bm25 import BM25Okapi
         started = time.time()

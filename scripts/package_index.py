@@ -14,6 +14,7 @@ error here is ~1e-3 against inter-document distances of ~0.3.
 from __future__ import annotations
 
 import argparse
+import collections
 import pathlib
 import shutil
 import sys
@@ -27,7 +28,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from kleverkobold import retrieval  # noqa: E402
 from kleverkobold.bm25 import BM25  # noqa: E402
 
-META_FIELDS = ("id", "name", "category", "level", "traits", "rarity", "book",
+META_FIELDS = ("id", "corpus", "name", "category", "level", "traits", "rarity", "book",
                "remaster_status", "remaster_id", "legacy_name", "url", "summary")
 
 # Qwen3-Embedding asks for queries to be marked. Ollama will not add this, so the
@@ -38,8 +39,9 @@ QUERY_PREFIX = ("Instruct: Given a web search query, retrieve relevant passages 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--chunks", type=pathlib.Path,
-                    default=ROOT / "data" / "processed" / "aon_chunks.jsonl")
+    ap.add_argument("--chunks", type=pathlib.Path, nargs="+",
+                    default=[ROOT / "data" / "processed" / "aon_chunks.jsonl"],
+                    help="the same files, in the same order, that build_index.py embedded")
     ap.add_argument("--index", type=pathlib.Path, default=ROOT / "data" / "processed" / "index")
     ap.add_argument("--out", type=pathlib.Path, default=ROOT / "dist" / "kobold-index")
     ap.add_argument("--embed-model", default="Qwen/Qwen3-Embedding-0.6B")
@@ -55,8 +57,9 @@ def main() -> int:
         shutil.rmtree(args.out)
     args.out.mkdir(parents=True)
 
-    rows = [orjson.loads(l) for l in args.chunks.open("rb")]
-    print(f"{len(rows):,} chunks")
+    rows = [orjson.loads(l) for path in args.chunks for l in path.open("rb")]
+    by_corpus = collections.Counter(r.get("corpus") or "aon" for r in rows)
+    print(f"{len(rows):,} chunks  {dict(by_corpus)}")
 
     with (args.out / "meta.jsonl").open("wb") as fh:
         for r in rows:
@@ -74,6 +77,9 @@ def main() -> int:
         if not path.exists():
             raise SystemExit(f"missing {path}")
         vecs = np.load(path).astype(np.float16)
+        if vecs.shape[0] != len(rows):
+            raise SystemExit(f"{path} has {vecs.shape[0]:,} rows for {len(rows):,} chunks: "
+                             f"embed the same --chunks first")
         np.save(args.out / dst, vecs)
         print(f"  {dst}: {vecs.shape} float16")
 
@@ -107,6 +113,8 @@ def main() -> int:
     print(f"  links.jsonl: {edges:,} edges")
 
     bm25_path = args.index / "bm25.npz"
+    if bm25_path.exists() and BM25.load(bm25_path).n_docs != len(rows):
+        bm25_path.unlink()   # built over a different chunk set
     if not bm25_path.exists():
         print("  building bm25...")
         BM25.build([retrieval.tokenize(retrieval.chunk_text(r)) for r in rows]).save(bm25_path)
@@ -122,16 +130,20 @@ def main() -> int:
     probe_vec = probe_model.encode([probe_text], normalize_embeddings=True,
                                    convert_to_numpy=True, **kwargs)[0]
 
+    sources = ["Archives of Nethys (https://2e.aonprd.com/)"]
+    if by_corpus.get("pathfinderwiki"):
+        sources.append("PathfinderWiki (https://pathfinderwiki.com/)")
     (args.out / "manifest.json").write_bytes(orjson.dumps({
-        "version": 1,
+        "version": 2,
         "chunks": len(rows),
+        "chunks_by_corpus": dict(by_corpus),
         "embed_model": args.embed_model,
         "ollama_embed": args.ollama_embed,
         "ollama_llm": args.ollama_llm,
         "query_prefix": QUERY_PREFIX,
         "probe": {"text": probe_text, "vector": [round(float(x), 6) for x in probe_vec]},
         "retrieval_mode": "hybrid3+hyde+cat+hop",
-        "source": "Archives of Nethys (https://2e.aonprd.com/)",
+        "source": "; ".join(sources),
         "notice": ("This work uses trademarks and/or copyrights owned by Paizo Inc., "
                    "used under Paizo's Community Use Policy "
                    "(https://paizo.com/communityuse). We are expressly prohibited from "
