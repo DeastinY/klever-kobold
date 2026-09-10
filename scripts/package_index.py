@@ -28,7 +28,7 @@ from pf2etune import retrieval  # noqa: E402
 from pf2etune.bm25 import BM25  # noqa: E402
 
 META_FIELDS = ("id", "name", "category", "level", "traits", "rarity", "book",
-               "remaster_status", "remaster_id", "url", "summary")
+               "remaster_status", "remaster_id", "legacy_name", "url", "summary")
 
 # Qwen3-Embedding asks for queries to be marked. Ollama will not add this, so the
 # runtime prepends it by hand; it lives in the manifest so the two cannot drift.
@@ -45,7 +45,9 @@ def main() -> int:
     ap.add_argument("--embed-model", default="Qwen/Qwen3-Embedding-0.6B")
     ap.add_argument("--ollama-embed", default="qwen3-embedding:0.6b")
     ap.add_argument("--ollama-llm", default="qwen3.5:9b")
-    ap.add_argument("--body-chars", type=int, default=2400,
+    # 2400 cut 5,243 entries (12.5%) on index-v2, and links now sit in the
+    # body too; 8000 keeps all but the longest class tables whole for ~12 MB more.
+    ap.add_argument("--body-chars", type=int, default=8000,
                     help="truncate entry bodies; the longest are class tables nobody quotes")
     args = ap.parse_args()
 

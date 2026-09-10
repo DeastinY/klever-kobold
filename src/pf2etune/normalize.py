@@ -47,7 +47,8 @@ RE_BLANKS = re.compile(r"\n{3,}")
 def _render_title(match: re.Match[str]) -> str:
     attrs = dict(RE_ATTR.findall(match.group(1)))
     level = int(attrs.get("level", "2") or 2)
-    body = match.group(2).strip()
+    # The heading is the entry's name, not a link to itself.
+    body = RE_LINK.sub(lambda m: m.group(1), match.group(2)).strip()
     right = attrs.get("right", "").strip()
     heading = f"{'#' * min(level, 6)} {body}"
     return f"{heading} ({right})" if right else heading
@@ -206,10 +207,43 @@ def resolve_embeds(chunk: dict, lookup: dict[str, dict]) -> dict:
 
 
 def embed_lookup_entry(doc: dict) -> dict:
-    """The little a parent needs to name an embedded child."""
+    """The little a parent needs to name an embedded child, and a Remaster entry its old name."""
     url = doc.get("url") or ""
     return {"name": doc.get("name"), "summary": doc.get("summary"),
             "url": f"https://2e.aonprd.com{url}" if url.startswith("/") else url}
+
+
+def fill_legacy_name(chunk: dict, lookup: dict[str, dict]) -> dict:
+    """Give a Remaster entry the name its legacy counterpart had, if it changed.
+
+    AoN carries ``legacy_name`` on some renamed entries and not others -- Force
+    Barrage has ``legacy_id`` pointing at Magic Missile but no ``legacy_name``,
+    so "was Magic Missile renamed?" could not find it. The legacy entry is in the
+    same dump, so its name is one lookup away. Written into the text as well as
+    the metadata: the answering model reads the text, and "**Formerly** Magic
+    Missile" is the fact the question is asking for.
+    """
+    if chunk.get("remaster_status") != "remaster":
+        return chunk
+    old = chunk.get("legacy_name") or []
+    old = [old] if isinstance(old, str) else [n for n in old if n]
+    for lid in _as_list(chunk.get("legacy_id")):
+        name = (lookup.get(lid) or {}).get("name")
+        if name and name.lower() != (chunk.get("name") or "").lower() and name not in old:
+            old.append(name)
+    chunk["legacy_name"] = old
+    if old and "**Formerly**" not in chunk["text"]:
+        line = "**Formerly** " + ", ".join(old)
+        text = chunk["text"]
+        # Right after the Source line, where the eye goes for provenance; else
+        # after the heading block.
+        src = text.find("**Source**")
+        cut = text.find("\n", src) if src >= 0 else text.find("\n\n")
+        if cut < 0:
+            cut = len(text)
+        chunk["text"] = text[:cut] + "\n\n" + line + text[cut:]
+        chunk["n_chars"] = len(chunk["text"])
+    return chunk
 
 
 # --- PathfinderWiki ---------------------------------------------------------

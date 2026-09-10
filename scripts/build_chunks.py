@@ -42,6 +42,7 @@ def main() -> int:
         for path in sorted(args.raw.glob("*.jsonl")):
             for line in path.open("rb"):
                 chunk = normalize.resolve_embeds(normalize.to_chunk(orjson.loads(line)), lookup)
+                chunk = normalize.fill_legacy_name(chunk, lookup)
                 if chunk["hidden"] and not args.keep_hidden:
                     skipped += 1
                     continue

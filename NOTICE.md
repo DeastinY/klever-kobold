@@ -23,6 +23,11 @@ current through an edition remaster. Every answer this project gives is really
 theirs; all it adds is a way to search them. Please
 [support them](https://2e.aonprd.com/) and use the site directly.
 
+**Pathfinder-Icons font** — the action symbols (one, two and three actions, free
+action, reaction) are drawn with Paizo's icon font, © Paizo Inc. 2019, the same
+file the Archives of Nethys serve. It is embedded in the web page so it renders
+offline, under the Community Use Policy above.
+
 **[PathfinderWiki](https://pathfinderwiki.com/)** — 27,749 articles of Golarion
 lore, written and curated by volunteers over more than a decade.
 

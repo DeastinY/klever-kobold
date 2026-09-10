@@ -270,8 +270,8 @@ def _has_model(models: list[str], want: str) -> bool:
 
 def _hits(hits) -> list[dict]:
     return [{"name": h.name, "category": h.category.replace("-", " "), "level": h.level,
-             "url": h.url, "text": h.text[:2600], "summary": h.summary or "",
-             "traits": []} for h in hits]
+             "url": h.url, "text": h.text[:9000], "summary": h.summary or "",
+             "legacy_name": h.legacy_name, "traits": []} for h in hits]
 
 
 def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLLAMA,

@@ -230,6 +230,7 @@ class Hit:
     url: str
     text: str
     summary: str = ""
+    legacy_name: list = None  # names this entry had before the Remaster, if any
 
 
 class OpenAICompatible:
@@ -750,7 +751,10 @@ class Assistant:
             hits.append(Hit(chunk_id=self.index.ids[i], name=m.get("name") or "",
                             category=m.get("category") or "", level=m.get("level"),
                             url=m.get("url") or "", text=self.body(self.index.ids[i]),
-                            summary=m.get("summary") or ""))
+                            summary=m.get("summary") or "",
+                            legacy_name=[n for n in (m.get("legacy_name") or []) if n]
+                            if isinstance(m.get("legacy_name"), list)
+                            else ([m["legacy_name"]] if m.get("legacy_name") else [])))
         if rerank:
             hits = self.rerank(question, hits, k)
         return hits

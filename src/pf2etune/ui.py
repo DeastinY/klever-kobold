@@ -14,12 +14,24 @@ away, which the previous plain-text rendering did.
 
 from __future__ import annotations
 
-PAGE = r"""<!doctype html>
+import base64
+import importlib.resources
+
+# Paizo's action-icon font, the one the Archives of Nethys draws its action
+# symbols with, embedded so the page needs no network for it. Used under the
+# Community Use Policy; see NOTICE.md. Glyphs: U+E902 one action, U+E901 two,
+# U+E900 three, U+E903 free action, U+E904 reaction.
+_FONT = base64.b64encode(
+    importlib.resources.files(__package__).joinpath("Pathfinder-Icons.ttf").read_bytes()
+).decode()
+
+_PAGE = r"""<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PF2e Rules</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 3 9.5v13L16 30l13-7.5v-13z' fill='%238a1b2e'/%3E%3Cpath d='M16 2v10.5L3 9.5M16 12.5 29 9.5M16 12.5 8 22.5h16L16 12.5M3 22.5l5 0M29 22.5l-5 0M8 22.5 16 30l8-7.5' fill='none' stroke='%23fff' stroke-width='1.3' stroke-linejoin='round'/%3E%3Ctext x='16' y='21.5' font-size='8' font-family='Georgia,serif' font-weight='700' text-anchor='middle' fill='%23fff'%3E20%3C/text%3E%3C/svg%3E">
 <style>
+@font-face{font-family:"Pathfinder-Icons";src:url(data:font/ttf;base64,__ICON_FONT__) format("truetype");font-display:block}
 /* Light is the base palette; the two blocks after it redefine only the tokens,
    so an un-stamped document (the default "system" setting) still resolves. */
 :root{color-scheme:light;
@@ -124,9 +136,10 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .name a:hover{text-decoration:underline;text-decoration-color:var(--accent)}
 .rank{margin-left:auto;font-family:ui-serif,Georgia,serif;font-size:.9rem;
  color:var(--soft);white-space:nowrap;font-variant-numeric:tabular-nums}
-.acts{display:inline-flex;gap:.1rem;align-items:center;vertical-align:-.08em}
-.acts svg{width:.86em;height:.86em;fill:var(--ink)}
-.acts{gap:.06em}
+.acts{display:inline-flex;align-items:center;font-family:"Pathfinder-Icons",serif;
+ font-size:1.05em;line-height:1;color:var(--ink);white-space:nowrap;vertical-align:-.05em}
+.acts .dash{font-family:inherit;opacity:.5;padding:0 .08em}
+.acts.txt{font-family:inherit;font-size:.72rem;color:var(--muted)}
 .traits{display:flex;flex-wrap:wrap;gap:.25rem;margin:0 0 .5rem}
 .trait{font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600;
  padding:.14rem .42rem;border-radius:2px;background:#5d0000;color:#fff;border:1px solid #3d0000}
@@ -200,9 +213,11 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .tile .thead{display:flex;gap:.45rem;align-items:baseline}
 .tile .tname{font-family:ui-serif,Georgia,"Iowan Old Style",serif;font-weight:600;
  font-size:.98rem;flex:1;min-width:0}
-.tile .acts{font-size:1.05em;margin-left:auto}
+.tile .acts{font-size:1.15em;margin-left:auto}
 .tile .traits{margin:.3rem 0 .1rem}
 .tile .trait{font-size:.6rem;padding:.1rem .35rem}
+.was{margin:.05rem 0 0;font-size:.76rem;color:var(--muted);font-style:italic}
+.pop .was{margin:-.3rem 0 .5rem}
 .snip-t{margin:.3rem 0 0;font-size:.82rem;color:var(--soft);line-height:1.4}
 .tile .more{position:absolute;right:.6rem;bottom:.45rem;font-size:.7rem;color:var(--muted);
  opacity:0;transition:opacity .12s}
@@ -228,7 +243,7 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
  text-transform:uppercase;font-weight:700;color:var(--k);margin-bottom:.2rem}
 .pop .kind svg{width:.95rem;height:.95rem;fill:currentColor}
 .pop .name{padding-right:2.4rem}
-.pop .acts{font-size:1.15em}
+.pop .acts{font-size:1.25em}
 .pop .x{position:absolute;top:.6rem;right:.6rem;width:2rem;height:2rem;border-radius:50%;
  border:1px solid var(--line);background:var(--card);color:var(--soft);font-size:1.1rem;
  line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
@@ -514,22 +529,19 @@ function enable(on){q.disabled=!on;look.disabled=!on;askBtn.disabled=!on;
  if(on&&!q.value)q.focus()}
 
 /* ---------- action glyphs ----------
-   Drawn here rather than loaded as Paizo's action font: the page has to render
-   offline, and the shapes are simple. Single/two/three actions are pips; a
-   reaction is the arrow that turns back on itself; a free action is hollow. */
-const PIP='<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 .6l4.4 4.4L5 9.4.6 5z"/></svg>';
-const PIP_O='<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M5 .6l4.4 4.4L5 9.4.6 5z" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
-const REACT='<svg viewBox="0 0 10 10" aria-hidden="true"><path d="M2 8.6V6.2a3.4 3.4 0 013.4-3.4h2.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M5.6 1l2.6 1.8-2.6 1.8z"/></svg>';
-const COST={'single action':PIP,'two actions':PIP+PIP,'three actions':PIP+PIP+PIP,
- 'reaction':REACT,'free action':PIP_O};
+   The same symbols the Archives use, from Paizo's icon font embedded above:
+   one/two/three actions, the hollow diamond for a free action, the turned
+   arrow for a reaction. "Single Action or Two Actions" shows both, joined. */
+const COST={'single action':'\ue902','one action':'\ue902','two actions':'\ue901',
+ 'three actions':'\ue900','reaction':'\ue904','free action':'\ue903'};
 function glyphs(label){
   const key=(label||'').toLowerCase().trim();
-  if(COST[key])return '<span class="acts" title="'+esc(label)+'">'+COST[key]+'</span>';
-  // ranges like "Single Action or Two Actions" -- show both, joined
+  if(!key)return '';
+  if(COST[key])return '<span class="acts" title="'+esc(label)+'" aria-label="'+esc(label)+'">'+COST[key]+'</span>';
   const parts=key.split(/\s+(?:or|to)\s+/).map(p=>COST[p]).filter(Boolean);
-  if(parts.length>1)return '<span class="acts" title="'+esc(label)+'">'+
-    parts.join('<span style="opacity:.5;padding:0 .1em">–</span>')+'</span>';
-  return '';
+  if(parts.length>1)return '<span class="acts" title="'+esc(label)+'" aria-label="'+esc(label)+'">'+
+    parts.join('<span class="dash">–</span>')+'</span>';
+  return '<span class="acts txt" title="'+esc(label)+'">'+esc(label)+'</span>';
 }
 
 /* ---------- markdown ----------
@@ -646,7 +658,7 @@ function statblock(h){
   const head=text.match(/^#\s*([^\n]*(?:\n\[[^\]]*\][^\n]*)?)/);
   if(head){
     text=text.slice(head[0].length).replace(/^\n+/,'');
-    let t=head[1].replace(/\n/g,' ');
+    let t=head[1].replace(/\n/g,' ').replace(/\[([^\]]+)\]\(https?:[^)]+\)/g,'$1');
     // An action with no cost is written "[]" in the corpus; drop the empty brackets.
     t=t.replace(/\[\s*\]/,'');
     const c=t.match(/\[([^\]]+)\]/); if(c){cost=c[1];t=t.replace(c[0],'')}
@@ -703,7 +715,8 @@ function parseHead(h){
   let text=(h.text||'').replace(/\r/g,'');
   const head=text.match(/^#\s*([^\n]*(?:\n\[[^\]]*\][^\n]*)?)/);
   let title=h.name,cost='',kind='';
-  if(head){let t=head[1].replace(/\n/g,' ').replace(/\[\s*\]/,'');
+  if(head){let t=head[1].replace(/\n/g,' ').replace(/\[([^\]]+)\]\(https?:[^)]+\)/g,'$1')
+      .replace(/\[\s*\]/,'');
     const c=t.match(/\[([^\]]+)\]/);if(c){cost=c[1];t=t.replace(c[0],'')}
     const k=t.match(/\(([^)]+)\)\s*$/);if(k){kind=k[1];t=t.replace(k[0],'')}
     title=t.trim()||h.name}
@@ -739,7 +752,7 @@ const isFav=h=>FAVS.some(f=>favKey(f)===favKey(h));
 function toggleFav(h){
   if(isFav(h))FAVS=FAVS.filter(f=>favKey(f)!==favKey(h));
   else FAVS.unshift({name:h.name,category:h.category,level:h.level,url:h.url,text:h.text,
-                     summary:h.summary||''});
+                     summary:h.summary||'',legacy_name:h.legacy_name||[]});
   try{localStorage.setItem(FKEY,JSON.stringify(FAVS))}catch(e){}
   paintFavs();
   for(const b of document.querySelectorAll('.star[data-key]'))
@@ -757,6 +770,11 @@ function paintFavs(){
   EL('fav-tiles').innerHTML=FAVS.map((h,i)=>tile(h,i,'fav')).join('');
 }
 const LISTS={res:()=>SHOWN,fav:()=>FAVS};
+/* The Remaster renamed things; the old name is what a table still says. */
+function formerly(h){
+  const names=[].concat(h.legacy_name||[]).filter(Boolean);
+  return names.length?'<p class="was">formerly '+esc(names.join(', '))+'</p>':'';
+}
 function tile(h,i,src){
   src=src||'res';
   const p=parseHead(h),k=kindOf(h.category);
@@ -764,6 +782,7 @@ function tile(h,i,src){
   return '<div class="tile'+(p.rarity?' '+p.rarity:'')+'" style="--k:var(--k-'+k+')" data-i="'+i+
     '" data-src="'+src+'" role="button" tabindex="0" title="Open">'+kindBadge(h,p)+starBtn(h)+
     '<div class="thead"><span class="tname">'+esc(p.title)+'</span>'+glyphs(p.cost)+'</div>'+
+    formerly(h)+
     (p.traits.length?'<div class="traits">'+p.traits.slice(0,4).map(t=>{
       const l=t.toLowerCase(),cls=RARITY.includes(l)?l:(SIZES.includes(l)?'size':'');
       return '<span class="trait'+(cls?' '+cls:'')+'">'+esc(t)+'</span>'}).join('')+'</div>':'')+
@@ -784,7 +803,7 @@ function openEntry(i,src){
   sheet.innerHTML='<div class="pop'+(p.rarity?' '+p.rarity:'')+'" style="--k:var(--k-'+k+')" '+
     'role="dialog" aria-modal="true" aria-label="'+esc(p.title)+'">'+
     '<button type="button" class="x" id="sheet-x" title="Close (Esc)" aria-label="Close">×</button>'+
-    starBtn(h)+kindBadge(h,p)+statblock(h)+
+    starBtn(h)+kindBadge(h,p)+statblock(h).replace('</div><div class="body',formerly(h)+'</div><div class="body')+
     '<div class="nav"><button type="button" id="sheet-prev"'+(i?'':' disabled')+'>← previous</button>'+
     '<a class="cite aon" href="'+esc(h.url)+'" target="_blank" rel="noreferrer">Open on Archives of Nethys ↗</a>'+
     '<button type="button" id="sheet-next"'+(i<list.length-1?'':' disabled')+'>next →</button></div></div>';
@@ -1312,3 +1331,5 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='?'){e.preventDefault();ob.hidden?openHelp():closeHelp()}
 });
 </script></body></html>"""
+
+PAGE = _PAGE.replace("__ICON_FONT__", _FONT)

@@ -56,6 +56,12 @@ def chunk_text(chunk: dict, max_chars: int = 1200) -> str:
         head.append(", ".join(chunk["traits"]))
     if chunk.get("rarity"):
         head.append(chunk["rarity"])
+    # "Magic Missile" is what the table says; Force Barrage is what the index
+    # holds. The old name goes in the header so both views can match it.
+    old = chunk.get("legacy_name") or []
+    old = [old] if isinstance(old, str) else [n for n in old if n]
+    if old:
+        head.append("formerly " + ", ".join(old))
     body = (chunk.get("summary") or "") + "\n" + plain(chunk.get("text") or "")
     return " | ".join(h for h in head if h) + "\n" + body[:max_chars].strip()
 
