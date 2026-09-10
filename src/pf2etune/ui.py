@@ -1502,7 +1502,7 @@ function busy(kind){
   const el=EL('busy');
   const tick=()=>{const label=pool[Math.floor((Date.now()-t0)/2600)%pool.length];
     el.textContent=label+'… '+((Date.now()-t0)/1000).toFixed(1)+'s'};
-  tick();clearInterval(timer);timer=setInterval(tick,250);rolling(true);
+  tick();clearInterval(timer);timer=setInterval(tick,100);rolling(true);
 }
 function stamp(t,live){
   // While writing: something to read. Done: the total. Expert mode: the
@@ -1647,7 +1647,7 @@ async function ask(text){
   const pending=()=>{const t0=Date.now();clearInterval(timer);
     timer=setInterval(()=>{const el=document.getElementById('pend');
       if(el){const l=LINES.write[Math.floor((Date.now()-t0)/2600)%LINES.write.length];
-        el.textContent=l+'… '+((Date.now()-t0)/1000).toFixed(1)+'s'}},250)};
+        el.textContent=l+'… '+((Date.now()-t0)/1000).toFixed(1)+'s'}},100)};
   for(;;){
     const {done,value}=await reader.read(); if(done)break;
     buf+=dec.decode(value,{stream:true});
