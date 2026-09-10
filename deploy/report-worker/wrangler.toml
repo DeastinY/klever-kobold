@@ -8,4 +8,4 @@ compatibility_date = "2025-06-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "pf2e-reports"
-database_id = "REPLACE-WITH-THE-ID-wrangler-d1-create-PRINTS"
+database_id = "713f3abf-d896-41d9-8fac-072e4073743b"
