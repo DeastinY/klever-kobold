@@ -253,6 +253,7 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
  text-transform:uppercase;font-weight:700;color:var(--k);margin-bottom:.2rem}
 .pop .kind svg{width:.95rem;height:.95rem;fill:currentColor}
 .pop .name{padding-right:2.4rem}
+.pop .rank{display:none}  /* the kind badge above already carries the level */
 .pop .acts{font-size:1.25em}
 .pop .x{position:absolute;top:.6rem;right:.6rem;width:2rem;height:2rem;border-radius:50%;
  border:1px solid var(--line);background:var(--card);color:var(--soft);font-size:1.1rem;
