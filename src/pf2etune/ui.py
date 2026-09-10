@@ -176,6 +176,14 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
  white-space:nowrap;font-variant-numeric:tabular-nums}
 .body th{background:var(--chip);font-weight:600}
 .body tr:nth-child(even) td{background:color-mix(in srgb,var(--chip) 45%,transparent)}
+.body .src{font-size:.8rem;color:var(--muted);margin:.25rem 0 .45rem}
+.body .src .field{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.body .src .pg{margin-left:.2rem}
+.body .src .ed{margin-left:.45rem;font-size:.66rem;border:1px solid var(--line);border-radius:3px;
+ padding:0 .3rem;vertical-align:.1em}
+.dc{font-weight:700;color:var(--accent);white-space:nowrap}
+.dice{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.92em;
+ background:var(--chip);border-radius:3px;padding:0 .28em;white-space:nowrap}
 .deg{display:block;margin-top:.3rem}
 .deg .field{color:var(--ok)}
 .deg.f .field{color:var(--fail)}
@@ -205,8 +213,8 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .tile.uncommon{border-color:#c45500;border-top-color:var(--k)}
 .tile.rare{border-color:#0c1466;border-top-color:var(--k)}
 .tile.unique{border-color:#800080;border-top-color:var(--k)}
-.tile .kind{display:inline-flex;align-items:center;gap:.3rem;font-size:.66rem;letter-spacing:.07em;
- text-transform:uppercase;font-weight:700;color:var(--k);margin-bottom:.25rem}
+.tile .kind{display:flex;align-items:center;gap:.3rem;font-size:.66rem;letter-spacing:.07em;
+ text-transform:uppercase;font-weight:700;color:var(--k);margin-bottom:.25rem;padding-right:1.6rem}
 .tile .kind svg{width:.9rem;height:.9rem;fill:currentColor}
 .tile .kind .lvl{margin-left:auto;font-weight:600;letter-spacing:0;text-transform:none;
  color:var(--muted);font-size:.72rem;font-variant-numeric:tabular-nums}
@@ -239,7 +247,7 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 @media(prefers-reduced-motion:reduce){.pop{animation:none}}
 .pop .card{border:0;margin:0;padding:0;background:none}
 .pop .body.clip{max-height:none}
-.pop .kind{display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;letter-spacing:.07em;
+.pop .kind{padding-right:5rem;display:inline-flex;align-items:center;gap:.3rem;font-size:.68rem;letter-spacing:.07em;
  text-transform:uppercase;font-weight:700;color:var(--k);margin-bottom:.2rem}
 .pop .kind svg{width:.95rem;height:.95rem;fill:currentColor}
 .pop .name{padding-right:2.4rem}
@@ -304,6 +312,7 @@ kbd{font:inherit;font-size:.75rem;background:var(--chip);border:1px solid var(--
  color:var(--ink);border-radius:999px;cursor:pointer;text-align:left;line-height:1.3}
 .chip:hover{border-color:var(--accent);color:var(--accent)}
 .chip .m{color:var(--muted);font-size:.72rem;margin-left:.35rem}
+.chip.again{color:var(--muted);padding:.35rem .6rem}
 .recent{list-style:none;margin:0;padding:0}
 .recent li{display:flex;gap:.5rem;align-items:baseline}
 .recent li button.qq{flex:1;text-align:left;background:none;border:0;padding:.28rem 0;
@@ -565,6 +574,9 @@ function inline(t,cites){
      .replace(/(^|[^*])\*(?=\S)([^*\n]*[^*\s])\*/g,'$1<i>$2</i>')
      // _Player Core_ -- underscores only when they wrap a word, not inside one
      .replace(/(^|[^\w])_(?=\S)([^_\n]*[^_\s])_(?!\w)/g,'$1<i>$2</i>');
+  // "[Reaction]", "[Two Actions]" in the body are AoN's action markers.
+  t=t.replace(/\[((?:Single|One|Two|Three|Free) Actions?|Reaction)((?: (?:or|to) (?:Single|One|Two|Three|Free) Actions?)?)\]/g,
+     (m,a,b)=>glyphs(a+b)||m);
   t=t.replace(/(?<!href=")https?:\/\/[^\s<)\]"]+/g,u=>{
     const clean=u.replace(/[.,;:]$/,''),tail=u.slice(clean.length);
     return chip(clean,AON_LABEL[clean]||clean.replace(/^https?:\/\/(www\.)?/,''))+tail;
@@ -579,6 +591,12 @@ function inline(t,cites){
       return chip(h.url,h.name)+(same?name.slice(h.name.length):(gap+(name||'')));
     });
   }
+  // DCs and dice stand out, the way a reader's eye already looks for them.
+  // Only in text nodes: a URL or an attribute must not be rewritten.
+  t=t.split(/(<[^>]+>)/).map(seg=>seg.startsWith('<')?seg:seg
+     .replace(/\bDC\s?(\d{1,2})\b/g,'<span class="dc">DC $1</span>')
+     .replace(/\b(\d{1,3}d\d{1,3}(?:\s?[+\u2212\-]\s?\d{1,3})?)\b/g,'<span class="dice">$1</span>')
+  ).join('');
   return t;
 }
 let AON_LABEL={};   // url -> entry name, so a cited link reads as the thing it cites
@@ -635,7 +653,13 @@ function md(src,cites){
       }
       const deg=DEGREES.test(f[1]);
       const cls=deg?(/Critical Failure/.test(f[1])?'deg cf':
-        (/^Failure/.test(f[1])?'deg f':'deg')):'';
+        (/^Failure/.test(f[1])?'deg f':'deg')):(/^Source$/i.test(f[1])?'src':'');
+      if(cls==='src'){
+        // "Player Core pg. 332" -> book in italics, page number muted, edition tag
+        val=val.replace(/^((?:\[[^\]]+\]\([^)]+\))|[^,;]+?)(\s+pg\.?\s*\d+[\d\u2013\-]*)?(\s+\d\.\d)?\s*$/,
+          (m,book,pg,ed)=>'<i>'+book+'</i>'+(pg?'<span class="pg">'+pg+'</span>':'')+
+                          (ed?'<span class="ed">'+ed.trim()+'</span>':''));
+      }
       html+='<p'+(cls?' class="'+cls+'"':'')+'><span class="field">'+inline(f[1],cites)+
         '</span> '+inline(val,cites)+'</p>';
       continue;
@@ -1170,20 +1194,63 @@ document.addEventListener('click',e=>{
 });
 
 /* ---------- empty state ---------- */
-const EXAMPLES=[
- ['How does Treat Wounds work?','ask'],
- ['What level is Battle Medicine?','ask'],
- ['Is there a feat that makes falling less dangerous?','ask'],
- ['What can players do during exploration?','ask'],
- ['Was Magic Missile renamed?','ask'],
- ['grabbed','search']];
-EL('examples').innerHTML=EXAMPLES.map(([t,m],i)=>
-  '<button type="button" class="chip" data-i="'+i+'">'+esc(t)+
-  (m==='search'?'<span class="m">look up</span>':'')+'</button>').join('');
+/* A different handful each visit: some from a hand-written pool that covers
+   the shapes the evaluation cares about, some made from entries drawn at
+   random from the index, so the corpus itself suggests what to ask. */
+const POOL=[
+ 'How does Treat Wounds work?','What level is Battle Medicine?',
+ 'Is there a feat that makes falling less dangerous?','What can players do during exploration?',
+ 'Was Magic Missile renamed?','What does the off-guard condition do?',
+ 'How much damage does Fireball do at 5th rank?','An ogre has grabbed my monk. What can she do?',
+ 'Can I Raise a Shield as a free action?','What happens on a critical failure to Recall Knowledge?',
+ 'How does flanking work?','How long does Sudden Charge take?',
+ 'What is the DC to Escape a grab?','Can a rogue sneak attack with a ranged weapon?',
+ 'How does the frightened condition go away?','What does Quick Repair do?',
+ 'How far can I Stride with a speed of 25?','Is there an archetype for being a pirate?',
+ 'How does concealment affect attacks?','How do I Treat Poison?',
+ 'What does the Reactive Strike reaction do?','How does heroic recovery work?',
+ 'What is the range of a longbow?','How does Demoralize work?',
+ 'How much does a healing potion heal?','What does the manipulate trait mean?',
+ 'How do persistent damage checks work?','What does a critical hit do with a deadly weapon?',
+ 'How does Hustle work in exploration?','What does the invisible condition do?',
+ 'How many actions does it take to draw a weapon?','Can I Aid an ally from across the room?',
+ 'What does Cat Fall do?','How does Sneak differ from Hide?',
+ 'What are the rules for falling damage?','How does Wounded interact with Dying?'];
+const LOOKUPS=['grabbed','flat-footed','Force Barrage','off-guard','Sudden Charge','Lay on Hands'];
+const MADE={
+ feat:n=>['What level is '+n+'?','What does the '+n+' feat do?'],
+ spell:n=>['How does the spell '+n+' work?','What rank is '+n+'?'],
+ action:n=>['How does '+n+' work?','What does '+n+' do?'],
+ condition:n=>['What does the '+n+' condition do?'],
+ equipment:n=>['What does '+n+' cost?','What does '+n+' do?'],
+ weapon:n=>['What are the traits of '+n+'?','How much damage does '+n+' deal?'],
+ creature:n=>['How dangerous is '+n+'?','What level is '+n+'?'],
+ 'class feature':n=>['Which class gets '+n+'?']};
+const pick=(arr,n)=>{const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;
+  [a[i],a[j]]=[a[j],a[i]]}return a.slice(0,n)};
+let EXAMPLES=[];
+async function drawExamples(){
+  let made=[];
+  try{
+    const d=await (await fetch('/api/examples')).json();
+    for(const e of d.entries||[]){
+      const f=MADE[(e.category||'').replace('-',' ')];if(!f)continue;
+      made.push(pick(f(e.name),1)[0]);
+    }
+  }catch(e){}
+  EXAMPLES=pick(pick(POOL,4).concat(pick(made,3)),6).map(t=>[t,'ask']);
+  EXAMPLES.push([pick(LOOKUPS,1)[0],'search']);
+  EL('examples').innerHTML=EXAMPLES.map(([t,m],i)=>
+    '<button type="button" class="chip" data-i="'+i+'">'+esc(t)+
+    (m==='search'?'<span class="m">look up</span>':'')+'</button>').join('')+
+    '<button type="button" class="chip again" id="reroll" title="Different ones">↻</button>';
+}
 EL('examples').addEventListener('click',e=>{
+  if(e.target.closest('#reroll')){drawExamples();return}
   const b=e.target.closest('.chip');if(!b)return;
   const [t,m]=EXAMPLES[+b.dataset.i];q.value=t;go(m);
 });
+drawExamples();
 function showHome(on){EL('home').hidden=!on}
 paintHist();showHome(true);
 

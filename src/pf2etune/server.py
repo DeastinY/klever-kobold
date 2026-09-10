@@ -155,6 +155,13 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
             if parsed.path == "/api/health":
                 self._send(200, json.dumps(health).encode(), "application/json")
                 return
+            if parsed.path == "/api/examples":
+                # A few random current entries, so the page can suggest questions
+                # the corpus can actually answer. No model, no index scan beyond
+                # a handful of random rows.
+                self._send(200, json.dumps({"entries": _random_entries(pool.base)}).encode(),
+                           "application/json; charset=utf-8")
+                return
             if parsed.path not in ("/api/search", "/api/ask", "/api/test"):
                 self._send(404, b'{"error":"not found"}', "application/json")
                 return
@@ -266,6 +273,22 @@ def _has_model(models: list[str], want: str) -> bool:
     names = set(models)
     return (want in names or f"{want}:latest" in names
             or want.removesuffix(":latest") in names)
+
+
+_EXAMPLE_KINDS = {"feat", "spell", "action", "condition", "equipment", "weapon", "creature"}
+
+
+def _random_entries(assistant: Assistant, n: int = 8) -> list[dict]:
+    import random
+    meta = assistant.index.meta
+    out, tries = [], 0
+    while len(out) < n and tries < 200:
+        tries += 1
+        m = meta[random.randrange(len(meta))]
+        if (m.get("category") in _EXAMPLE_KINDS and m.get("remaster_status") != "legacy"
+                and m.get("name") and len(m["name"]) < 32 and m.get("summary")):
+            out.append({"name": m["name"], "category": m["category"], "level": m.get("level")})
+    return out
 
 
 def _hits(hits) -> list[dict]:
