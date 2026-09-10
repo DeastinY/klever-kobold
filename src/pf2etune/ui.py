@@ -287,6 +287,7 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .err{color:var(--accent);white-space:pre-wrap}
 .timing{color:var(--muted);font-size:.72rem;margin-top:.7rem;
  font-variant-numeric:tabular-nums}
+.rune{color:var(--accent);opacity:.75;letter-spacing:.02em}
 .caret{display:inline-block;width:.45em;height:1em;vertical-align:text-bottom;
  background:var(--warn);animation:blink 1s steps(2,start) infinite}
 @keyframes blink{to{visibility:hidden}}
@@ -1429,6 +1430,42 @@ const LINES={
       'Leafing through the Player Core','Sharpening the quill','Casting Read Aura',
       'Rolling a secret check','Bribing the librarian','Checking the errata',
       'Asking Nethys nicely','Reading the fine print']};
+/* ---------- the text arrives as runes ----------
+   Streamed text is shown the moment it lands, but the newest half-second of
+   it is drawn as runes that settle into letters as they age: fully scrambled
+   while fresh, half resolved in the middle, plain once old. Everything older
+   than that is rendered as markdown as before, so the settled text never
+   flickers. Cut at a space so a markdown marker is never split. */
+const RUNES='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ✦✧᛭';
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let ARRIVALS=[];   // [time, answer length at that time]
+function noteArrival(len){ARRIVALS.push([Date.now(),len]);if(ARRIVALS.length>400)ARRIVALS.splice(0,200)}
+function stableLength(answer,age){
+  const cutoff=Date.now()-age;let n=0;
+  for(const [t,len] of ARRIVALS){if(t<=cutoff)n=len;else break}
+  return n;
+}
+function runes(text,ratio){
+  let out='';
+  for(const ch of text){
+    if(/\s/.test(ch)||Math.random()>ratio)out+=esc(ch);
+    else out+=RUNES[Math.floor(Math.random()*RUNES.length)];
+  }
+  return out;
+}
+function streamed(answer){
+  if(REDUCED||!ARRIVALS.length)return md(answer,true);
+  let old=stableLength(answer,520),mid=stableLength(answer,260);
+  // back both cuts up to a space, so markdown markers are never split
+  const back=i=>{while(i>0&&i<answer.length&&!/\s/.test(answer[i]))i--;return i};
+  old=back(old);mid=Math.max(old,back(mid));
+  if(old>=answer.length)return md(answer,true);
+  const settled=md(answer.slice(0,old),true);
+  const tail='<span class="rune">'+runes(answer.slice(old,mid),.5)+runes(answer.slice(mid),.9)+'</span>';
+  // into the last open block, not after it
+  const m=settled.match(/((?:<\/(?:p|li|ul|b|i)>\s*)+)$/);
+  return m?settled.slice(0,m.index)+tail+m[1]:settled+tail;
+}
 let funTimer=null;
 function funStart(){
   const t0=Date.now(),pool=LINES.fun.slice().sort(()=>Math.random()-.5);
@@ -1438,8 +1475,10 @@ function funStart(){
   if(foot&&!document.getElementById('fun'))foot.innerHTML=stamp({},true);
   clearInterval(funTimer);
   funTimer=setInterval(()=>{const el=document.getElementById('fun');
-    if(el)el.textContent=pool[Math.floor((Date.now()-t0)/2600)%pool.length]+'…'},250);
+    if(el)el.textContent=pool[Math.floor((Date.now()-t0)/2600)%pool.length]+'…';
+    if(typeof settle==='function')settle()},120);
 }
+let settle=null;   // set by the running ask: repaints so the runes keep settling
 function funStop(){clearInterval(funTimer);funTimer=null}
 let timer=null;
 function rolling(on){d20.classList.toggle('rolling',on)}
@@ -1570,6 +1609,7 @@ async function ask(text){
   }
   const reader=res.body.getReader(),dec=new TextDecoder();
   let buf='',answer='',timings={},hits=[],srcHtml='',started=false,queued=false;
+  ARRIVALS=[];settle=()=>{if(!queued&&started){queued=true;setTimeout(()=>{queued=false;paint()},0)}};
   // Two containers: the entries are drawn once, and each token repaints only
   // the answer's body. Replacing the whole output per token tore the tiles out
   // from under a click.
@@ -1578,9 +1618,10 @@ async function ask(text){
   const frame=()=>{if(!EL('ans'))out.innerHTML='<div id="ans"></div><div id="src"></div>'};
   const paint=(live=true)=>{
     frame();const ans=EL('ans');
-    if(!ans.firstChild){ans.innerHTML=answerCard(answer,timings,live);return}
+    if(!ans.firstChild){ans.innerHTML=answerCard(answer,timings,live);
+      if(live&&answer)ans.querySelector('.body').innerHTML=streamed(answer)+'<span class="caret"></span>';return}
     const body=ans.querySelector('.body');
-    body.innerHTML=answer?(live?md(answer,true)+'<span class="caret"></span>':linkNames(md(answer,true)))
+    body.innerHTML=answer?(live?streamed(answer)+'<span class="caret"></span>':linkNames(md(answer,true)))
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>';
     // The footer's line begins in the same paint that removes the body's.
     if(live&&answer&&!document.getElementById('fun'))funStart();
@@ -1605,22 +1646,22 @@ async function ask(text){
         setCites(hits);frame();EL('src').innerHTML=srcHtml;paint();pending();
       }else if(ev.event==='token'){
         if(!started){started=true;clearInterval(timer)}
-        answer+=ev.text;
+        answer+=ev.text;noteArrival(answer.length);
         // One repaint per frame, however many chunks arrived: markdown over the
         // whole answer per token is what made the page stutter while writing.
         if(!queued){queued=true;const run=()=>{queued=false;paint()};
           // A hidden tab gets no animation frames; a timer keeps it current.
           if(document.hidden)setTimeout(run,150);else requestAnimationFrame(run)}
-      }else if(ev.event==='done'){clearInterval(timer);funStop();rolling(false);timings=ev.timings;
+      }else if(ev.event==='done'){clearInterval(timer);funStop();settle=null;rolling(false);timings=ev.timings;
         EXTRA=ev.mentions||[];answer=answer.trimEnd();
         CURRENT={q:text,answer,sources:hits,model:SET.model||SDEF.model,timings};paint(false);
         addHist({id:String(Date.now()),q:text,mode:'ask',ts:Date.now(),
           model:SET.model||SDEF.model,answer,hits,timings,mentions:EXTRA});
-      }else if(ev.event==='error'){clearInterval(timer);funStop();rolling(false);
+      }else if(ev.event==='error'){clearInterval(timer);funStop();settle=null;rolling(false);
         out.innerHTML='<p class="err">'+esc(ev.error)+'</p>';return}
     }
   }
-  clearInterval(timer);funStop();rolling(false);
+  clearInterval(timer);funStop();settle=null;rolling(false);
 }
 async function go(mode,force){
   const text=q.value.trim(); if(!text)return;
