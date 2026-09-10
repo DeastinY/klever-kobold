@@ -1,4 +1,4 @@
-// A mailbox for wrong-answer reports. Anyone running pf2e serve can POST one;
+// A mailbox for wrong-answer reports. Anyone running kobold serve can POST one;
 // reading them back needs the admin key. Nothing else.
 //
 //   POST /report          JSON body, see LIMITS for the fields  -> {ok, id}
@@ -76,7 +76,7 @@ export default {
     }
 
     if (request.method === "GET" && url.pathname === "/")
-      return new Response("pf2e report mailbox: POST /report", { headers: CORS });
+      return new Response("kobold report mailbox: POST /report", { headers: CORS });
     return json({ error: "not found" }, 404);
   }
 };

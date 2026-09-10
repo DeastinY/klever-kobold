@@ -16,9 +16,9 @@ RUN chmod +x deploy/entrypoint.sh
 
 ENV PYTHONPATH=/app/src \
     PYTHONUNBUFFERED=1 \
-    PF2E_INDEX=/data/pf2e-index \
+    KOBOLD_INDEX=/data/kobold-index \
     OLLAMA_URL=http://ollama:11434 \
-    PF2E_INDEX_URL=https://github.com/DeastinY/pf2etune/releases/download/index-v1/pf2e-index.tar.gz
+    KOBOLD_INDEX_URL=https://github.com/DeastinY/klever-kobold/releases/download/index-v1/kobold-index.tar.gz
 
 EXPOSE 8765
 ENTRYPOINT ["deploy/entrypoint.sh"]

@@ -14,16 +14,16 @@ done
 [ -d .venv ] || python3 -m venv .venv
 .venv/bin/pip install -q -r deploy/requirements.txt
 
-if [ ! -d dist/pf2e-index ]; then
+if [ ! -d dist/kobold-index ]; then
   echo "Fetching the packaged index (143 MB)..."
   mkdir -p dist
   if command -v gh >/dev/null; then
-    gh release download index-v1 --pattern 'pf2e-index.tar.gz' --clobber -O /tmp/pf2e-index.tar.gz
+    gh release download index-v1 --pattern 'kobold-index.tar.gz' --clobber -O /tmp/kobold-index.tar.gz
   else
-    curl -fL -o /tmp/pf2e-index.tar.gz \
-      https://github.com/DeastinY/pf2etune/releases/download/index-v1/pf2e-index.tar.gz
+    curl -fL -o /tmp/kobold-index.tar.gz \
+      https://github.com/DeastinY/klever-kobold/releases/download/index-v1/kobold-index.tar.gz
   fi
-  tar -xzf /tmp/pf2e-index.tar.gz -C dist
+  tar -xzf /tmp/kobold-index.tar.gz -C dist
 fi
 
-PYTHONPATH=src .venv/bin/python -m pf2etune doctor
+PYTHONPATH=src .venv/bin/python -m kleverkobold doctor

@@ -24,13 +24,13 @@ sys.path.insert(0, str(ROOT / "src"))
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--benchmark", type=pathlib.Path, default=ROOT / "eval" / "holdout.jsonl")
-    ap.add_argument("--index", type=pathlib.Path, default=ROOT / "dist" / "pf2e-index")
+    ap.add_argument("--index", type=pathlib.Path, default=ROOT / "dist" / "kobold-index")
     ap.add_argument("-k", type=int, default=8)
     ap.add_argument("--pool", type=int, default=24)
     ap.add_argument("--rerank", action="store_true")
     args = ap.parse_args()
 
-    from pf2etune.app import Assistant
+    from kleverkobold.app import Assistant
 
     a = Assistant(args.index)
     canon = a.index.canonical

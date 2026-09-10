@@ -968,7 +968,7 @@ how large that gap is. They never did; I measured them differently.
 
 ## Latency: the 60-second answer on a MacBook
 
-Reported from the field: `pf2e serve` on an M-series 16 GB took upwards of a
+Reported from the field: `kobold serve` on an M-series 16 GB took upwards of a
 minute per question, after the warm-start fix had already landed. So this was
 per-question inference cost, not cold start.
 
@@ -1059,7 +1059,7 @@ changed no verdict on 31 items — says the graded fact arrives early.
 prompt processing by a third. 45% of corpus entries are longer than 1000
 characters (23% are longer than 1600), so it truncates nearly half the corpus
 mid-entry — a real information loss that 109 lookup-shaped questions happen not
-to punish. It is exposed as `pf2e serve --context-chars` instead, with the
+to punish. It is exposed as `kobold serve --context-chars` instead, with the
 measurement written down, so the trade is the user's to make on their hardware.
 
 **Not taken:** pool 12. It saves the least of the three and cuts rerank depth,

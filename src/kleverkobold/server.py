@@ -30,12 +30,12 @@ from .ui import PAGE
 # The header the API key travels in. A header rather than a query parameter so it
 # stays out of the URL, and therefore out of browser history, out of a Referer,
 # and out of any access log anyone ever adds to this handler.
-KEY_HEADER = "X-PF2E-Key"
+KEY_HEADER = "X-Kobold-Key"
 
-# Where "Wrong? Report it" goes unless --report-url / PF2E_REPORT_URL say
+# Where "Wrong? Report it" goes unless --report-url / KOBOLD_REPORT_URL say
 # otherwise: this project's own mailbox (deploy/report-worker). Set either to
 # "" to disable the Send button and fall back to a GitHub issue.
-DEFAULT_REPORT_URL = "https://pf2e-reports.deastiny.workers.dev"
+DEFAULT_REPORT_URL = "https://kobold-reports.deastiny.workers.dev"
 
 
 @dataclass(frozen=True)
@@ -344,7 +344,7 @@ def _report_url(flag: str | None) -> str:
     """The flag, else the environment, else the default; an explicit '' disables."""
     if flag is not None:
         return flag
-    env = os.environ.get("PF2E_REPORT_URL")
+    env = os.environ.get("KOBOLD_REPORT_URL")
     return env if env is not None else DEFAULT_REPORT_URL
 
 

@@ -226,7 +226,7 @@ def attach_context(items: list[dict], retriever: str, mode: str, k: int,
     """
     sys.path.insert(0, str(ROOT / "src"))
     sys.path.insert(0, str(ROOT / "eval"))
-    from pf2etune import retrieval as R
+    from kleverkobold import retrieval as R
     import retrieval_eval
 
     index = retrieval_eval.load_index(retriever)
@@ -299,7 +299,7 @@ def run_app(items: list[dict], index_dir: pathlib.Path, ollama_url: str, k: int,
     published program.
     """
     sys.path.insert(0, str(ROOT / "src"))
-    from pf2etune.app import Assistant
+    from kleverkobold.app import Assistant
 
     assistant = Assistant(index_dir, ollama_url, context_chars=context_chars,
                           answer_tokens=answer_tokens, llm_model=llm_model)
@@ -336,7 +336,7 @@ def main() -> int:
     ap.add_argument("--reasoning-effort", help="e.g. low; omit for non-reasoning models")
     ap.add_argument("--batch-size", type=int, default=8, help="hf backend only")
     ap.add_argument("--no-4bit", action="store_true", help="hf backend: load in bf16 instead")
-    ap.add_argument("--index-dir", type=pathlib.Path, default=ROOT / "dist" / "pf2e-index",
+    ap.add_argument("--index-dir", type=pathlib.Path, default=ROOT / "dist" / "kobold-index",
                     help="app backend: the packaged index to run against")
     ap.add_argument("--ollama", default="http://localhost:11434")
     ap.add_argument("--rerank", action="store_true", help="app backend: listwise rerank")

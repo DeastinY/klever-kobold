@@ -89,22 +89,22 @@ def default_llm() -> tuple[str, str]:
                          f"speed). --llm-model {BIG_LLM} for the 9B, 100/109{room}.")
 
 
-INDEX_URL = ("https://github.com/DeastinY/pf2etune/releases/download/"
-             "index-v2/pf2e-index.tar.gz")
+INDEX_URL = ("https://github.com/DeastinY/klever-kobold/releases/download/"
+             "index-v2/kobold-index.tar.gz")
 
 
 def default_index() -> pathlib.Path:
     """Where the index lives, whether this is a clone or an installed tool.
 
-    Running from a checkout, ``dist/pf2e-index`` is right there. Installed with
+    Running from a checkout, ``dist/kobold-index`` is right there. Installed with
     ``uv tool install`` or run with ``uvx``, the package sits in a cache that is
     wiped on upgrade, so a 244 MB index cannot live beside it -- it goes to the
     user data directory instead and survives.
     """
-    repo = pathlib.Path(__file__).resolve().parents[2] / "dist" / "pf2e-index"
+    repo = pathlib.Path(__file__).resolve().parents[2] / "dist" / "kobold-index"
     if (repo / "manifest.json").exists():
         return repo
-    env = os.environ.get("PF2E_INDEX")
+    env = os.environ.get("KOBOLD_INDEX")
     if env:
         return pathlib.Path(env).expanduser()
     if sys.platform == "darwin":
@@ -114,7 +114,17 @@ def default_index() -> pathlib.Path:
     else:
         base = pathlib.Path(os.environ.get("XDG_DATA_HOME",
                                            pathlib.Path.home() / ".local" / "share"))
-    return base / "pf2etune" / "pf2e-index"
+    new = base / "kleverkobold" / "kobold-index"
+    # Installs from before the rename keep working: an index under the old
+    # names is moved to the new ones once, and never looked for again.
+    old = base / "pf2etune" / "pf2e-index"
+    if not new.exists() and (old / "manifest.json").exists():
+        try:
+            new.parent.mkdir(parents=True, exist_ok=True)
+            old.rename(new)
+        except OSError:
+            return old
+    return new
 
 
 DEFAULT_INDEX = default_index()
@@ -457,8 +467,8 @@ class Assistant:
         if not (index_dir / "manifest.json").exists():
             raise OllamaError(
                 f"No index at {index_dir}.\n"
-                f"Fetch it with:  pf2e setup\n"
-                f"or point --index at an unpacked pf2e-index directory."
+                f"Fetch it with:  kobold setup\n"
+                f"or point --index at an unpacked kobold-index directory."
             )
         self.manifest = orjson.loads((index_dir / "manifest.json").read_bytes())
         self.ollama = client_for(backend, ollama_url, api_key)

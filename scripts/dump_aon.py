@@ -12,7 +12,7 @@ import orjson
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 
-from pf2etune import aon  # noqa: E402
+from kleverkobold import aon  # noqa: E402
 
 OUT = pathlib.Path(__file__).resolve().parents[1] / "data" / "raw" / "aon"
 
@@ -24,7 +24,7 @@ def main() -> int:
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
-    with httpx.Client(headers={"User-Agent": "pf2etune/0.1 (research corpus build)"}) as client:
+    with httpx.Client(headers={"User-Agent": "kleverkobold/0.1 (research corpus build)"}) as client:
         total = aon.total_documents(client)
         cats = aon.categories(client)
         if args.only:

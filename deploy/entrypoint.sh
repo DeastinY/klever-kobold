@@ -3,7 +3,7 @@
 # wait for Ollama, pull the two models if absent, fetch the index if absent.
 set -euo pipefail
 
-INDEX="${PF2E_INDEX:-/data/pf2e-index}"
+INDEX="${KOBOLD_INDEX:-/data/kobold-index}"
 OLLAMA="${OLLAMA_URL:-http://ollama:11434}"
 LLM="${PF2E_LLM:-qwen3.5:9b}"
 EMBED="${PF2E_EMBED:-qwen3-embedding:0.6b}"
@@ -29,10 +29,10 @@ done
 if [ ! -f "$INDEX/manifest.json" ]; then
   echo "fetching the rules index (~143 MB) ..."
   mkdir -p "$(dirname "$INDEX")"
-  curl -fL -o /tmp/pf2e-index.tar.gz "$PF2E_INDEX_URL"
-  tar -xzf /tmp/pf2e-index.tar.gz -C "$(dirname "$INDEX")"
-  rm -f /tmp/pf2e-index.tar.gz
+  curl -fL -o /tmp/kobold-index.tar.gz "$KOBOLD_INDEX_URL"
+  tar -xzf /tmp/kobold-index.tar.gz -C "$(dirname "$INDEX")"
+  rm -f /tmp/kobold-index.tar.gz
 fi
 
-exec python -m pf2etune --index "$INDEX" --ollama "$OLLAMA" \
+exec python -m kleverkobold --index "$INDEX" --ollama "$OLLAMA" \
   serve --host 0.0.0.0 --port "${PF2E_PORT:-8765}"

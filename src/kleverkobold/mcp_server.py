@@ -2,8 +2,8 @@
 
 Two tools, deliberately separate:
 
-``pf2e_ask``     the full pipeline -- rewrite, retrieve, answer with citations.
-``pf2e_search``  retrieval only, returning the excerpts. Useful when the caller is
+``kobold_ask``     the full pipeline -- rewrite, retrieve, answer with citations.
+``kobold_search``  retrieval only, returning the excerpts. Useful when the caller is
                  itself a capable model: it can read the rules text and reason
                  about it directly, which measured better than any local model
                  answering on its own.
@@ -25,7 +25,7 @@ PROTOCOL_VERSION = "2024-11-05"
 
 TOOLS = [
     {
-        "name": "pf2e_ask",
+        "name": "kobold_ask",
         "description": (
             "Answer a Pathfinder 2e rules question using the Archives of Nethys, "
             "with source URLs. Handles natural phrasing: describe a feat instead of "
@@ -41,7 +41,7 @@ TOOLS = [
         },
     },
     {
-        "name": "pf2e_search",
+        "name": "kobold_search",
         "description": (
             "Retrieve Pathfinder 2e rules excerpts without answering. Returns the "
             "matching Archives of Nethys entries with their text and URLs, for the "
@@ -77,7 +77,7 @@ def serve(index_dir: pathlib.Path, ollama_url: str, llm_model: str | None = None
         if method == "initialize":
             return {"protocolVersion": PROTOCOL_VERSION,
                     "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "pf2etune", "version": "0.1.0"}}
+                    "serverInfo": {"name": "kleverkobold", "version": "0.1.0"}}
         if method == "tools/list":
             return {"tools": TOOLS}
         if method == "tools/call":
@@ -89,12 +89,12 @@ def serve(index_dir: pathlib.Path, ollama_url: str, llm_model: str | None = None
                 return _result("A question is required.", True)
             try:
                 a = get()
-                if name == "pf2e_ask":
+                if name == "kobold_ask":
                     out = a.ask(question, k=int(args.get("k") or DEFAULT_K))
                     lines = [out["answer"], "", "Sources:"]
                     lines += [f"- {s['name']} ({s['category']}) {s['url']}" for s in out["sources"]]
                     return _result("\n".join(lines))
-                if name == "pf2e_search":
+                if name == "kobold_search":
                     hits = a.search(question, k=int(args.get("k") or DEFAULT_K))
                     blocks = [f"## {h.name} ({h.category})\n{h.url}\n\n{h.text[:1600]}"
                               for h in hits]

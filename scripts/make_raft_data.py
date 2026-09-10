@@ -123,7 +123,7 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=11)
     args = ap.parse_args()
 
-    from pf2etune import retrieval as R
+    from kleverkobold import retrieval as R
     import retrieval_eval
     from run_eval import SYSTEM_RAG, format_context
 

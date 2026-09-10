@@ -11,7 +11,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 MODEL=${MODEL:-Qwen/Qwen3-Embedding-0.6B}
-OUT=${OUT:-dist/pf2e-index}
+OUT=${OUT:-dist/kobold-index}
 
 [ -n "${SKIP_DUMP:-}" ] || python scripts/dump_aon.py
 python scripts/build_chunks.py
@@ -57,4 +57,4 @@ longest = max(len(json.loads(l)["text"]) for l in open(out / "bodies.jsonl"))
 print(f"  ok  {len(meta):,} entries; longest body {longest:,} chars; links.jsonl "
       f"{sum(1 for _ in open(out / 'links.jsonl')):,} rows")
 PY
-echo "packaged -> $OUT   (tar czf pf2e-index.tar.gz -C $(dirname "$OUT") $(basename "$OUT"); gh release create index-vN ...)"
+echo "packaged -> $OUT   (tar czf kobold-index.tar.gz -C $(dirname "$OUT") $(basename "$OUT"); gh release create index-vN ...)"

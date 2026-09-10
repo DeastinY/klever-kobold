@@ -18,7 +18,7 @@ import httpx
 import orjson
 
 API = "https://pathfinderwiki.com/w/api.php"
-UA = "pf2etune/0.1 (personal research corpus; contact via github)"
+UA = "kleverkobold/0.1 (personal research corpus; contact via github)"
 BATCH = 50
 DELAY = 0.25  # be a polite guest on a volunteer-run wiki
 

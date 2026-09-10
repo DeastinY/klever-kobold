@@ -1,7 +1,7 @@
 # The Klever Kobold
 
 Quick, keen, and wrong often enough that every answer shows the entries it was
-read from. (The package is `pf2etune`; the kobold is what you run.)
+read from. (The package is `kleverkobold`; the kobold is what you run.)
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Runs offline](https://img.shields.io/badge/runs-fully%20offline-2f6b4f)
@@ -77,13 +77,13 @@ provider, or attach the retrieval to any model over MCP:
 ## Run it
 
 ```bash
-uv tool install git+ssh://git@github.com/DeastinY/pf2etune
-pf2e setup --install-ollama     # installs Ollama, pulls both models, fetches the index
-pf2e serve                      # http://localhost:8765
+uv tool install git+ssh://git@github.com/DeastinY/klever-kobold
+kobold setup --install-ollama     # installs Ollama, pulls both models, fetches the index
+kobold serve                      # http://localhost:8765
 ```
 
-`pf2e setup` is idempotent. Without `--install-ollama` it prints the one command
-for your platform and stops. `pf2e doctor` checks each moving part separately.
+`kobold setup` is idempotent. Without `--install-ollama` it prints the one command
+for your platform and stops. `kobold doctor` checks each moving part separately.
 
 Every answer has a **Wrong? Report it** button; see
 [Reporting wrong answers](#reporting-wrong-answers) for what it sends and why.
@@ -92,7 +92,7 @@ The 4B answers by default: 93/109 on the holdout against the 9B's 100, at twice
 the speed and half the memory, and a 16 GB laptop stays usable while it thinks.
 `--llm-model qwen3.5:9b` runs the 9B; the web UI's Settings has it as the Better preset.
 
-Also: `pf2e ask "…"`, `pf2e search "…"`, `pf2e mcp` (stdio MCP server for Claude
+Also: `kobold ask "…"`, `kobold search "…"`, `kobold mcp` (stdio MCP server for Claude
 Desktop / Claude Code). Docker for Linux and Windows is in
 [`deploy/README.md`](deploy/README.md) — on a Mac use uv, since a container
 cannot reach Metal.
@@ -168,8 +168,8 @@ found in our own favour, is in [`notes/experiments.md`](notes/experiments.md).
 | [PathfinderWiki](https://pathfinderwiki.com/) | 22,604 *(unused)* | Paizo CUP |
 
 Rebuilt from scratch by four scripts; nothing derived is committed. The packaged
-index ships as a [release asset](https://github.com/DeastinY/pf2etune/releases).
-`src/pf2etune` is the runtime, `scripts/` builds the corpus, `eval/` is the
+index ships as a [release asset](https://github.com/DeastinY/klever-kobold/releases).
+`src/kleverkobold` is the runtime, `scripts/` builds the corpus, `eval/` is the
 measurement harness, `notes/` is the record.
 
 ## Reporting wrong answers
@@ -188,7 +188,7 @@ into that form. A hash of the sender's IP is kept for a 20-a-day limit and for
 nothing else.
 
 **Where it goes.** To a small mailbox the maintainer runs on Cloudflare Workers,
-`https://pf2e-reports.deastiny.workers.dev`, backed by a D1 table. The code is in
+`https://kobold-reports.deastiny.workers.dev`, backed by a D1 table. The code is in
 [`deploy/report-worker`](deploy/report-worker/README.md); anyone can run their
 own with six commands and point the app at it with `--report-url`. Nothing is
 sent unless someone fills the form in and presses Send — the tool otherwise

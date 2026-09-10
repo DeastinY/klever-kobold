@@ -1,16 +1,16 @@
 """Command line and MCP entry points.
 
-    pf2e setup                         # pull models, fetch the index
-    pf2e serve                         # web UI on localhost:8765
-    pf2e ask "can my level 4 fighter take Power Attack?"
+    kobold setup                         # pull models, fetch the index
+    kobold serve                         # web UI on localhost:8765
+    kobold ask "can my level 4 fighter take Power Attack?"
 
-Equivalently, without installing: uv run --with pf2etune pf2e ...
+Equivalently, without installing: uv run --with kleverkobold pf2e ...
 
-    python -m pf2etune ask "can my level 4 fighter take Power Attack?"
-    python -m pf2etune search "a feat that makes falling less dangerous"
-    python -m pf2etune serve           # web UI on localhost:8765
-    python -m pf2etune doctor          # check Ollama, models, index
-    python -m pf2etune mcp             # stdio MCP server
+    python -m kleverkobold ask "can my level 4 fighter take Power Attack?"
+    python -m kleverkobold search "a feat that makes falling less dangerous"
+    python -m kleverkobold serve           # web UI on localhost:8765
+    python -m kleverkobold doctor          # check Ollama, models, index
+    python -m kleverkobold mcp             # stdio MCP server
 """
 
 from __future__ import annotations
@@ -102,7 +102,7 @@ def cmd_doctor(args) -> int:
         print(f"  {mark} {name:18s} {size}")
         ok &= path.exists()
     if not ok:
-        print("\n-> unpack pf2e-index next to the package, or pass --index")
+        print("\n-> unpack kobold-index next to the package, or pass --index")
         return 1
 
     manifest = orjson.loads((index / "manifest.json").read_bytes())
@@ -128,7 +128,7 @@ def cmd_doctor(args) -> int:
         hint = INSTALL_HINT.get(
             "linux" if sys.platform.startswith("linux") else sys.platform,
             "See https://ollama.com/download")
-        print(f"\n  Ollama is not installed.\n  {hint}\n  Then: pf2e setup")
+        print(f"\n  Ollama is not installed.\n  {hint}\n  Then: kobold setup")
         return 1
     client = Ollama(args.ollama)
     for key in ("ollama_embed", "ollama_llm"):
@@ -181,7 +181,7 @@ def ensure_ollama(url: str, install: bool) -> bool:
 
     Installing is opt-in because it modifies the system. Starting an
     already-installed server is not, because that is plainly what someone running
-    `pf2e setup` is asking for -- and it is the step people most often miss.
+    `kobold setup` is asking for -- and it is the step people most often miss.
     """
     import httpx
 
@@ -205,7 +205,7 @@ def ensure_ollama(url: str, install: bool) -> bool:
                 "linux" if sys.platform.startswith("linux") else sys.platform,
                 "See https://ollama.com/download")
             print(f"ollama    not installed.\n\n  {hint}\n\n"
-                  f"  Then re-run `pf2e setup`, or `pf2e setup --install-ollama` to have "
+                  f"  Then re-run `kobold setup`, or `kobold setup --install-ollama` to have "
                   f"this do it.", file=sys.stderr)
             return False
 
@@ -315,17 +315,17 @@ def cmd_setup(args) -> int:
                       "fetched anonymously.\n"
                       "  Either install the GitHub CLI (`gh auth login`), or set "
                       "GITHUB_TOKEN,\n"
-                      "  or copy dist/pf2e-index from a machine that has it and pass "
+                      "  or copy dist/kobold-index from a machine that has it and pass "
                       "--index.", file=sys.stderr)
                 return 1
-            target = pathlib.Path(tempfile.gettempdir()) / "pf2e-index.tar.gz"
+            target = pathlib.Path(tempfile.gettempdir()) / "kobold-index.tar.gz"
             target.unlink(missing_ok=True)
             # The tag is whatever INDEX_URL points at, so a release bump cannot
             # leave this fallback fetching the previous index.
             tag = INDEX_URL.split("/releases/download/")[1].split("/")[0]
             code = subprocess.call(["gh", "release", "download", tag,
-                                    "--repo", "DeastinY/pf2etune",
-                                    "--pattern", "pf2e-index.tar.gz",
+                                    "--repo", "DeastinY/kleverkobold",
+                                    "--pattern", "kobold-index.tar.gz",
                                     "--output", str(target)])
             if code != 0 or not target.exists():
                 print("  gh could not fetch it either.", file=sys.stderr)
@@ -336,7 +336,7 @@ def cmd_setup(args) -> int:
         pathlib.Path(path).unlink(missing_ok=True)
         print("  ok   unpacked")
 
-    print("\nready:  pf2e serve")
+    print("\nready:  kobold serve")
     return 0
 
 
@@ -358,7 +358,7 @@ def cmd_mcp(args) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="pf2etune", description="Pathfinder 2e rules assistant")
+    ap = argparse.ArgumentParser(prog="kobold", description="Pathfinder 2e rules assistant")
     ap.add_argument("--index", type=pathlib.Path, default=DEFAULT_INDEX)
     ap.add_argument("--ollama", default=DEFAULT_OLLAMA,
                     help="model server URL; with --backend openai this is its base URL")
@@ -411,7 +411,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--report-url", default=None,
                    help="where the page's 'Report a wrong answer' form posts (see "
-                        "deploy/report-worker); or PF2E_REPORT_URL. Defaults to this "
+                        "deploy/report-worker); or KOBOLD_REPORT_URL. Defaults to this "
                         "project's mailbox; pass '' to disable and fall back to a GitHub issue.")
     p.add_argument("--context-chars", type=int, default=None,
                    help="characters of each entry shown to the model (default 1600). "

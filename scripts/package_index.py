@@ -3,7 +3,7 @@
 
 The development index is 563 MB of float32 across five embedders. A deployment
 needs one embedder, half the precision, and no pickles. This writes
-``dist/pf2e-index/`` -- roughly 270 MB, loadable by memory-map in under a second,
+``dist/kobold-index/`` -- roughly 270 MB, loadable by memory-map in under a second,
 with no torch, no transformers, and no CUDA anywhere in the dependency graph.
 
 float16 halves the embeddings at no measurable cost to ranking: cosine
@@ -24,8 +24,8 @@ import orjson
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from pf2etune import retrieval  # noqa: E402
-from pf2etune.bm25 import BM25  # noqa: E402
+from kleverkobold import retrieval  # noqa: E402
+from kleverkobold.bm25 import BM25  # noqa: E402
 
 META_FIELDS = ("id", "name", "category", "level", "traits", "rarity", "book",
                "remaster_status", "remaster_id", "legacy_name", "url", "summary")
@@ -41,7 +41,7 @@ def main() -> int:
     ap.add_argument("--chunks", type=pathlib.Path,
                     default=ROOT / "data" / "processed" / "aon_chunks.jsonl")
     ap.add_argument("--index", type=pathlib.Path, default=ROOT / "data" / "processed" / "index")
-    ap.add_argument("--out", type=pathlib.Path, default=ROOT / "dist" / "pf2e-index")
+    ap.add_argument("--out", type=pathlib.Path, default=ROOT / "dist" / "kobold-index")
     ap.add_argument("--embed-model", default="Qwen/Qwen3-Embedding-0.6B")
     ap.add_argument("--ollama-embed", default="qwen3-embedding:0.6b")
     ap.add_argument("--ollama-llm", default="qwen3.5:9b")

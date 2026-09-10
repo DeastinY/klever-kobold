@@ -15,12 +15,12 @@
 # reaching either way, but native Ollama still avoids a layer of virtualisation.
 
 services:
-  pf2e:
+  kobold:
     build: .
     ports:
       - "8765:8765"
     volumes:
-      - pf2e-index:/data
+      - kobold-index:/data
     environment:
       # Docker Desktop resolves this to the host on macOS and Windows.
       OLLAMA_URL: http://host.docker.internal:11434
@@ -30,4 +30,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  pf2e-index:
+  kobold-index:

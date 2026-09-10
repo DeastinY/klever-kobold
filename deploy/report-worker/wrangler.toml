@@ -1,11 +1,11 @@
-# Cloudflare Worker + D1: a mailbox for wrong-answer reports from pf2e serve.
+# Cloudflare Worker + D1: a mailbox for wrong-answer reports from kobold serve.
 # Free tier: 100k requests/day, 5 GB of D1. Deploy once; the URL goes into
-# `pf2e serve --report-url` (or PF2E_REPORT_URL).
-name = "pf2e-reports"
+# `kobold serve --report-url` (or KOBOLD_REPORT_URL).
+name = "kobold-reports"
 main = "src/index.js"
 compatibility_date = "2025-06-01"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "pf2e-reports"
-database_id = "713f3abf-d896-41d9-8fac-072e4073743b"
+database_name = "kobold-reports"
+database_id = "dc5adba1-73eb-4671-bdee-90ae7904ee2f"

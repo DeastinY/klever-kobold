@@ -25,9 +25,9 @@ a full answer about 1.6 s.
 ## Install
 
 ```bash
-uv tool install git+ssh://git@github.com/DeastinY/pf2etune
-pf2e setup --install-ollama                  # Ollama, both models, the index
-pf2e doctor                                  # verify each part
+uv tool install git+ssh://git@github.com/DeastinY/klever-kobold
+kobold setup --install-ollama                  # Ollama, both models, the index
+kobold doctor                                  # verify each part
 ```
 
 `--install-ollama` runs `brew install ollama` for you. Leave it off and setup
@@ -37,14 +37,14 @@ it yourself, that is `brew install ollama`, or the app from
 server if it is installed but not running, which is the step people miss.
 
 That is the whole thing. The index goes to
-`~/Library/Application Support/pf2etune/pf2e-index` and survives tool upgrades.
+`~/Library/Application Support/kleverkobold/kobold-index` and survives tool upgrades.
 
 Without uv, from a clone:
 
 ```bash
-git clone git@github.com:DeastinY/pf2etune.git && cd pf2etune
+git clone git@github.com:DeastinY/klever-kobold.git && cd kleverkobold
 python3 -m venv .venv && .venv/bin/pip install -e .
-.venv/bin/pf2e setup
+.venv/bin/kobold setup
 ```
 
 ## Use
@@ -53,17 +53,17 @@ python3 -m venv .venv && .venv/bin/pip install -e .
 export PYTHONPATH=src
 
 # web UI for the table — rules entries first, generated answer behind a button
-.venv/bin/python -m pf2etune serve
+.venv/bin/python -m kleverkobold serve
 # ...then http://localhost:8765, or --host 0.0.0.0 to reach it from a tablet
 
 # ask a question
-.venv/bin/python -m pf2etune ask "an ogre grabbed my monk, what can she do?"
+.venv/bin/python -m kleverkobold ask "an ogre grabbed my monk, what can she do?"
 
 # see what retrieval finds, without spending tokens on an answer
-.venv/bin/python -m pf2etune search "a feat that makes falling less dangerous"
+.venv/bin/python -m kleverkobold search "a feat that makes falling less dangerous"
 
 # check every moving part
-.venv/bin/python -m pf2etune doctor
+.venv/bin/python -m kleverkobold doctor
 ```
 
 ## As an MCP server
@@ -73,18 +73,18 @@ Claude Desktop — `~/Library/Application Support/Claude/claude_desktop_config.j
 ```json
 {
   "mcpServers": {
-    "pf2e": {
-      "command": "/absolute/path/to/pf2etune/.venv/bin/python",
-      "args": ["-m", "pf2etune", "mcp"],
-      "env": { "PYTHONPATH": "/absolute/path/to/pf2etune/src" }
+    "kobold": {
+      "command": "/absolute/path/to/kleverkobold/.venv/bin/python",
+      "args": ["-m", "kleverkobold", "mcp"],
+      "env": { "PYTHONPATH": "/absolute/path/to/kleverkobold/src" }
     }
   }
 }
 ```
 
-Claude Code: `claude mcp add pf2e -- /absolute/path/to/.venv/bin/python -m pf2etune mcp`
+Claude Code: `claude mcp add kobold -- /absolute/path/to/.venv/bin/python -m kleverkobold mcp`
 
-Two tools are exposed. `pf2e_ask` runs the whole pipeline locally. **`pf2e_search`
+Two tools are exposed. `kobold_ask` runs the whole pipeline locally. **`kobold_search`
 returns the rules excerpts and lets the calling model reason over them** — worth
 preferring when the caller is a frontier model, since retrieval is the part that
 carries this system and a stronger reader does better with the same excerpts.
@@ -107,11 +107,11 @@ docker compose -f docker-compose.mac.yml up
 
 **You probably already have it.** Ollama replaced its llama.cpp Metal backend
 with Apple's MLX in 0.19, which roughly doubled decode speed on M-series
-hardware. `pf2e doctor` reports your Ollama version and says which backend that
+hardware. `kobold doctor` reports your Ollama version and says which backend that
 means you are on.
 
 ```bash
-pf2e doctor        # ...  ok  ollama version  0.33.2  — uses MLX on Apple Silicon
+kobold doctor        # ...  ok  ollama version  0.33.2  — uses MLX on Apple Silicon
 ```
 
 If it says you are below 0.19, `brew upgrade ollama` is the whole optimisation.
@@ -123,7 +123,7 @@ If you would rather use a different MLX server —
 anything speaking the OpenAI API works:
 
 ```bash
-pf2e --backend openai --ollama http://localhost:8080/v1 \
+kobold --backend openai --ollama http://localhost:8080/v1 \
      --llm-model mlx-community/Qwen3.5-9B-4bit serve
 ```
 
@@ -172,4 +172,4 @@ so a wrong one is usually obvious from a wrong-looking citation.
 
 - **"Cannot reach Ollama"** — `ollama serve` is not running.
 - **"Ollama does not have the model"** — the `ollama pull` steps were skipped.
-- **"No index at ..."** — `dist/pf2e-index/` is missing; copy it or build it.
+- **"No index at ..."** — `dist/kobold-index/` is missing; copy it or build it.

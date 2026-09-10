@@ -1,4 +1,4 @@
-"""The single page served by ``pf2e serve``.
+"""The single page served by ``kobold serve``.
 
 One string, no build step, no CDN. The runtime keeps its four dependencies and
 the page has to work on a laptop with no network -- which is the whole point of
@@ -559,28 +559,32 @@ the MCP setup for Claude Desktop and Claude Code: Settings →
  defaults</button></div>
 
 <p class="set-h">Use it from Claude Desktop or Claude Code</p>
-<p class="tools">Exposes <code>pf2e_ask</code> and <code>pf2e_search</code> to Claude over stdio.</p>
+<p class="tools">Exposes <code>kobold_ask</code> and <code>kobold_search</code> to Claude over stdio.</p>
 <div class="pair" style="margin-top:.5rem"><b style="font-size:.8rem;color:var(--soft)">Claude
  Desktop</b><button id="c-desktop" type="button">Copy</button></div>
 <pre class="snip" id="snip-desktop">{
   "mcpServers": {
     "pf2e": {
-      "command": "pf2e",
+      "command": "kobold",
       "args": ["mcp"]
     }
   }
 }</pre>
 <div class="pair" style="margin-top:.6rem"><b style="font-size:.8rem;color:var(--soft)">Claude
  Code</b><button id="c-code" type="button">Copy</button></div>
-<pre class="snip" id="snip-code">claude mcp add pf2e -- pf2e mcp</pre>
-<p class="tools">Without the <code>pf2e</code> command: <code>"command": "/path/to/.venv/bin/python",
-"args": ["-m", "pf2etune", "mcp"]</code>. These settings do not travel to it.</p>
+<pre class="snip" id="snip-code">claude mcp add kobold -- kobold mcp</pre>
+<p class="tools">Without the <code>kobold</code> command: <code>"command": "/path/to/.venv/bin/python",
+"args": ["-m", "kleverkobold", "mcp"]</code>. These settings do not travel to it.</p>
 </div>
 </div></div></div>
 
 <div id="out"></div>
 </div><script>
 const EL=id=>document.getElementById(id);
+// Settings, history and favourites saved under the old name carry over once.
+try{for(const k of ['theme','settings','onboarded','history','favs','expert']){
+  const o=localStorage.getItem('pf2e-'+k);
+  if(o!==null&&localStorage.getItem('kobold-'+k)===null){localStorage.setItem('kobold-'+k,o);localStorage.removeItem('pf2e-'+k)}}}catch(e){}
 const out=document.getElementById('out'),q=document.getElementById('q'),
  st=document.getElementById('status'),stt=document.getElementById('statustext'),
  look=document.getElementById('lookbtn'),askBtn=document.getElementById('askbtn'),
@@ -594,12 +598,12 @@ const ICON={
  light:'<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.2"/><path d="M8 .8v2.1M8 13.1v2.1M.8 8h2.1M13.1 8h2.1M2.9 2.9l1.5 1.5M11.6 11.6l1.5 1.5M13.1 2.9l-1.5 1.5M4.4 11.6l-1.5 1.5" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg>',
  dark:'<svg viewBox="0 0 16 16"><path d="M13.4 10.2A5.8 5.8 0 015.8 2.6a6 6 0 107.6 7.6z"/></svg>'};
 const THEMES=['auto','light','dark'];
-let theme=localStorage.getItem('pf2e-theme')||'auto';
+let theme=localStorage.getItem('kobold-theme')||'auto';
 function applyTheme(){
   if(theme==='auto')document.documentElement.removeAttribute('data-theme');
   else document.documentElement.setAttribute('data-theme',theme);
   themeBtn.innerHTML=ICON[theme]+'<span>'+theme[0].toUpperCase()+theme.slice(1)+'</span>';
-  try{localStorage.setItem('pf2e-theme',theme)}catch(e){}
+  try{localStorage.setItem('kobold-theme',theme)}catch(e){}
 }
 themeBtn.addEventListener('click',()=>{theme=THEMES[(THEMES.indexOf(theme)+1)%3];applyTheme()});
 applyTheme();
@@ -842,7 +846,7 @@ function firstLine(text){
 /* ---------- favourites ----------
    A star on any entry keeps it on the front page. The whole entry is stored,
    so a favourite opens instantly and offline like anything else here. */
-const FKEY='pf2e-favs';
+const FKEY='kobold-favs';
 let FAVS=[];
 try{FAVS=JSON.parse(localStorage.getItem(FKEY)||'[]');if(!Array.isArray(FAVS))FAVS=[]}catch(e){FAVS=[]}
 const favKey=h=>h.url||h.name;
@@ -996,11 +1000,11 @@ const SDEF={backend:'ollama',base:'http://localhost:11434',model:'',key:'',
  k:8,rerank:true,ctx:1600,tokens:400,embed:'server'};
 let SET=Object.assign({},SDEF),SEEDED=false,LOCAL_ONLY=true,EMBED_MODEL='',AUTO_MODEL=false;
 let STORED=false;
-try{const raw=localStorage.getItem('pf2e-settings');
+try{const raw=localStorage.getItem('kobold-settings');
     if(raw){SET=Object.assign({},SDEF,JSON.parse(raw));STORED=true}}catch(e){}
 function saveSettings(){
   // Private windows throw on every access, not just on write.
-  try{localStorage.setItem('pf2e-settings',JSON.stringify(SET))}catch(e){}
+  try{localStorage.setItem('kobold-settings',JSON.stringify(SET))}catch(e){}
 }
 
 function settingsQuery(extra){
@@ -1016,7 +1020,7 @@ function settingsQuery(extra){
 function settingsHeaders(){
   // Only for the backend that has keys, and only when one was typed. A header
   // keeps it out of history, out of a Referer, and out of any future access log.
-  return (SET.backend==='openai'&&SET.key)?{'X-PF2E-Key':SET.key}:{};
+  return (SET.backend==='openai'&&SET.key)?{'X-Kobold-Key':SET.key}:{};
 }
 
 /* Measured on eval/holdout.jsonl, the 109 hand-written questions:
@@ -1094,7 +1098,7 @@ function paintSettings(){
     : 'Leave it here unless this server has no local models.';
 }
 function seedFromServer(health){
-  // The panel shows what `pf2e serve` was actually launched with rather than a
+  // The panel shows what `kobold serve` was actually launched with rather than a
   // second copy of the defaults, so --llm-model on the command line is visible.
   if(SEEDED||!health)return;
   SEEDED=true;LOCAL_ONLY=health.local_only!==false;
@@ -1183,10 +1187,10 @@ for(const name of ['better','faster'])
     Object.assign(SET,PRESETS[name]);saveSettings();writeForm();ensureModel(SET.model);
   });
 /* ---------- expert mode ---------- */
-let EXPERT=false;try{EXPERT=localStorage.getItem('pf2e-expert')==='1'}catch(e){}
+let EXPERT=false;try{EXPERT=localStorage.getItem('kobold-expert')==='1'}catch(e){}
 function paintExpert(){EL('expert').hidden=!EXPERT;EL('s-expert').checked=EXPERT}
 EL('s-expert').addEventListener('change',()=>{EXPERT=EL('s-expert').checked;
-  try{localStorage.setItem('pf2e-expert',EXPERT?'1':'0')}catch(e){};paintExpert();
+  try{localStorage.setItem('kobold-expert',EXPERT?'1':'0')}catch(e){};paintExpert();
   const tm=document.querySelector('.answer .foot .timing:not(.fun)');
   if(tm&&CURRENT&&CURRENT.timings)tm.outerHTML=stamp(CURRENT.timings,false)});
 paintExpert();
@@ -1260,7 +1264,7 @@ poll();
    worth more than a login. Each record carries the answer, the entries and the
    timings, so replaying one draws exactly what was drawn the first time and
    costs no model call. Bounded, and trimmed further if the browser says no. */
-const HKEY='pf2e-history',HMAX=80;
+const HKEY='kobold-history',HMAX=80;
 let HIST=[];
 try{HIST=JSON.parse(localStorage.getItem(HKEY)||'[]');if(!Array.isArray(HIST))HIST=[]}catch(e){HIST=[]}
 function saveHist(){
@@ -1407,7 +1411,7 @@ function openHelp(){closeOverlays();ob.hidden=false;lockScroll();
     for(const c of EL('ob-choices').querySelectorAll('.choice'))c.classList.toggle('on',c.dataset.choice===now)}EL('help').setAttribute('aria-expanded','true');
   EL('ob-go').focus()}
 function closeHelp(){ob.hidden=true;lockScroll();EL('help').setAttribute('aria-expanded','false');
-  try{localStorage.setItem('pf2e-onboarded','1')}catch(e){}
+  try{localStorage.setItem('kobold-onboarded','1')}catch(e){}
   if(ready)q.focus()}
 let OB_CHOICE='faster',OB_TOUCHED=false;
 EL('ob-choices').addEventListener('click',e=>{
@@ -1423,11 +1427,11 @@ EL('ob-go').addEventListener('click',()=>{
   seen=true;OB_TOUCHED=false;closeHelp();
 });
 EL('ob-settings').addEventListener('click',()=>{closeHelp();
-  EXPERT=true;try{localStorage.setItem('pf2e-expert','1')}catch(e){};paintExpert();
+  EXPERT=true;try{localStorage.setItem('kobold-expert','1')}catch(e){};paintExpert();
   if(panel.hidden)gear.click()});
 EL('help').addEventListener('click',()=>ob.hidden?openHelp():closeHelp());
 ob.addEventListener('click',e=>{if(e.target===ob)closeHelp()});
-let seen=false;try{seen=!!localStorage.getItem('pf2e-onboarded')}catch(e){}
+let seen=false;try{seen=!!localStorage.getItem('kobold-onboarded')}catch(e){}
 if(!seen)openHelp();
 
 /* ---------- asking ---------- */
@@ -1584,7 +1588,7 @@ async function sendReport(){
 function issueReport(){
   const fix=EL('r-fix').value.trim();if(!fix){EL('r-fix').focus();return}
   const b=reportBody(fix,EL('r-src').value.trim());
-  const u='https://github.com/DeastinY/pf2etune/issues/new?title='+
+  const u='https://github.com/DeastinY/klever-kobold/issues/new?title='+
     encodeURIComponent('Wrong answer: '+b.question.slice(0,80))+'&body='+encodeURIComponent(reportMarkdown(b));
   window.open(u,'_blank','noreferrer');
 }

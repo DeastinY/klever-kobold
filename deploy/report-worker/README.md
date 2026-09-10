@@ -12,25 +12,25 @@ Once, from this directory:
 ```bash
 npm install -g wrangler
 wrangler login
-wrangler d1 create pf2e-reports          # paste the printed database_id into wrangler.toml
-wrangler d1 execute pf2e-reports --remote --file schema.sql
+wrangler d1 create kobold-reports          # paste the printed database_id into wrangler.toml
+wrangler d1 execute kobold-reports --remote --file schema.sql
 wrangler secret put ADMIN_KEY            # anything long; needed to read reports back
 wrangler secret put SALT                 # anything; salts the IP hash used for rate limiting
-wrangler deploy                          # prints https://pf2e-reports.<you>.workers.dev
+wrangler deploy                          # prints https://kobold-reports.<you>.workers.dev
 ```
 
-This project's own deployment is `https://pf2e-reports.deastiny.workers.dev` and is
+This project's own deployment is `https://kobold-reports.deastiny.workers.dev` and is
 the app's default. To use your own, run the app with that URL:
 
 ```bash
-pf2e serve --report-url https://pf2e-reports.<you>.workers.dev
-# or PF2E_REPORT_URL=… pf2e serve
+kobold serve --report-url https://kobold-reports.<you>.workers.dev
+# or KOBOLD_REPORT_URL=… kobold serve
 ```
 
 Reading them:
 
 ```bash
-curl "https://pf2e-reports.<you>.workers.dev/reports.md?key=$ADMIN_KEY"
+curl "https://kobold-reports.<you>.workers.dev/reports.md?key=$ADMIN_KEY"
 ```
 
 What a report carries: the question, the answer as shown, the correction typed

@@ -44,7 +44,7 @@ import orjson
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from pf2etune import retrieval  # noqa: E402
+from kleverkobold import retrieval  # noqa: E402
 
 
 def main() -> int:

@@ -74,7 +74,7 @@ Nothing was collected behind a login or a paywall, and no rate limit was evaded.
 
 ## What this project redistributes
 
-- **The packaged index** ([release asset](https://github.com/DeastinY/pf2etune/releases))
+- **The packaged index** ([release asset](https://github.com/DeastinY/klever-kobold/releases))
   contains Archives of Nethys rules text — 41,743 entries, 48 MB. That is
   redistribution of Paizo Material under the Community Use Policy: non-commercial
   only, free to access, never behind a paywall, with the notice above. Every

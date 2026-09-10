@@ -50,7 +50,7 @@ RE_VERDICT = re.compile(r"\b(YES|PART|NO)\b")
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--benchmark", type=pathlib.Path, default=ROOT / "eval" / "wild_clean.jsonl")
-    ap.add_argument("--index", type=pathlib.Path, default=ROOT / "dist" / "pf2e-index")
+    ap.add_argument("--index", type=pathlib.Path, default=ROOT / "dist" / "kobold-index")
     ap.add_argument("--judge", default="Qwen/Qwen3.8-27B")
     ap.add_argument("-k", type=int, default=8)
     ap.add_argument("--excerpt-chars", type=int, default=520)
@@ -63,7 +63,7 @@ def main() -> int:
 
     import torch
     from transformers import AutoTokenizer, BitsAndBytesConfig
-    from pf2etune.app import Assistant
+    from kleverkobold.app import Assistant
     from run_eval import _load_hf, strip_thinking
 
     a = Assistant(args.index)

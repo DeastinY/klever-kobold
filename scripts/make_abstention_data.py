@@ -255,7 +255,7 @@ def main() -> int:
     items = [{"question": s["question"], "id": str(i), "family": s["kind"]}
              for i, s in enumerate(specs)]
     import rewrite_queries  # noqa: F401  (ensures the module path resolves)
-    from pf2etune import retrieval as R
+    from kleverkobold import retrieval as R
     import retrieval_eval
 
     # Rewrites for these questions do not exist yet; generate them with the teacher.

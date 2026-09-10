@@ -32,12 +32,12 @@ services:
       timeout: 5s
       retries: 30
 
-  pf2e:
+  kobold:
     build: .
     ports:
       - "8765:8765"
     volumes:
-      - pf2e-index:/data
+      - kobold-index:/data
     environment:
       OLLAMA_URL: http://ollama:11434
     depends_on:
@@ -47,4 +47,4 @@ services:
 
 volumes:
   ollama-models:
-  pf2e-index:
+  kobold-index:
