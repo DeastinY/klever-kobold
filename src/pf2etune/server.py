@@ -291,8 +291,13 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                     for event in assistant.ask_stream(question, k=k, rerank=rerank,
                                                       max_tokens=max_tokens):
                         if event["event"] == "sources":
+                            shown = event["hits"]
                             event = {"event": "sources", "timings": event["timings"],
-                                     "hits": _hits(event["hits"])}
+                                     "hits": _hits(shown)}
+                        elif event["event"] == "done":
+                            event = dict(event)
+                            event["mentions"] = _hits(assistant.mentions(
+                                event.get("answer", ""), exclude={h.url for h in shown}))
                         self._sse(event)
             except OllamaError as exc:
                 self._sse({"event": "error", "error": str(exc)})

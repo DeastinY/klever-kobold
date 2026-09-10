@@ -163,6 +163,8 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .body a.lnk{color:var(--link);text-decoration:underline;text-decoration-thickness:1px;
  text-underline-offset:.12em}
 .body a.lnk:hover{color:var(--accent)}
+.answer .body a.ent{color:var(--accent);text-decoration-color:color-mix(in srgb,var(--accent) 45%,transparent);
+ font-weight:600}
 .star{background:none;border:0;padding:0 .1rem;cursor:pointer;font-size:1.05rem;line-height:1;
  color:var(--muted);flex:none;align-self:center}
 .star:hover,.star.on{color:#d19a1a}
@@ -296,15 +298,19 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 /* The container is a compositor layer: rotating it costs no repaint. Animating
    the SVG's parts did -- ten facets re-rasterised per frame, which stuttered
    on a laptop already busy running the model. */
-.d20.rolling{animation:roll 1.9s cubic-bezier(.3,.05,.2,1) infinite}
-@keyframes roll{
- 0%{transform:translateY(0) rotate(0) scale(1)}
- 18%{transform:translateY(-.32em) rotate(150deg) scale(1.08)}
- 42%{transform:translateY(-.06em) rotate(345deg) scale(1)}
- 52%{transform:translateY(0) rotate(372deg) scale(.94,1.04)}
- 60%{transform:translateY(-.04em) rotate(357deg) scale(1.02,.98)}
- 68%{transform:translateY(0) rotate(361deg) scale(1)}
- 100%{transform:translateY(0) rotate(360deg) scale(1)}}
+/* While a question runs, the model owns the GPU that macOS also composites
+   with, so every continuous animation on screen stutters -- this one included,
+   however it is built. So the roll has no continuous motion: the die shows a
+   new face six times a second, like a stop-motion tumble. A dropped frame
+   only delays the next face; there is no half-way state to judge. */
+.d20.rolling{animation:tumble 1.5s steps(9,end) infinite}
+@keyframes tumble{
+ 0%{transform:rotate(0) scale(1)}
+ 22%{transform:rotate(80deg) scale(1.06)}
+ 44%{transform:rotate(200deg) scale(1.1)}
+ 66%{transform:rotate(300deg) scale(1.04)}
+ 88%{transform:rotate(340deg) scale(1)}
+ 100%{transform:rotate(360deg) scale(1)}}
 
 @media(prefers-reduced-motion:reduce){.d20.rolling{animation:none}}
 #help,#hist{padding:.35rem .65rem;font-size:.8rem;border:1px solid var(--line);
@@ -821,7 +827,33 @@ function paintFavs(){
   const w=EL('favs');w.hidden=!FAVS.length;
   EL('fav-tiles').innerHTML=FAVS.map((h,i)=>tile(h,i,'fav')).join('');
 }
-const LISTS={res:()=>SHOWN,fav:()=>FAVS};
+let EXTRA=[];   // entries the answer mentions that were not among the eight shown
+const LISTS={res:()=>SHOWN,fav:()=>FAVS,ext:()=>EXTRA};
+/* ---------- names in the answer ----------
+   "You can Grab an Edge as a reaction" -- the name becomes a link that opens
+   the entry. Longest names first so "Treat Wounds" wins over "Wounds"; text
+   nodes only, so nothing inside an existing link or tag is touched. */
+function linkNames(html){
+  const pool=[];
+  for(const [src,list] of [['res',SHOWN],['ext',EXTRA]])
+    list.forEach((h,i)=>{if(h.name&&h.name.length>=4)pool.push({name:h.name,url:h.url,src,i})});
+  if(!pool.length)return html;
+  pool.sort((a,b)=>b.name.length-a.name.length);
+  const seen=new Set();
+  return html.split(/(<[^>]+>)/).map((seg,n)=>{
+    if(seg.startsWith('<'))return seg;
+    for(const p of pool){
+      const re=new RegExp('(^|[^\\w>])('+p.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+
+        ')(?![\\w])','i');
+      seg=seg.replace(re,(m,pre,txt)=>{
+        // one link per name: two "Falling" pages must not each claim an occurrence
+        const key=p.name.toLowerCase();if(seen.has(key))return m;seen.add(key);
+        return pre+'<a class="lnk ent" href="'+esc(p.url)+'" data-src="'+p.src+'" data-i="'+p.i+
+          '" target="_blank" rel="noreferrer">'+txt+'</a>'});
+    }
+    return seg;
+  }).join('');
+}
 /* The Remaster renamed things; the old name is what a table still says. */
 function formerly(h){
   const names=[].concat(h.legacy_name||[]).filter(Boolean);
@@ -870,6 +902,7 @@ function openEntry(i,src){
    anything else goes to the Archives in a new tab, as the link says. */
 function followLink(e){
   const a=e.target.closest('a.lnk');if(!a)return;
+  if(a.dataset.src){e.preventDefault();openEntry(+a.dataset.i,a.dataset.src);return}
   const url=a.getAttribute('href');
   for(const src of ['res','fav']){
     const i=LISTS[src]().findIndex(h=>h.url===url);
@@ -1387,9 +1420,10 @@ function fromBanner(r){
     (r.mode==='ask'?'Ask again':'Look up again')+'</button></div>';
 }
 function replay(r){
-  showHome(false);setCites(r.hits);
+  showHome(false);setCites(r.hits);EXTRA=r.mentions||[];
   out.innerHTML=fromBanner(r)+(r.mode==='ask'?answerCard(r.answer,r.timings,false):'')+
     cards(r.hits);
+  const b=out.querySelector('.answer .body');if(b)b.innerHTML=linkNames(b.innerHTML);
   EL('again').addEventListener('click',()=>go(r.mode,true));
   closeOverlays();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1427,7 +1461,7 @@ async function ask(text){
     frame();const ans=EL('ans');
     if(!ans.firstChild){ans.innerHTML=answerCard(answer,timings,live);return}
     const body=ans.querySelector('.body');
-    body.innerHTML=answer?md(answer,true)+(live?'<span class="caret"></span>':'')
+    body.innerHTML=answer?(live?md(answer,true)+'<span class="caret"></span>':linkNames(md(answer,true)))
       :'<span class="spin" id="pend">'+LINES.write[0]+'…</span>';
     const t=ans.querySelector('.timing');const fresh=stamp(timings||{});
     if(t)t.outerHTML=fresh;else ans.querySelector('.card').insertAdjacentHTML('beforeend',fresh);
@@ -1453,9 +1487,9 @@ async function ask(text){
         // whole answer per token is what made the page stutter while writing.
         if(!queued){queued=true;requestAnimationFrame(()=>{queued=false;paint()})}
       }else if(ev.event==='done'){clearInterval(timer);rolling(false);timings=ev.timings;
-        answer=answer.trimEnd();paint(false);
+        EXTRA=ev.mentions||[];answer=answer.trimEnd();paint(false);
         addHist({id:String(Date.now()),q:text,mode:'ask',ts:Date.now(),
-          model:SET.model||SDEF.model,answer,hits,timings});
+          model:SET.model||SDEF.model,answer,hits,timings,mentions:EXTRA});
       }else if(ev.event==='error'){clearInterval(timer);rolling(false);
         out.innerHTML='<p class="err">'+esc(ev.error)+'</p>';return}
     }

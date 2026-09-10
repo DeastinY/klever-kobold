@@ -852,6 +852,69 @@ class Assistant:
                 "sources": [{"name": h.name, "category": h.category, "url": h.url}
                             for h in hits]}
 
+    _MENTION_KINDS = ("action", "feat", "spell", "condition", "skill", "equipment", "weapon",
+                      "armor", "class-feature", "archetype", "trait", "rules")
+
+    def mentions(self, text: str, exclude: set[str] | None = None, limit: int = 12) -> list[Hit]:
+        """Index entries whose names appear in ``text``, as Hits the page can open.
+
+        The answer says "You can Grab an Edge as a reaction"; the reader wants
+        to click that. Names are matched as word n-grams, one to five words,
+        against the current (non-legacy) entries of the kinds a rule refers
+        to. Names under four characters are skipped: "Aid" and "Hide" match too
+        much prose to be worth a wrong link.
+        """
+        names = self._name_table()
+        words = re.findall(r"[A-Za-z][A-Za-z'’\-]*", text)
+        found: dict[str, int] = {}
+        for n in range(5, 0, -1):
+            for i in range(len(words) - n + 1):
+                span = words[i:i + n]
+                key = " ".join(span).lower()
+                pos = names.get(key)
+                if pos is None or key in found:
+                    continue
+                # A short name that is also an ordinary word ("Damage", "Eliminate")
+                # links only when the prose writes it as a name, capitalised.
+                # Conditions are the exception: rules text says "prone".
+                cat = self.index.meta[pos].get("category")
+                capitalised = all(w[0].isupper() for w in span)
+                if n <= 2 and cat == "rules" and not capitalised:
+                    continue
+                if n == 1 and cat != "condition" and not capitalised:
+                    continue
+                found[key] = pos
+        hits = []
+        for key, pos in found.items():
+            m = self.index.meta[pos]
+            if exclude and m.get("url") in exclude:
+                continue
+            hits.append(Hit(chunk_id=self.index.ids[pos], name=m.get("name") or "",
+                            category=m.get("category") or "", level=m.get("level"),
+                            url=m.get("url") or "", text=self.body(self.index.ids[pos]),
+                            summary=m.get("summary") or "",
+                            legacy_name=[x for x in (m.get("legacy_name") or []) if x]
+                            if isinstance(m.get("legacy_name"), list) else []))
+            if len(hits) >= limit:
+                break
+        return hits
+
+    def _name_table(self) -> dict[str, int]:
+        table = getattr(self, "_names", None)
+        if table is None:
+            table = {}
+            for pos, m in enumerate(self.index.meta):
+                name = (m.get("name") or "").strip()
+                if (len(name) < 4 or m.get("category") not in self._MENTION_KINDS
+                        or m.get("remaster_status") == "legacy"):
+                    continue
+                key = " ".join(re.findall(r"[A-Za-z][A-Za-z'’\-]*", name)).lower()
+                if key and len(key.split()) <= 5:
+                    # Prefer the entry whose kind a rule most often means.
+                    table.setdefault(key, pos)
+            self._names = table
+        return table
+
     def ask_stream(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
                    pool: int | None = None, expand: int = DEFAULT_EXPAND,
                    max_tokens: int | None = None) -> Iterator[dict]:
@@ -866,14 +929,16 @@ class Assistant:
                            for h in hits]}
         t = time.time()
         first = None
+        pieces: list[str] = []
         for piece in self.ollama.stream(ANSWER_SYSTEM, self.prompt(question, hits),
                                         self.manifest["ollama_llm"],
                                         max_tokens=max_tokens):
             if first is None:
                 first = round(time.time() - t, 2)
                 timings["first_token"] = first
+            pieces.append(piece)
             yield {"event": "token", "text": piece}
         timings["answer"] = round(time.time() - t, 2)
         timings["total"] = round(sum(v for key, v in timings.items()
                                      if key != "first_token"), 2)
-        yield {"event": "done", "timings": timings}
+        yield {"event": "done", "timings": timings, "answer": "".join(pieces)}
