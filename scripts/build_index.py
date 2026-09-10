@@ -84,9 +84,12 @@ def main() -> int:
     if args.bm25_only:
         return 0
 
+    import torch
     from sentence_transformers import SentenceTransformer
     started = time.time()
-    model = SentenceTransformer(args.model, device="cuda")
+    device = ("cuda" if torch.cuda.is_available()
+              else "mps" if torch.backends.mps.is_available() else "cpu")
+    model = SentenceTransformer(args.model, device=device)
     vecs = model.encode(texts, batch_size=args.batch_size, normalize_embeddings=True,
                         convert_to_numpy=True, show_progress_bar=True).astype(np.float32)
     suffix = "" if args.field == "full" else f"__{args.field}"

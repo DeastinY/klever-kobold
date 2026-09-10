@@ -298,7 +298,10 @@ def cmd_setup(args) -> int:
                 return 1
             target = pathlib.Path(tempfile.gettempdir()) / "pf2e-index.tar.gz"
             target.unlink(missing_ok=True)
-            code = subprocess.call(["gh", "release", "download", "index-v1",
+            # The tag is whatever INDEX_URL points at, so a release bump cannot
+            # leave this fallback fetching the previous index.
+            tag = INDEX_URL.split("/releases/download/")[1].split("/")[0]
+            code = subprocess.call(["gh", "release", "download", tag,
                                     "--repo", "DeastinY/pf2etune",
                                     "--pattern", "pf2e-index.tar.gz",
                                     "--output", str(target)])
