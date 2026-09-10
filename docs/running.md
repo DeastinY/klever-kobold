@@ -59,6 +59,15 @@ index with a different encoder returns plausible, unrelated entries.
   the MCP snippets. The per-stage timing under each answer appears in expert
   mode too.
 - **Wrong? Report it** under every answer: see [reporting.md](reporting.md).
+- **Follow-up questions** is in Expert mode, under Conversation, and is **off**.
+  Turned on, the kobold reads your last question and its answer, rewrites a
+  follow-up like "what if she's prone?" into a question that can be looked up,
+  and searches the Archives again for what it now understands you to be asking.
+  It shows you that rewritten question, because when a follow-up goes wrong
+  that line is almost always where. Only the last turn travels; a line above
+  the box says which one, with a way to start fresh. Costs one extra model
+  call, roughly a sixth of an answer — see
+  [notes/followup-design.md](../notes/followup-design.md).
 
 `kobold serve --host 0.0.0.0` makes it reachable from a phone or tablet on your
 network. There is no login; do not expose it to the internet.
@@ -70,8 +79,13 @@ kobold ask "an ogre grabbed my monk, what can she do?"   # streams an answer wit
 kobold ask "who rules Cheliax?"                           # lore, from PathfinderWiki
 kobold search "grabbed"                                   # what retrieval finds, no answer
 kobold search --scope lore "Desna"                        # the deity's stat block and her wiki page
+kobold chat                                               # a conversation; follow-ups work
 kobold doctor                                             # Ollama, models, index
 ```
+
+`ask` is one shot and every question is independent. `chat` keeps one turn, so
+"and what if she's prone?" means something; `/new` forgets the thread and
+ctrl-d stops. `--timings` shows what the extra stage cost.
 
 Global flags go before the subcommand: `--index`, `--ollama`, `--backend`,
 `--llm-model`, `--embed-model`. `ask` and `search` take `--scope rules|lore|auto`

@@ -62,6 +62,9 @@ and every option are in [docs/running.md](docs/running.md).
   either way.
 - **Keeps what you asked.** History and favourites live in your browser; asking
   the same thing twice is instant.
+- **Can hold a conversation, if you ask it to.** Off by default; switch it on in
+  Expert mode, or run `kobold chat`. Then "and what if she's prone?" is a
+  question the kobold can actually look up.
 - **Wrong? Report it.** One button under every answer. Reports are how the
   kobold gets less wrong; see [docs/reporting.md](docs/reporting.md) for exactly
   what is sent and what happens to it.

@@ -26,7 +26,7 @@ import time
 import orjson
 
 from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, DEFAULT_SCOPE, SCOPES, Assistant,
-                  Ollama, OllamaError, default_llm)
+                  Ollama, OllamaError, Turn, default_llm)
 
 
 def _llm(args) -> tuple[str | None, bool]:
@@ -80,6 +80,62 @@ def cmd_ask(args) -> int:
         parts = " · ".join(f"{k.replace('_', ' ')} {v:.1f}s" for k, v in timings.items())
         print(f"\n{parts}", file=sys.stderr)
     return 0
+
+
+def cmd_chat(args) -> int:
+    """`ask`, but each question may lean on the one before it.
+
+    A separate command rather than a flag on `ask`, because `ask` is one shot
+    and has nowhere to keep a turn. Everything else is the same pipeline; the
+    only difference is that a follow-up is condensed into a question that can
+    be looked up before retrieval sees it, and that the condensed form is
+    printed -- when a follow-up goes wrong, that line is nearly always where.
+    """
+    a = _assistant(args)
+    print("A conversation with the kobold. Each question may refer to the last one.\n"
+          "  /new    forget the thread and start fresh\n"
+          "  ctrl-d  stop\n", file=sys.stderr)
+    history: list[Turn] = []
+    while True:
+        try:
+            question = input("\nyou > ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return 0
+        if not question:
+            continue
+        if question in ("/new", "/fresh"):
+            history.clear()
+            print("  (fresh thread)", file=sys.stderr)
+            continue
+        if question in ("/quit", "/exit"):
+            return 0
+
+        sources, timings, pieces, standalone = [], {}, [], ""
+        # Only the last turn is carried. The turn holds its own condensed form,
+        # so a third question still finds its way back to the first subject.
+        for event in a.ask_stream(question, k=args.k, rerank=not args.no_rerank,
+                                  history=history[-1:] or None):
+            if event["event"] == "sources":
+                sources = event["sources"]
+                standalone = event["plan"].get("standalone", "")
+                if standalone and standalone != question:
+                    print(f"  (read as: {standalone})", file=sys.stderr)
+                print("\nkobold> ", end="", flush=True)
+            elif event["event"] == "token":
+                pieces.append(event["text"])
+                sys.stdout.write(event["text"])
+                sys.stdout.flush()
+            elif event["event"] == "done":
+                timings = event["timings"]
+        answer = "".join(pieces).strip()
+        print("\n\nsources:")
+        for s in sources:
+            print(f"  {s['name']} ({s['category']}) — {s['url']}")
+        if args.timings:
+            parts = " · ".join(f"{k.replace('_', ' ')} {v:.1f}s" for k, v in timings.items())
+            print(f"\n{parts}", file=sys.stderr)
+        history.append(Turn(question=question, answer=answer, standalone=standalone))
 
 
 def cmd_search(args) -> int:
@@ -403,6 +459,13 @@ def main(argv: list[str] | None = None) -> int:
                    help="print seconds spent per stage to stderr")
     p.add_argument("--scope", choices=SCOPES, default=DEFAULT_SCOPE, help=SCOPE_HELP)
     p.set_defaults(func=cmd_ask)
+
+    p = sub.add_parser("chat", help="a conversation: each question may follow up on the last")
+    p.add_argument("-k", type=int, default=DEFAULT_K)
+    p.add_argument("--no-rerank", action="store_true")
+    p.add_argument("--timings", action="store_true",
+                   help="print seconds spent per stage to stderr, condense included")
+    p.set_defaults(func=cmd_chat)
 
     p = sub.add_parser("search", help="show what retrieval finds, without answering")
     p.add_argument("question")

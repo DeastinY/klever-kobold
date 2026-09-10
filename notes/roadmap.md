@@ -92,6 +92,11 @@ Four things to try, cheapest first, each measured alone:
 1. **Follow-up questions.** Every real rules conversation is multi-turn ("what
    about if she's prone?"). Today each question is independent, which is the
    single most obvious gap between this and a usable assistant.
+   *Built, behind a switch that is off* — a condense stage in front of the
+   pipeline, one extra model call worth about a sixth of an answer. Retrieval
+   on fourteen hand-written follow-ups goes 2/14 to 13/14, which is a smoke
+   test and not a result: there is no multi-turn set, and building one is
+   Tier 0 work. See `notes/followup-design.md`.
 2. **Character context.** Import a Pathbuilder JSON and filter answers to what
    *this* character can actually take. Turns a rules lookup into advice.
 3. **Foundry VTT module.** `foundryvtt/pf2e` is Apache-2.0 and officially

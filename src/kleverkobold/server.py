@@ -23,8 +23,8 @@ import urllib.parse
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from .app import (BIG_LLM, DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, DEFAULT_SCOPE, INDEX_URL,
-                  SCOPES, SMALL_LLM, Assistant, OllamaError, probe_backend)
+from .app import (BIG_LLM, DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, DEFAULT_SCOPE, HISTORY_CHARS,
+                  INDEX_URL, SCOPES, SMALL_LLM, Assistant, OllamaError, Turn, probe_backend)
 from .ui import PAGE
 
 # The header the API key travels in. A header rather than a query parameter so it
@@ -131,6 +131,30 @@ def _read_config(query: dict[str, list[str]], base: Config, api_key: str) -> Con
         key_digest=_key_digest(api_key))
 
 
+def _read_history(query: dict[str, list[str]]) -> list[Turn]:
+    """The previous turn, if the page asked for one. Off unless ``followup=1``.
+
+    The page holds the conversation, not the server: there is no session here,
+    no cookie and nothing kept between requests, which is the same bargain the
+    history panel already makes. So a follow-up arrives as three parameters and
+    a switch, and a request that does not send them is byte-for-byte the
+    request this server has always handled.
+    """
+    if (query.get("followup") or ["0"])[0] != "1":
+        return []
+
+    def one(name: str) -> str:
+        return (query.get(name) or [""])[0].strip()
+
+    previous = one("prev_q")
+    if not previous:
+        return []
+    # Same caps the prompt applies, enforced again here: the page is not the
+    # only thing that can send a query string.
+    return [Turn(question=previous[:400], answer=one("prev_a")[:HISTORY_CHARS],
+                 standalone=one("prev_std")[:400])]
+
+
 def _key_digest(api_key: str) -> str:
     return hashlib.sha256(api_key.encode()).hexdigest() if api_key else ""
 
@@ -212,19 +236,26 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
             scope = (query.get("scope") or [DEFAULT_SCOPE])[0]
             if scope not in SCOPES:
                 scope = DEFAULT_SCOPE
+            history = _read_history(query)
             if parsed.path == "/api/ask":
-                self._ask_stream(question, config, api_key, k, rerank, max_tokens, scope)
+                self._ask_stream(question, config, api_key, k, rerank, max_tokens, scope, history)
                 return
             try:
                 assistant = pool.get(config, api_key)
                 # One model, one card: serialise so two players hitting enter at
                 # the same time queue instead of thrashing Ollama.
                 with lock:
-                    plan = assistant.rewrite(question)
+                    # Shift+Enter follows up too: the entries a follow-up wants
+                    # are the ones its standalone form retrieves, and showing
+                    # them without an answer is the cheaper half of the feature.
+                    asked = assistant.condense(question, history) if history else question
+                    plan = assistant.rewrite(asked)
                     lore = assistant.resolve_scope(scope, plan)
-                    payload = {"hits": _hits(assistant.search(question, k=k, plan=plan,
+                    payload = {"hits": _hits(assistant.search(asked, k=k, plan=plan,
                                                               rerank=rerank, scope=scope)),
                                "scope": "lore" if lore else "rules"}
+                    if history:
+                        payload["standalone"] = asked
             except OllamaError as exc:
                 self._send(503, json.dumps({"error": str(exc)}).encode(), "application/json")
                 return
@@ -283,7 +314,8 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                 self._sse({"event": "error", "error": f"{type(exc).__name__}: {exc}"})
 
         def _ask_stream(self, question: str, config: Config, api_key: str,
-                        k: int, rerank: bool, max_tokens: int, scope: str) -> None:
+                        k: int, rerank: bool, max_tokens: int, scope: str,
+                        history: list[Turn] | None = None) -> None:
             """Answer over server-sent events.
 
             The answer is the slow half and it decodes a token at a time. Sending
@@ -302,11 +334,19 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                 assistant = pool.get(config, api_key)
                 with lock:
                     for event in assistant.ask_stream(question, k=k, rerank=rerank,
-                                                      max_tokens=max_tokens, scope=scope):
+                                                      max_tokens=max_tokens, scope=scope,
+                                                      history=history):
                         if event["event"] == "sources":
                             shown = event["hits"]
-                            event = {"event": "sources", "timings": event["timings"],
-                                     "hits": _hits(shown), "scope": event["scope"]}
+                            trimmed = {"event": "sources", "timings": event["timings"],
+                                       "hits": _hits(shown), "scope": event["scope"]}
+                            # What the kobold decided it was being asked. The
+                            # page shows it, and sends it back with the next
+                            # follow-up so a chain condenses against a question
+                            # that already names its subject.
+                            if event["plan"].get("standalone"):
+                                trimmed["standalone"] = event["plan"]["standalone"]
+                            event = trimmed
                         elif event["event"] == "done":
                             event = dict(event)
                             event["mentions"] = _hits(assistant.mentions(

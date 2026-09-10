@@ -434,6 +434,7 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 <button id="lookbtn" type="button" disabled>Look up</button></form>
 <p class="hint"><kbd>Enter</kbd> asks · <kbd>Shift</kbd>+<kbd>Enter</kbd> shows only the entries
 · <kbd>↑</kbd> earlier questions</p>
+<p class="hint" id="thread" hidden></p>
 
 <div id="history-wrap" class="ov" hidden><div class="pop" role="dialog" aria-modal="true" aria-label="Asked before">
 <button type="button" class="x" data-close="history-wrap" title="Close (Esc)" aria-label="Close">×</button>
@@ -570,6 +571,14 @@ the MCP setup for Claude Desktop and Claude Code: Settings →
  <span><label for="s-tokens">Answer tokens</label><input id="s-tokens" type="number" min="32"
   max="4000" step="50"></span>
 </div>
+<p class="set-h">Conversation</p>
+<div class="pair"><label class="tog"><input type="checkbox" id="s-followup">
+ Follow-up questions</label><span class="note" style="margin:0">off by default</span></div>
+<p class="note" id="s-follownote" style="margin:.35rem 0 0">Each question is answered on its own.
+Turned on, the kobold reads your last question and its answer, rewrites a follow-up like “what if
+she’s prone?” into a question that can be looked up, and searches the Archives again for it. One
+extra model call; only the last turn travels, never the one before it.</p>
+
 <div class="grid" style="margin-top:.6rem">
  <label for="s-embed">Embedder</label>
  <select id="s-embed">
@@ -1039,7 +1048,7 @@ document.addEventListener('keydown',e=>{
    so "this server's own" is the default and the alternative is fingerprinted
    against the index before the first question. */
 const SDEF={backend:'ollama',base:'http://localhost:11434',model:'',key:'',
- k:8,rerank:true,ctx:1600,tokens:400,embed:'server',scope:'auto'};
+ k:8,rerank:true,ctx:1600,tokens:400,embed:'server',scope:'auto',followup:false};
 let SET=Object.assign({},SDEF),SEEDED=false,LOCAL_ONLY=true,EMBED_MODEL='',AUTO_MODEL=false;
 // Whether the index this server loaded carries PathfinderWiki. Without it the
 // scope control, the lore examples and the trust line stay hidden: nothing to
@@ -1098,6 +1107,8 @@ const PRESET_NOTE={
 function currentPreset(){
   for(const name in PRESETS){
     const p=PRESETS[name];
+    // followup is deliberately not part of this: it is a mode, not a quality
+    // knob, and turning it on must not make the preset read as "custom".
     if(SET.model===p.model&&!!SET.rerank===p.rerank&&+SET.k===p.k&&+SET.ctx===p.ctx&&
        +SET.tokens===p.tokens)return name;
   }
@@ -1109,7 +1120,7 @@ function writeForm(){
   EL('s-model').value=SET.model;EL('s-key').value=SET.key;
   EL('s-k').value=SET.k;EL('s-rerank').checked=!!SET.rerank;
   EL('s-ctx').value=SET.ctx;EL('s-tokens').value=SET.tokens;
-  EL('s-embed').value=SET.embed;
+  EL('s-embed').value=SET.embed;EL('s-followup').checked=!!SET.followup;
   EL('s-scope').value=SET.scope||'auto';
   paintSettings();
 }
@@ -1124,7 +1135,9 @@ function readForm(){
   SET.tokens=+EL('s-tokens').value||SDEF.tokens;
   SET.embed=EL('s-embed').value;
   SET.scope=EL('s-scope').value||'auto';
-  saveSettings();paintSettings();
+  SET.followup=EL('s-followup').checked;
+  if(!SET.followup)endThread();
+  saveSettings();paintSettings();paintThread();
 }
 function paintSettings(){
   // Presets are a view of the fields, not a stored mode: hand-edit one field and
@@ -1239,7 +1252,7 @@ gear.addEventListener('click',()=>{
   if(open&&!EL('s-models').children.length)probeModels(true);
 });
 for(const id of ['s-backend','s-base','s-model','s-key','s-k','s-rerank','s-ctx','s-tokens',
-                 's-embed','s-scope'])
+                 's-embed','s-scope','s-followup'])
   EL(id).addEventListener('change',readForm);
 for(const name of ['better','faster'])
   // Writing the values into the fields rather than holding a hidden mode: the
@@ -1322,6 +1335,36 @@ async function poll(){
   setTimeout(poll,700);
 }
 poll();
+
+/* ---------- the thread ----------
+   One turn, held in the page and sent with the next question. The server keeps
+   nothing: it is handed the previous question, the previous answer and the
+   standalone form the last condense produced, and that is the whole
+   conversation as far as it is concerned.
+
+   Only the last turn. Sending two would double the prompt for a gain nobody
+   here has measured, and the standalone form already carries the subject
+   forward — turn three condenses against a turn-two question that names what
+   it is about. See notes/followup-design.md. */
+let LAST=null;   // {q, answer, standalone} of the turn a follow-up follows
+function endThread(){LAST=null;paintThread()}
+function paintThread(){
+  const el=EL('thread'),on=SET.followup&&LAST;
+  el.hidden=!on;
+  if(!on)return;
+  el.innerHTML='Following on from “'+esc((LAST.standalone||LAST.q).slice(0,90))+
+    '” · <button type="button" class="link" id="thread-end">start fresh</button>';
+  EL('thread-end').addEventListener('click',endThread);
+}
+function threadParams(){
+  // Nothing is sent unless the switch is on and there is a turn to send.
+  if(!SET.followup||!LAST)return {};
+  // 900 is HISTORY_CHARS in app.py. The server truncates to it anyway; doing it
+  // here too keeps a long answer out of the query string rather than sending
+  // three kilobytes for the server to throw away.
+  return {followup:'1',prev_q:LAST.q,prev_a:(LAST.answer||'').slice(0,900),
+          prev_std:LAST.standalone||''};
+}
 
 /* ---------- history ----------
    Kept in this browser: a table has one laptop, and what it asked last week is
@@ -1469,7 +1512,7 @@ function showHome(on){EL('home').hidden=!on}
    but the box, the suggestions and what you have asked before. */
 function goHome(){
   closeOverlays();closeEntry();clearInterval(timer);rolling(false);
-  out.innerHTML='';q.value='';hpos=-1;CURRENT=null;showHome(true);
+  out.innerHTML='';q.value='';hpos=-1;CURRENT=null;endThread();showHome(true);
   window.scrollTo({top:0});if(ready)q.focus();
 }
 EL('home-link').addEventListener('click',e=>{e.preventDefault();goHome()});
@@ -1687,6 +1730,9 @@ function fromBanner(r){
     (r.mode==='ask'?'Ask again':'Look up again')+'</button></div>';
 }
 function replay(r){
+  // Picking a question out of the history is starting somewhere else, not
+  // continuing from here.
+  endThread();
   showHome(false);setCites(r.hits);EXTRA=r.mentions||[];
   CURRENT=r.mode==='ask'?{q:r.q,answer:r.answer,sources:r.hits,model:r.model,timings:r.timings}:null;
   out.innerHTML=fromBanner(r)+(r.mode==='ask'?answerCard(r.answer,r.timings,false):'')+
@@ -1698,18 +1744,29 @@ function replay(r){
 }
 async function search(text){
   busy('search');
-  const d=await (await fetch('/api/search?'+settingsQuery({q:text}),
+  const d=await (await fetch('/api/search?'+settingsQuery(Object.assign({q:text},threadParams())),
     {headers:settingsHeaders()})).json();
   clearInterval(timer);rolling(false);
   if(d.error){out.innerHTML='<p class="err">'+esc(d.error)+'</p>';return}
   setCites(d.hits);
-  out.innerHTML=cards(d.hits)||'<p class="spin">Nothing matched.</p>';
+  out.innerHTML=(d.standalone?asked(d.standalone):'')+
+    (cards(d.hits)||'<p class="spin">Nothing matched.</p>');
+  // A look-up has no answer to carry, but it is still a turn: the next
+  // follow-up should be read against what was just looked up.
+  if(SET.followup){LAST={q:text,answer:'',standalone:d.standalone||''};paintThread()}
   addHist({id:String(Date.now()),q:text,mode:'search',ts:Date.now(),
     model:SET.model||SDEF.model,hits:d.hits||[],timings:{}});
 }
+/* What the kobold decided it was being asked. Shown whenever it differs from
+   what was typed, because when a follow-up goes wrong this is almost always
+   where it went wrong, and the fix is to see it and rephrase. */
+function asked(std){
+  return '<p class="from"><span>Read as “'+esc(std)+'”</span></p>';
+}
 async function ask(text){
   busy('find');
-  const res=await fetch('/api/ask?'+settingsQuery({q:text}),{headers:settingsHeaders()});
+  const res=await fetch('/api/ask?'+settingsQuery(Object.assign({q:text},threadParams())),
+    {headers:settingsHeaders()});
   if(!res.ok){
     // A refusal (still loading, or a rejected configuration) is plain JSON, not
     // an event stream, and reading it as one would spin forever.
@@ -1718,14 +1775,15 @@ async function ask(text){
     out.innerHTML='<p class="err">'+esc(msg||('server said '+res.status))+'</p>';return;
   }
   const reader=res.body.getReader(),dec=new TextDecoder();
-  let buf='',answer='',timings={},hits=[],srcHtml='',started=false,queued=false;
+  let buf='',answer='',timings={},hits=[],srcHtml='',started=false,queued=false,standalone='';
   ARRIVALS=[];settle=()=>{if(!queued&&started){queued=true;setTimeout(()=>{queued=false;paint()},0)}};
   // Two containers: the entries are drawn once, and each token repaints only
   // the answer's body. Replacing the whole output per token tore the tiles out
   // from under a click.
   // The containers are made when the sources arrive: until then the busy
   // ticker owns the output and would overwrite them.
-  const frame=()=>{if(!EL('ans'))out.innerHTML='<div id="ans"></div><div id="src"></div>'};
+  const frame=()=>{if(!EL('ans'))out.innerHTML='<div id="std"></div><div id="ans"></div>'+
+    '<div id="src"></div>'};
   const paint=(live=true,caret=true)=>{
     frame();const ans=EL('ans');
     if(!ans.firstChild){ans.innerHTML=answerCard(answer,timings,live);
@@ -1753,7 +1811,10 @@ async function ask(text){
       const ev=JSON.parse(line.slice(6));
       if(ev.event==='sources'){
         clearInterval(timer);timings=ev.timings;hits=ev.hits||[];srcHtml=cards(hits);
-        setCites(hits);frame();EL('src').innerHTML=srcHtml;paint();pending();
+        standalone=ev.standalone||'';
+        setCites(hits);frame();EL('src').innerHTML=srcHtml;
+        if(standalone)EL('std').innerHTML=asked(standalone);
+        paint();pending();
       }else if(ev.event==='token'){
         if(!started){started=true;clearInterval(timer)}
         answer+=ev.text;noteArrival(answer.length);
@@ -1765,6 +1826,7 @@ async function ask(text){
       }else if(ev.event==='done'){clearInterval(timer);funStop();settle=null;rolling(false);timings=ev.timings;
         EXTRA=ev.mentions||[];answer=answer.trimEnd();
         CURRENT={q:text,answer,sources:hits,model:SET.model||SDEF.model,timings};
+        if(SET.followup){LAST={q:text,answer,standalone};paintThread()}
         // Let the last characters finish fading before the final render, or
         // the end of every answer snaps from half-faded to solid.
         await new Promise(res=>{const tick=setInterval(()=>{
@@ -1781,7 +1843,11 @@ async function ask(text){
 }
 async function go(mode,force){
   const text=q.value.trim(); if(!text)return;
-  const cached=!force&&findHist(text,mode);
+  // Replaying a stored answer is only free because the same words mean the
+  // same thing. Inside a thread they do not -- "and untrained?" is a different
+  // question after Treat Wounds than after Battle Medicine -- so a follow-up
+  // always goes to the model.
+  const cached=!force&&!(SET.followup&&LAST)&&findHist(text,mode);
   if(cached){replay(cached);return}
   if(!ready)return;
   showHome(false);enable(false);

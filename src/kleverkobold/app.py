@@ -28,6 +28,11 @@ path every number in the docs was measured on; ``lore`` sees both corpora;
 ``auto`` (the default) lets the rewrite step say which, in one extra line, and
 anything short of a plain "lore" means rules. So a rules question cannot be
 answered from a wiki paragraph, and "who rules Cheliax?" gets the wiki.
+A caller that passes ``history`` gets one stage in front of that: the follow-up
+is condensed into a question that can be retrieved on its own, and the pipeline
+below runs on the condensed question unchanged. Nothing here does that by
+default -- no history, no condense call, byte-identical prompts. See
+notes/followup-design.md.
 """
 
 from __future__ import annotations
@@ -255,6 +260,43 @@ LORE_ANSWER_SYSTEM = (
     "'Source:' giving the URL of each excerpt you used, and nothing after it."
 )
 
+# Follow-ups are elliptical -- "what if she's prone?" names nothing the index
+# holds, and BM25 has three stopwords to work with. Condensing restores the
+# names before retrieval sees the question, and is a separate call from the
+# rewriter on purpose: one job each, so a bad answer can be blamed on the stage
+# that produced it by reading two short strings.
+CONDENSE_SYSTEM = (
+    "You rewrite follow-up questions in a Pathfinder 2e rules conversation so they can be "
+    "understood on their own.\n\n"
+    "You are given the exchange before it and a new question. Reply with one line and nothing "
+    "else: the new question, rewritten so someone who has not read the conversation could look "
+    "the answer up. Put back the names that were called 'it', 'she' or 'that', and keep what "
+    "the asker actually wants to know. Do not answer it, do not explain it, and do not add "
+    "rules nobody asked about. If the new question already stands on its own, reply with it "
+    "unchanged.\n\n"
+    "Earlier question: How does Treat Wounds work?\n"
+    "Earlier answer: Treat Wounds is a 10-minute Medicine activity; attempt a DC 15 Medicine "
+    "check and the target regains 2d8 Hit Points on a success.\n"
+    "New question: what if she's untrained\n"
+    "Rewritten: What happens when a character untrained in Medicine attempts Treat Wounds?\n\n"
+    "Earlier question: What does the grabbed condition do?\n"
+    "Earlier answer: Grabbed makes you immobilized and off-guard, and you must succeed at a "
+    "DC 5 flat check to use an action with the manipulate trait.\n"
+    "New question: and can I still cast\n"
+    "Rewritten: Can a grabbed creature still cast spells?\n\n"
+    "Earlier question: How much does a longsword cost?\n"
+    "Earlier answer: A longsword costs 1 gp.\n"
+    "New question: What level is Battle Medicine?\n"
+    "Rewritten: What level is Battle Medicine?"
+)
+
+# Added to ANSWER_SYSTEM only when there is an earlier turn in the prompt. The
+# single-turn system string stays exactly the one the holdout was measured with.
+FOLLOWUP_NOTE = (
+    "\nThe earlier exchange above the excerpts is context for what the question refers to. "
+    "Answer the last question. The earlier answer is not a source: cite only the excerpts."
+)
+
 RE_NETHYS_NOTE = re.compile(r"^[ \t]*_?\*?Nethys Note:[^\n]*\n?", re.M | re.I)
 RE_CLEAN = re.compile(r"^[\s\-*\d.)]+|[\s;:]+$")
 
@@ -290,6 +332,15 @@ RRF_SMOOTHING = 5
 # Characters of each retrieved entry put in front of the model. Swept on the
 # holdout; see notes/experiments.md.
 CONTEXT_CHARS = 1600
+
+# Characters of the previous answer carried into a follow-up -- into the
+# condense prompt, and into the answering prompt. ANSWER_SYSTEM budgets 120
+# words; 19 real answers from the 4B came out at a median of 651 characters and
+# a maximum of 1,027, and this keeps 17 of the 19 whole. What the tail costs is
+# context, not correctness: both readers want the entity names, and those are
+# in the first sentence. Nothing else from the previous turn travels -- not its
+# excerpts and not its sources. notes/followup-design.md says why.
+HISTORY_CHARS = 900
 
 # Safety net on generated answer length, not the thing that ends a normal answer.
 # Length is set by the prompt: told only to "answer concisely", Qwen3.5-9B wrote
@@ -352,6 +403,27 @@ class Hit:
     @property
     def lore(self) -> bool:
         return self.corpus == "pathfinderwiki"
+
+
+@dataclass
+class Turn:
+    """One earlier exchange, as the next question needs to see it.
+
+    ``standalone`` is the condensed form of ``question`` -- what the last
+    condense call produced. Handing *that* back rather than the raw text is
+    what makes a chain of three follow-ups work: turn three condenses against
+    a turn-two question that already names its subject, so "and untrained?"
+    can still find its way back to Treat Wounds without anyone carrying the
+    whole transcript.
+    """
+
+    question: str
+    answer: str = ""
+    standalone: str = ""
+
+    def asked(self) -> str:
+        """The form the next turn should be condensed against."""
+        return self.standalone or self.question
 
 
 class OpenAICompatible:
@@ -789,7 +861,7 @@ class Assistant:
 
     @property
     def has_lore(self) -> bool:
-        return bool(getattr(self.index, "has_lore", False))
+        return bool(getattr(getattr(self, "index", None), "has_lore", False))
 
     def rewrite(self, question: str) -> dict:
         system = self.rewrite_system or (REWRITE_SCOPE_SYSTEM if self.has_lore else REWRITE_SYSTEM)
@@ -813,6 +885,47 @@ class Assistant:
         if scope == "lore":
             return True
         return bool(plan) and plan.get("scope") == "lore"
+
+    def condense(self, question: str, history: Iterable[Turn]) -> str:
+        """Rewrite a follow-up into a question that can be retrieved on its own.
+
+        Only the most recent turn is shown, and only its text. That is enough
+        because the turn carries its own condensed form: the question it was
+        answered as already names its subject, so a chain repairs itself one
+        link at a time instead of growing a transcript in the prompt.
+
+        Every failure returns the question untouched, which is exactly today's
+        behaviour -- so the worst a broken condense call can do is leave a
+        follow-up as badly retrieved as it already is.
+        """
+        prior = list(history)[-1:]
+        if not prior:
+            return question
+        turn = prior[0]
+        user = f"Earlier question: {turn.asked()[:400]}\n"
+        if turn.answer:
+            user += f"Earlier answer: {turn.answer[:HISTORY_CHARS]}\n"
+        user += f"New question: {question}\nRewritten:"
+        try:
+            raw = self.ollama.chat(CONDENSE_SYSTEM, user, self.manifest["ollama_llm"],
+                                   max_tokens=60)
+        except OllamaError:
+            raise
+        except Exception:
+            return question
+        lines = [ln.strip() for ln in (raw or "").splitlines() if ln.strip()]
+        # The label is asked for and usually omitted, so prefer a labelled line
+        # and fall back to the first thing said.
+        line = next((ln for ln in lines if ln.lower().startswith("rewritten:")),
+                    lines[0] if lines else "")
+        if line.lower().startswith("rewritten:"):
+            line = line.split(":", 1)[1]
+        line = RE_CLEAN.sub("", line).strip().strip('"').strip("'").strip()
+        # A condensation that lost the question, or ran on into an answer, is
+        # worse than none: the raw follow-up at least says what was asked.
+        if not line or len(line) > 300:
+            return question
+        return line
 
     def _embed_queries(self, texts: list[str]) -> np.ndarray:
         prefix = self.manifest["query_prefix"]
@@ -996,33 +1109,74 @@ class Assistant:
 
     def retrieve(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
                  pool: int | None = None, expand: int = DEFAULT_EXPAND,
-                 scope: str = DEFAULT_SCOPE) -> tuple:
+                 scope: str = DEFAULT_SCOPE,
+                 history: Iterable[Turn] | None = None) -> tuple:
         """Everything up to the answer call, timed per stage.
 
         Split out from `ask` so the web UI can put sources on screen while the
         answer is still decoding, and so no caller has to run retrieval twice to
         get both halves of a result.
+
+        With `history`, the follow-up is condensed first and every stage below
+        runs on the condensed question -- rewrite, all four rankings, the
+        rerank. The condensed form comes back on the plan as `standalone`,
+        because the caller has to send it with the next turn, and because the
+        one thing worth seeing when a follow-up goes wrong is what the kobold
+        thought it was being asked.
         """
         timings: dict[str, float] = {}
+        asked = question
+        if history:
+            t = time.time()
+            asked = self.condense(question, history)
+            timings["condense"] = round(time.time() - t, 2)
+
         t = time.time()
-        plan = self.rewrite(question)
+        plan = self.rewrite(asked)
         # What the question was actually answered from, for the caller to show.
         plan["lore"] = self.resolve_scope(scope, plan)
         timings["rewrite"] = round(time.time() - t, 2)
+        if history:
+            plan["standalone"] = asked
 
         t = time.time()
-        hits = self.search(question, k=k, plan=plan, rerank=False,
+        hits = self.search(asked, k=k, plan=plan, rerank=False,
                            pool=pool or DEFAULT_POOL, expand=expand, scope=scope)
         timings["retrieve"] = round(time.time() - t, 2)
 
         if rerank:
             t = time.time()
-            hits = self.rerank(question, hits, k)
+            hits = self.rerank(asked, hits, k)
             timings["rerank"] = round(time.time() - t, 2)
         return plan, hits[:k], timings
 
-    def prompt(self, question: str, hits: Iterable[Hit]) -> str:
-        return self.context(hits) + "\n\nQuestion: " + question
+    def earlier(self, history: Iterable[Turn] | None) -> str:
+        """The previous turn as prompt text, or nothing at all.
+
+        It goes *before* the excerpts, not between them and the question. A
+        single-turn prompt ends with the entry the question names sitting next
+        to the question (see `named_last`), and a conversation block wedged in
+        there would undo an effect that was worth the difference between
+        "level 12" and "no such creature exists".
+        """
+        prior = list(history or [])[-1:]
+        if not prior:
+            return ""
+        turn = prior[0]
+        block = f"Question: {turn.question[:400]}"
+        if turn.answer:
+            block += f"\nAnswer: {turn.answer[:HISTORY_CHARS]}"
+        return "<earlier_exchange>\n" + block + "\n</earlier_exchange>\n\n"
+
+    def answer_system(self, history: Iterable[Turn] | None = None,
+                      hits: Iterable[Hit] = ()) -> str:
+        """The answering instructions. Unchanged, to the byte, without history or lore."""
+        base = self.system_for(hits)
+        return (base + FOLLOWUP_NOTE) if history else base
+
+    def prompt(self, question: str, hits: Iterable[Hit],
+               history: Iterable[Turn] | None = None) -> str:
+        return self.earlier(history) + self.context(hits) + "\n\nQuestion: " + question
 
     @staticmethod
     def named_last(question: str, hits: list[Hit]) -> list[Hit]:
@@ -1045,13 +1199,19 @@ class Assistant:
 
     def ask(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
             pool: int | None = None, expand: int = DEFAULT_EXPAND,
-            max_tokens: int | None = None, scope: str = DEFAULT_SCOPE) -> dict:
+            max_tokens: int | None = None, scope: str = DEFAULT_SCOPE,
+            history: Iterable[Turn] | None = None) -> dict:
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
-                                            pool=pool, expand=expand, scope=scope)
-        hits = self.named_last(question, hits)
+                                            pool=pool, expand=expand, scope=scope,
+                                            history=history)
+        # The condensed question is the one that names things, so it is the one
+        # `named_last` can match; the question the model answers is still the
+        # one that was typed.
+        hits = self.named_last(plan.get("standalone") or question, hits)
         t = time.time()
-        answer = self.ollama.chat(self.system_for(hits), self.prompt(question, hits),
+        answer = self.ollama.chat(self.answer_system(history, hits),
+                                  self.prompt(question, hits, history),
                                   self.manifest["ollama_llm"], max_tokens=max_tokens)
         timings["answer"] = round(time.time() - t, 2)
         timings["total"] = round(sum(timings.values()), 2)
@@ -1138,12 +1298,14 @@ class Assistant:
     def ask_stream(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
                    pool: int | None = None, expand: int = DEFAULT_EXPAND,
                    max_tokens: int | None = None,
-                   scope: str = DEFAULT_SCOPE) -> Iterator[dict]:
+                   scope: str = DEFAULT_SCOPE,
+                   history: Iterable[Turn] | None = None) -> Iterator[dict]:
         """Yield one `sources` event, then `token` events, then `done`."""
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
-                                            pool=pool, expand=expand, scope=scope)
-        hits = self.named_last(question, hits)
+                                            pool=pool, expand=expand, scope=scope,
+                                            history=history)
+        hits = self.named_last(plan.get("standalone") or question, hits)
         # `hits` carries the Hit objects (full body text) for a caller that wants
         # to render cards; `sources` is the JSON-safe citation list.
         yield {"event": "sources", "plan": plan, "timings": dict(timings), "hits": hits,
@@ -1153,7 +1315,8 @@ class Assistant:
         t = time.time()
         first = None
         pieces: list[str] = []
-        for piece in self.ollama.stream(self.system_for(hits), self.prompt(question, hits),
+        for piece in self.ollama.stream(self.answer_system(history, hits),
+                                        self.prompt(question, hits, history),
                                         self.manifest["ollama_llm"],
                                         max_tokens=max_tokens):
             if first is None:
