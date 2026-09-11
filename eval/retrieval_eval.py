@@ -28,7 +28,7 @@ import orjson
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 
-from kleverkobold import retrieval  # noqa: E402
+from kleverkobold import retrieval
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 INDEX = ROOT / "data" / "processed" / "index"
@@ -63,7 +63,7 @@ def load_rewrites(model: str) -> dict:
 
 
 def load_index(model_name: str | None, want_bm25: bool = True) -> retrieval.Index:
-    meta = [orjson.loads(l) for l in (INDEX / "meta.jsonl").open("rb")]
+    meta = [orjson.loads(line) for line in (INDEX / "meta.jsonl").open("rb")]
     ids = [m["id"] for m in meta]
     emb = summary = None
     if model_name:
@@ -246,8 +246,8 @@ def main() -> int:
                     help="which cached rewrite set to use for +hyde / +cat modes")
     args = ap.parse_args()
 
-    items = [orjson.loads(l) for l in args.benchmark.open("rb")
-             if orjson.loads(l)["source_ids"] and not orjson.loads(l).get("excluded")]
+    items = [orjson.loads(line) for line in args.benchmark.open("rb")
+             if orjson.loads(line)["source_ids"] and not orjson.loads(line).get("excluded")]
     print(f"{len(items)} benchmark items carry a gold chunk id")
 
     results = []
@@ -289,7 +289,7 @@ def main() -> int:
 
     best = max(results, key=lambda r: r["recall"]["8"])
     print(f"\nbest by R@8: {best['model']} / {best['mode']}")
-    print(f"  per family (R@8):")
+    print("  per family (R@8):")
     for fam, v in best["families"].items():
         print(f"    {fam:18s} n={v['n']:4d}  {v['8']:6.1%}")
     unreachable = {(r["mode"], r["unreachable"]) for r in results if r["unreachable"]}

@@ -38,7 +38,7 @@ def main() -> int:
     ap.add_argument("--out", type=pathlib.Path, default=ROOT / "eval" / "holdout.jsonl")
     args = ap.parse_args()
 
-    rows = [orjson.loads(l) for l in args.chunks.open("rb")]
+    rows = [orjson.loads(line) for line in args.chunks.open("rb")]
     # Prefer the current entry when a name exists in both Remaster and legacy form.
     index: dict[tuple[str, str], dict] = {}
     for r in rows:

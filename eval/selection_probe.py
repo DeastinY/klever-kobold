@@ -50,11 +50,11 @@ def main() -> int:
     args = ap.parse_args()
 
     import torch
-    from transformers import AutoTokenizer, BitsAndBytesConfig
     from run_eval import _load_hf, attach_context
+    from transformers import AutoTokenizer, BitsAndBytesConfig
 
-    items = [orjson.loads(l) for l in args.benchmark.open("rb")
-             if not orjson.loads(l).get("excluded")]
+    items = [orjson.loads(line) for line in args.benchmark.open("rb")
+             if not orjson.loads(line).get("excluded")]
     # Only families with a gold chunk, plus abstention, have a defined right answer.
     items = [i for i in items if i["source_ids"] or i["family"] == "abstention"]
     attach_context(items, args.retriever, "hybrid+hop", args.k, args.context_chars)
@@ -89,7 +89,7 @@ def main() -> int:
         with torch.inference_mode():
             logits = model(**enc).logits[:, -1, :]
         picked = logits[:, choice_ids].argmax(dim=-1).tolist()
-        for it, p in zip(batch, picked):
+        for it, p in zip(batch, picked, strict=False):
             gold_ids = set(it["source_ids"]) | set(it.get("alt_source_ids") or [])
             retrieved = it["retrieved"]
             correct_slots = {str(n + 1) for n, cid in enumerate(retrieved) if cid in gold_ids}

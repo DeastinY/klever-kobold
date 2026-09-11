@@ -34,8 +34,8 @@ def main() -> int:
 
     a = Assistant(args.index)
     canon = a.index.canonical
-    items = [orjson.loads(l) for l in args.benchmark.open("rb")
-             if orjson.loads(l)["source_ids"] and not orjson.loads(l).get("excluded")]
+    items = [orjson.loads(line) for line in args.benchmark.open("rb")
+             if orjson.loads(line)["source_ids"] and not orjson.loads(line).get("excluded")]
 
     def partners(pos: set[int]) -> set[int]:
         out = set(pos)

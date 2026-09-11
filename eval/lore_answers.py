@@ -41,7 +41,7 @@ def main() -> int:
     a = Assistant(args.index, args.ollama, llm_model=args.llm_model)
     model = a.manifest["ollama_llm"]
     label = args.label or "lore_answers_" + model.replace(":", "-").replace("/", "-")
-    items = [json.loads(l) for l in args.seeds.open()]
+    items = [json.loads(line) for line in args.seeds.open()]
     rows, started = [], time.time()
     for it in items:
         out = a.ask(it["question"], k=args.k, scope=args.scope)

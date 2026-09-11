@@ -22,7 +22,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--benchmark", type=pathlib.Path, default=ROOT / "eval" / "benchmark.jsonl")
     args = ap.parse_args()
-    items = [orjson.loads(l) for l in args.benchmark.open("rb")]
+    items = [orjson.loads(line) for line in args.benchmark.open("rb")]
 
     by_family = collections.defaultdict(list)
     for it in items:

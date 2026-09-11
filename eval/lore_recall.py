@@ -60,7 +60,7 @@ def main() -> int:
     if not a.has_lore:
         print(f"{args.index} carries no lore; nothing to measure")
         return 1
-    items = [json.loads(l) for l in args.seeds.open()]
+    items = [json.loads(line) for line in args.seeds.open()]
     rows, started = [], time.time()
     for n, it in enumerate(items, 1):
         plan, hits, timings = a.retrieve(it["question"], k=args.k, rerank=not args.no_rerank,
@@ -103,7 +103,8 @@ def main() -> int:
     print("\nlore misses:")
     for r in lore:
         if not r["hit"]:
-            where = "in pool, cut by rerank" if r["in_pool"] else ("sent to rules" if r["scope"] == "rules" else "not retrieved")
+            where = ("in pool, cut by rerank" if r["in_pool"]
+                     else "sent to rules" if r["scope"] == "rules" else "not retrieved")
             print(f"  {r['question']!r} -> {where}; got " + ", ".join(h["name"] for h in r["hits"][:4]))
     print("\nrules controls that saw lore:")
     for r in ctrl:

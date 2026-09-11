@@ -13,7 +13,7 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import score  # noqa: E402
+import score
 
 # (text, forbidden term, should_count_as_a_leak)
 CASES = [

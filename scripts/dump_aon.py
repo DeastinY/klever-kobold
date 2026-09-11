@@ -12,7 +12,7 @@ import orjson
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 
-from kleverkobold import aon  # noqa: E402
+from kleverkobold import aon
 
 OUT = pathlib.Path(__file__).resolve().parents[1] / "data" / "raw" / "aon"
 

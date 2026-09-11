@@ -7,8 +7,8 @@ import urllib.request
 from http.server import ThreadingHTTPServer
 
 import pytest
-
 from conftest import plan_reply
+
 from kleverkobold import server as s
 from kleverkobold import update
 from kleverkobold.app import HISTORY_CHARS, OllamaError

@@ -185,10 +185,10 @@ def main() -> int:
     args = ap.parse_args()
 
     import torch
-    from transformers import AutoTokenizer, BitsAndBytesConfig
     from run_eval import SYSTEM_RAG, _load_hf, attach_context, format_context, strip_thinking
+    from transformers import AutoTokenizer, BitsAndBytesConfig
 
-    rows = [orjson.loads(l) for l in args.chunks.open("rb")]
+    rows = [orjson.loads(line) for line in args.chunks.open("rb")]
     by_id = {r["id"]: r for r in rows}
 
     # Hygiene: nothing the holdout or the generated benchmark touches.
@@ -302,7 +302,7 @@ def main() -> int:
 
     print(f"\ngenerating {len(prompts)} questions with {args.teacher}")
     questions = generate(prompts, 70)
-    for spec, q in zip(specs, questions):
+    for spec, q in zip(specs, questions, strict=False):
         spec["question"] = " ".join(q.strip().strip('"').split())[:300]
     specs = [s for s in specs if 15 < len(s["question"]) < 300 and not excluded(s["question"])]
     print(f"{len(specs)} questions kept after length and topic filters")
@@ -310,16 +310,15 @@ def main() -> int:
     # --- 2. retrieve, using the deployed pipeline -----------------------------
     items = [{"question": s["question"], "id": str(i), "family": s["kind"]}
              for i, s in enumerate(specs)]
-    import rewrite_queries  # noqa: F401  (ensures the module path resolves)
-    from kleverkobold import retrieval as R
-    import retrieval_eval
+    import rewrite_queries
+
 
     # Rewrites for these questions do not exist yet; generate them with the teacher.
     print("\ngenerating query rewrites")
     rw_prompts = [(rewrite_queries.SYSTEM, f"Question: {s['question']}") for s in specs]
     rewrites_raw = generate(rw_prompts, 90)
     rewrite_map = {s["question"]: rewrite_queries.parse(t)
-                   for s, t in zip(specs, rewrites_raw)}
+                   for s, t in zip(specs, rewrites_raw, strict=False)}
     cache_path = ROOT / "data" / "processed" / "query_rewrites.json"
     cache = orjson.loads(cache_path.read_bytes()) if cache_path.exists() else {}
     for q, v in rewrite_map.items():
@@ -330,7 +329,7 @@ def main() -> int:
                    args.k, 1600, args.teacher)
 
     bodies = {r["id"]: r["text"] for r in rows}
-    for spec, item in zip(specs, items):
+    for spec, item in zip(specs, items, strict=False):
         if spec["kind"] == "withheld":
             gold = spec["chunk"]["id"]
             keep = [cid for cid in item["retrieved"] if cid != gold][:args.k]
@@ -365,7 +364,7 @@ def main() -> int:
 
     print("\ngenerating answers")
     pairs = []
-    for spec, item in zip(specs, items):
+    for spec, item in zip(specs, items, strict=False):
         if spec["kind"] in refusal_kinds:
             pairs.append((GUIDE.format(reason=reason[spec["kind"]]), item["prompt"]))
         else:
@@ -375,11 +374,11 @@ def main() -> int:
     if args.dump_answers:
         pathlib.Path(args.dump_answers).write_bytes(orjson.dumps(
             [{"kind": s_["kind"], "question": s_["question"], "answer": a}
-             for s_, a in zip(specs, answers)], option=orjson.OPT_INDENT_2))
+             for s_, a in zip(specs, answers, strict=False)], option=orjson.OPT_INDENT_2))
         print(f"dumped raw answers -> {args.dump_answers}")
 
     kept, dropped = [], collections.Counter()
-    for spec, item, answer in zip(specs, items, answers):
+    for spec, item, answer in zip(specs, items, answers, strict=False):
         answer = answer.strip()
         if not 20 < len(answer) < 2000:
             dropped[spec["kind"] + ":length"] += 1

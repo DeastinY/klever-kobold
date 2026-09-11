@@ -76,3 +76,26 @@ packages = ["src/kleverkobold"]
 
 [tool.ruff]
 line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+# The defaults plus import order, modern syntax, bugbear, and the simplifiers.
+# CI runs `ruff check .` with exactly this, so a local run means the same thing.
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "RUF001", "RUF002", "RUF003",   # the prose uses real dashes and ellipses on purpose
+    "RUF012",                       # mutable class attributes are the pattern here
+    "B008",                         # default arguments computed once are intended
+]
+
+[tool.ruff.lint.pycodestyle]
+# 100 is the style; a line is an error at 120. The page (one string) and the
+# verbatim model replies in the scorer's tests are exempt below.
+max-line-length = 120
+
+[tool.ruff.lint.per-file-ignores]
+"src/kleverkobold/ui.py" = ["E501"]
+"eval/test_score.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["kleverkobold"]

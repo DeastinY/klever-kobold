@@ -191,7 +191,7 @@ def resolve_embeds(chunk: dict, lookup: dict[str, dict]) -> dict:
     """
     if not chunk.get("embeds"):
         return chunk
-    linked = {f"{l['name']}|{l['url']}" for l in chunk.get("links") or []}
+    linked = {f"{line['name']}|{line['url']}" for line in chunk.get("links") or []}
 
     def render(match: re.Match[str]) -> str:
         child = lookup.get(match.group(1))
@@ -529,7 +529,7 @@ def wiki_to_chunks(page: dict, split_at: int = 2500, min_section: int = 300,
         else:
             parts.append((list(path), body))
         level, title = len(m.group(1)), m.group(2).strip()
-        path = [title] if level <= 2 else (path[:1] + [title])
+        path = [title] if level <= 2 else ([*path[:1], title])
         pos = m.end()
     parts.append((list(path) if parts else [], prose[pos:].strip()))
 
@@ -538,7 +538,8 @@ def wiki_to_chunks(page: dict, split_at: int = 2500, min_section: int = 300,
     for heads, body in parts:
         if merged and len(body) < min_section and merged[-1][0] and heads:
             prev_heads, prev_body = merged[-1]
-            merged[-1] = (prev_heads, prev_body + "\n\n## " + " › ".join(heads[len(prev_heads):] or heads) + "\n\n" + body)
+            sub_heading = " › ".join(heads[len(prev_heads):] or heads)
+            merged[-1] = (prev_heads, prev_body + "\n\n## " + sub_heading + "\n\n" + body)
         else:
             merged.append((heads, body))
 

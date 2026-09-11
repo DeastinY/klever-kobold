@@ -14,8 +14,8 @@ this is safe.
 from __future__ import annotations
 
 import time
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import Iterator
 
 import httpx
 import orjson

@@ -23,9 +23,22 @@ import urllib.parse
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-from .app import (BIG_LLM, DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, DEFAULT_SCOPE, HISTORY_CHARS,
-                  INDEX_URL, SCOPES, SMALL_LLM, Assistant, OllamaError, Turn, probe_backend)
 from . import update
+from .app import (
+    BIG_LLM,
+    DEFAULT_INDEX,
+    DEFAULT_K,
+    DEFAULT_OLLAMA,
+    DEFAULT_SCOPE,
+    HISTORY_CHARS,
+    INDEX_URL,
+    SCOPES,
+    SMALL_LLM,
+    Assistant,
+    OllamaError,
+    Turn,
+    probe_backend,
+)
 from .ui import PAGE
 
 # The header the API key travels in. A header rather than a query parameter so it

@@ -139,12 +139,14 @@ def render_retrieval(rows: list[dict]) -> str:
     return f"""<div class="scroller">
       <table>
         <thead>
-          <tr><th>Retriever</th><th>mode</th><th class="num">R@1</th><th class="num">R@5</th><th class="num">R@20</th><th class="num">MRR</th></tr>
+          <tr><th>Retriever</th><th>mode</th><th class="num">R@1</th><th class="num">R@5</th>
+              <th class="num">R@20</th><th class="num">MRR</th></tr>
         </thead>
         <tbody>
           {chr(10).join("          " + b for b in body).strip()}
         </tbody>
-        <caption>Did the right chunk come back? Scored on the 400 benchmark items that carry a gold chunk id. No model involved.</caption>
+        <caption>Did the right chunk come back? Scored on the 400 benchmark items that carry a
+          gold chunk id. No model involved.</caption>
       </table>
     </div>"""
 

@@ -41,7 +41,7 @@ class BM25:
         self._lookup = {t: i for i, t in enumerate(vocab.tolist())}
 
     @classmethod
-    def build(cls, tokenised: list[list[str]]) -> "BM25":
+    def build(cls, tokenised: list[list[str]]) -> BM25:
         postings: dict[str, dict[int, int]] = defaultdict(dict)
         doc_len = np.zeros(len(tokenised), dtype=np.int32)
         for doc_id, tokens in enumerate(tokenised):
@@ -68,7 +68,7 @@ class BM25:
             doc_len=self.doc_len.astype(np.int32))
 
     @classmethod
-    def load(cls, path: pathlib.Path) -> "BM25":
+    def load(cls, path: pathlib.Path) -> BM25:
         z = np.load(path, allow_pickle=True)
         return cls(z["vocab"], z["indptr"], z["docs"], z["tf"], z["doc_len"])
 

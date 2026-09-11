@@ -34,7 +34,6 @@ shown a description of something it will be asked to find.
 from __future__ import annotations
 
 import argparse
-import collections
 import pathlib
 import random
 import sys
@@ -64,13 +63,15 @@ def main() -> int:
     ap.add_argument("--no-strip-anchor", dest="strip_anchor", action="store_false")
     args = ap.parse_args()
 
-    import torch
     from datasets import Dataset
-    from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer
-    from sentence_transformers import SentenceTransformerTrainingArguments
+    from sentence_transformers import (
+        SentenceTransformer,
+        SentenceTransformerTrainer,
+        SentenceTransformerTrainingArguments,
+    )
     from sentence_transformers.losses import CachedMultipleNegativesRankingLoss
 
-    rows = [orjson.loads(l) for l in args.chunks.open("rb")]
+    rows = [orjson.loads(line) for line in args.chunks.open("rb")]
 
     banned: set[str] = set()
     for name in ("benchmark.jsonl", "holdout.jsonl", "wild.jsonl", "wild_clean.jsonl"):

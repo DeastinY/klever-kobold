@@ -20,9 +20,9 @@ import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 
-from kleverkobold import retrieval  # noqa: E402
-from kleverkobold.app import Assistant  # noqa: E402
-from kleverkobold.bm25 import BM25  # noqa: E402
+from kleverkobold import retrieval
+from kleverkobold.app import Assistant
+from kleverkobold.bm25 import BM25
 
 DIM = 64
 QUERY_PREFIX = "Query: "
@@ -140,7 +140,7 @@ def build_index(directory: pathlib.Path, entries: list[dict] = ENTRIES) -> pathl
         meta_rows.append(meta)
     (directory / "meta.jsonl").write_bytes(b"".join(orjson.dumps(m) + b"\n" for m in meta_rows))
     (directory / "bodies.jsonl").write_bytes(b"".join(orjson.dumps(b) + b"\n" for b in body_rows))
-    (directory / "links.jsonl").write_bytes(b"".join(orjson.dumps(l) + b"\n" for l in LINKS))
+    (directory / "links.jsonl").write_bytes(b"".join(orjson.dumps(line) + b"\n" for line in LINKS))
     full = np.stack([embed_text(retrieval.chunk_text(row)) for row in entries]).astype(np.float16)
     summary = np.stack([embed_text(f"{row['name']}\n{row['summary']}") for row in entries]
                        ).astype(np.float16)

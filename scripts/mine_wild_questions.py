@@ -142,7 +142,7 @@ def main() -> int:
     ap.add_argument("--min-name-len", type=int, default=5)
     args = ap.parse_args()
 
-    rows = [orjson.loads(l) for l in args.chunks.open("rb")]
+    rows = [orjson.loads(line) for line in args.chunks.open("rb")]
 
     # Only categories that answer a rules question. Source books, category pages
     # and article stubs match constantly and cite nothing: the first run labelled

@@ -60,14 +60,14 @@ def main() -> int:
     args = ap.parse_args()
 
     import torch
-    from transformers import AutoTokenizer, BitsAndBytesConfig
     from run_eval import _load_hf, strip_thinking
+    from transformers import AutoTokenizer, BitsAndBytesConfig
 
     bodies = {}
     for line in args.chunks.open("rb"):
         r = orjson.loads(line)
         bodies[r["id"]] = (r["name"], r["category"], r["text"] or "")
-    items = [orjson.loads(l) for l in args.wild.open("rb")]
+    items = [orjson.loads(line) for line in args.wild.open("rb")]
 
     cache = orjson.loads(args.verdicts.read_bytes()) if args.verdicts.exists() else {}
     todo = [(it, sid) for it in items for sid in it["source_ids"]
@@ -104,7 +104,7 @@ def main() -> int:
                 gen = model.generate(**enc, max_new_tokens=8, do_sample=False,
                                      temperature=None, top_p=None, top_k=None,
                                      pad_token_id=tok.pad_token_id)
-            for (it, sid), seq in zip(batch, gen):
+            for (it, sid), seq in zip(batch, gen, strict=False):
                 text = strip_thinking(tok.decode(seq[enc["input_ids"].shape[1]:],
                                                  skip_special_tokens=True))
                 m = RE_VERDICT.search(text)
@@ -122,7 +122,7 @@ def main() -> int:
             continue
         item = dict(it)
         item["source_ids"] = good
-        item["source_urls"] = [u for sid, u in zip(it["source_ids"], it["source_urls"])
+        item["source_urls"] = [u for sid, u in zip(it["source_ids"], it["source_urls"], strict=False)
                                if sid in good]
         item["family"] = "wild_answerable"
         kept.append(item)

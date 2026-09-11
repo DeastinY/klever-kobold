@@ -4,7 +4,6 @@ import pytest
 
 from kleverkobold import normalize as n
 
-
 # --- AoN markdown -------------------------------------------------------------
 
 def test_title_becomes_heading_with_right_hand_label():

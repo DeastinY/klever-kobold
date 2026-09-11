@@ -25,9 +25,15 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 
-from kleverkobold import server  # noqa: E402
-from kleverkobold.app import (ANSWER_SYSTEM, HISTORY_CHARS, Assistant, Hit,  # noqa: E402
-                              OllamaError, Turn)
+from kleverkobold import server
+from kleverkobold.app import (
+    ANSWER_SYSTEM,
+    HISTORY_CHARS,
+    Assistant,
+    Hit,
+    OllamaError,
+    Turn,
+)
 
 FOLLOW_UP = "what if she's untrained?"
 EARLIER = Turn(question="How does Treat Wounds work?",
@@ -197,10 +203,10 @@ def main() -> int:
         stub = Stub("What happens when a character untrained in Medicine attempts Treat Wounds?")
         a = assistant(stub)
         seen = {}
-        a.rewrite = lambda question: seen.setdefault("rewrite", question) and {} or {}
-        a.search = lambda question, **kw: seen.setdefault("search", question) and [] or []
-        a.rerank = lambda question, hits, k: seen.setdefault("rerank", question) and [] or []
-        plan, hits, timings = a.retrieve("what if she's untrained?", history=history)
+        a.rewrite = lambda question: (seen.setdefault("rewrite", question) and {}) or {}
+        a.search = lambda question, **kw: (seen.setdefault("search", question) and []) or []
+        a.rerank = lambda question, hits, k: (seen.setdefault("rerank", question) and []) or []
+        plan, _hits, timings = a.retrieve("what if she's untrained?", history=history)
         return plan, timings, seen, stub
 
     plan, timings, seen, stub = wired(None)

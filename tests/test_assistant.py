@@ -2,8 +2,8 @@
 
 import numpy as np
 import pytest
-
 from conftest import FakeClient, build_index, embed_text, plan_reply
+
 from kleverkobold.app import Assistant, OllamaError, Turn
 
 
@@ -101,7 +101,7 @@ def test_ask_builds_the_prompt_and_returns_sources(assistant, client):
                                                    "Battle Medicine", "Prone", "Desna",
                                                    "Force Barrage"}
     assert set(out["timings"]) == {"rewrite", "retrieve", "rerank", "answer", "total"}
-    system, user, model, max_tokens = client.calls[-1]
+    _system, user, model, max_tokens = client.calls[-1]
     assert user.endswith("Question: What level is Gurglegut? Also Treat Wounds.")
     assert model == "fake-llm" and max_tokens == assistant.answer_tokens
     # The entry the question names went last, next to the question.

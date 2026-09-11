@@ -47,7 +47,6 @@ audited rather than trusted.
 from __future__ import annotations
 
 import argparse
-import collections
 import pathlib
 import re
 import sys
@@ -332,7 +331,7 @@ def main() -> int:
     ap.add_argument("--out", type=pathlib.Path, help="write the full report as json")
     args = ap.parse_args()
 
-    items = {orjson.loads(l)["id"]: orjson.loads(l) for l in args.benchmark.open("rb")}
+    items = {orjson.loads(line)["id"]: orjson.loads(line) for line in args.benchmark.open("rb")}
     responses = {}
     for line in args.responses.open("rb"):
         row = orjson.loads(line)

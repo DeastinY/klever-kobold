@@ -131,7 +131,7 @@ def _load_hf(model_id: str, quant):
     fall back, rather than assuming a plain causal LM.
     """
     import torch
-    from transformers import AutoConfig, AutoModel
+    from transformers import AutoModel
 
     errors = []
     try:
@@ -207,7 +207,7 @@ def run_hf(items: list[dict], model_id: str, max_tokens: int, batch_size: int,
             gen = model.generate(**enc, max_new_tokens=max_tokens, do_sample=False,
                                  temperature=None, top_p=None, top_k=None,
                                  pad_token_id=tok.pad_token_id)
-        for it, seq in zip(batch, gen):
+        for it, seq in zip(batch, gen, strict=False):
             text = tok.decode(seq[enc["input_ids"].shape[1]:], skip_special_tokens=True)
             out.append({"id": it["id"], "family": it["family"],
                         "response": strip_thinking(text), "usage": {},
@@ -226,8 +226,9 @@ def attach_context(items: list[dict], retriever: str, mode: str, k: int,
     """
     sys.path.insert(0, str(ROOT / "src"))
     sys.path.insert(0, str(ROOT / "eval"))
-    from kleverkobold import retrieval as R
     import retrieval_eval
+
+    from kleverkobold import retrieval as R
 
     index = retrieval_eval.load_index(retriever)
     bodies = {}
@@ -253,7 +254,7 @@ def attach_context(items: list[dict], retriever: str, mode: str, k: int,
     base_mask = index.allowed(exclude_legacy=not hop)
     pool = k * 2 if hop else k
 
-    for n, (item, qvec) in enumerate(zip(items, qvecs)):
+    for n, (item, qvec) in enumerate(zip(items, qvecs, strict=False)):
         mask = base_mask
         if use_cat:
             cats = (rewrites.get(item["question"]) or {}).get("categories") or []
@@ -376,7 +377,7 @@ def main() -> int:
                     help="per-excerpt truncation")
     args = ap.parse_args()
 
-    items = [orjson.loads(l) for l in args.benchmark.open("rb")]
+    items = [orjson.loads(line) for line in args.benchmark.open("rb")]
     if args.family:
         items = [i for i in items if i["family"] in set(args.family)]
     if args.limit:
@@ -400,13 +401,13 @@ def main() -> int:
     kept: list[dict] = []
     if args.merge and not args.retry_empty and out_path.exists():
         covered = {i["id"] for i in items}
-        kept = [r for r in (orjson.loads(l) for l in out_path.open("rb")) if r["id"] not in covered]
+        kept = [r for r in (orjson.loads(line) for line in out_path.open("rb")) if r["id"] not in covered]
         print(f"merging {len(items)} new into {len(kept)} existing")
     if args.retry_empty:
         if not out_path.exists():
             print(f"--retry-empty needs an existing {out_path}", file=sys.stderr)
             return 1
-        previous = [orjson.loads(l) for l in out_path.open("rb")]
+        previous = [orjson.loads(line) for line in out_path.open("rb")]
         kept = [r for r in previous if r["response"].strip()]
         redo = {r["id"] for r in previous if not r["response"].strip()}
         items = [i for i in items if i["id"] in redo]
@@ -458,7 +459,8 @@ def main() -> int:
     out_path.with_suffix(".meta.json").write_bytes(orjson.dumps(meta, option=orjson.OPT_INDENT_2))
 
     print(f"wrote {out_path}  ({meta['seconds']}s"
-          + (f", {usage['prompt_tokens']:,} in / {usage['completion_tokens']:,} out" if usage["completion_tokens"] else "")
+          + (f", {usage['prompt_tokens']:,} in / {usage['completion_tokens']:,} out"
+             if usage["completion_tokens"] else "")
           + ")")
     if meta["empty_responses"]:
         print(f"warning: {meta['empty_responses']} empty responses", file=sys.stderr)

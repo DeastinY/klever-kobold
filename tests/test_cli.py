@@ -1,8 +1,8 @@
 """The command line: argument parsing and the commands that need no model to answer."""
 
 import pytest
-
 from conftest import plan_reply
+
 from kleverkobold import __main__ as cli
 
 

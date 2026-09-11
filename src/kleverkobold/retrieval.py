@@ -26,8 +26,8 @@ answered by the wiki page and the deity's stat block together.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
-from typing import Iterable, Sequence
 
 import numpy as np
 
@@ -185,7 +185,7 @@ class Index:
 
 
 def rrf(rankings: Iterable[Sequence[int]], k: int, smoothing: int = 60,
-        weights: Sequence[float] | None = None, index: "Index | None" = None) -> list[int]:
+        weights: Sequence[float] | None = None, index: Index | None = None) -> list[int]:
     """Reciprocal rank fusion, optionally weighted per ranking.
 
     Scores by rank position rather than by score value, so a BM25 score of 31.4
@@ -210,7 +210,7 @@ def rrf(rankings: Iterable[Sequence[int]], k: int, smoothing: int = 60,
     # exists in three books is the legacy Core Rulebook text.
     fused: dict[int, float] = {}
     best: dict[int, tuple[int, int]] = {}
-    for ranking, weight in zip(rankings, weights):
+    for ranking, weight in zip(rankings, weights, strict=False):
         for rank, idx in enumerate(ranking):
             key = index.canonical[idx] if index is not None and index.canonical else idx
             fused[key] = fused.get(key, 0.0) + weight / (smoothing + rank + 1)
@@ -219,7 +219,7 @@ def rrf(rankings: Iterable[Sequence[int]], k: int, smoothing: int = 60,
     return [best[key][1] for key, _ in sorted(fused.items(), key=lambda kv: -kv[1])[:k]]
 
 
-def dedupe(index: "Index", order: Sequence[int]) -> list[int]:
+def dedupe(index: Index, order: Sequence[int]) -> list[int]:
     """Collapse an ordering to one row per entity, keeping the best-ranked.
 
     The row kept is the one that was retrieved, not the entity's canonical row.

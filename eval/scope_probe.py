@@ -32,8 +32,13 @@ import time
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from kleverkobold.app import (DEFAULT_LLM, REWRITE_SCOPE_SYSTEM, REWRITE_SYSTEM,  # noqa: E402
-                              Ollama, parse_plan)
+from kleverkobold.app import (  # noqa: E402
+    DEFAULT_LLM,
+    REWRITE_SCOPE_SYSTEM,
+    REWRITE_SYSTEM,
+    Ollama,
+    parse_plan,
+)
 
 
 def jaccard(a, b) -> float:
@@ -52,8 +57,8 @@ def main() -> int:
     ap.add_argument("--out", type=pathlib.Path, default=ROOT / "eval" / "runs" / "scope_probe")
     args = ap.parse_args()
 
-    items = [json.loads(l) for l in args.seeds.open()]
-    bench = [json.loads(l) for l in args.benchmark.open()]
+    items = [json.loads(line) for line in args.seeds.open()]
+    bench = [json.loads(line) for line in args.benchmark.open()]
     if args.limit:
         random.Random(args.seed).shuffle(bench)
         bench = bench[:args.limit]

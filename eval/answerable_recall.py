@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import contextlib
 import pathlib
 import re
 import sys
@@ -62,24 +63,23 @@ def main() -> int:
     args = ap.parse_args()
 
     import torch
-    from transformers import AutoTokenizer, BitsAndBytesConfig
-    from kleverkobold.app import Assistant
     from run_eval import _load_hf, strip_thinking
+    from transformers import AutoTokenizer, BitsAndBytesConfig
+
+    from kleverkobold.app import Assistant
 
     a = Assistant(args.index)
-    items = [orjson.loads(l) for l in args.benchmark.open("rb")]
+    items = [orjson.loads(line) for line in args.benchmark.open("rb")]
     print(f"retrieving for {len(items)} questions")
     retrieved = [a.search(it["question"], k=args.k, rerank=not args.no_rerank,
-                          expand=0 if args.no_expand else None or 3) for it in items]
+                          expand=0 if args.no_expand else 3) for it in items]
     # Ollama keeps models resident server-side after the last call, so the 27B
     # judge cannot fit alongside them. keep_alive=0 unloads immediately.
     import httpx
     for model in (a.manifest["ollama_llm"], a.manifest["ollama_embed"]):
-        try:
+        with contextlib.suppress(httpx.HTTPError):
             httpx.post(f"{a.ollama.base_url}/api/generate",
                        json={"model": model, "keep_alive": 0}, timeout=30.0)
-        except httpx.HTTPError:
-            pass
     del a
 
     tok = AutoTokenizer.from_pretrained(args.judge, padding_side="left")
@@ -94,7 +94,7 @@ def main() -> int:
 
     verdicts = []
     for start in range(0, len(items), args.batch_size):
-        batch = list(zip(items, retrieved))[start:start + args.batch_size]
+        batch = list(zip(items, retrieved, strict=False))[start:start + args.batch_size]
         prompts = []
         for it, hits in batch:
             excerpts = "\n\n".join(
@@ -113,7 +113,7 @@ def main() -> int:
             gen = model.generate(**enc, max_new_tokens=6, do_sample=False,
                                  temperature=None, top_p=None, top_k=None,
                                  pad_token_id=tok.pad_token_id)
-        for (it, _), seq in zip(batch, gen):
+        for (it, _), seq in zip(batch, gen, strict=False):
             text = strip_thinking(tok.decode(seq[enc["input_ids"].shape[1]:],
                                              skip_special_tokens=True))
             m = RE_VERDICT.search(text.upper())

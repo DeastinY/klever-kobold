@@ -79,9 +79,8 @@ def test_aon_post_retries_then_raises(monkeypatch):
     def always_bad(request):
         return httpx.Response(200, content=b"not json")
 
-    with httpx.Client(transport=transport(always_bad)) as client:
-        with pytest.raises(orjson.JSONDecodeError):
-            aon.categories(client)
+    with httpx.Client(transport=transport(always_bad)) as client, pytest.raises(orjson.JSONDecodeError):
+        aon.categories(client)
 
 
 # --- PathfinderWiki ---------------------------------------------------------------
@@ -126,9 +125,8 @@ def test_wiki_get_gives_up_after_five(monkeypatch):
         calls.append(1)
         return httpx.Response(500)
 
-    with httpx.Client(transport=transport(down)) as client:
-        with pytest.raises(httpx.HTTPStatusError):
-            wiki.site_info(client)
+    with httpx.Client(transport=transport(down)) as client, pytest.raises(httpx.HTTPStatusError):
+        wiki.site_info(client)
     assert len(calls) == 5
 
 
@@ -199,7 +197,7 @@ def test_ollama_client():
             lines = [{"message": {"content": "a"}}, {"message": {}},
                      {"message": {"content": "b"}, "done": True},
                      {"message": {"content": "never"}}]
-            return httpx.Response(200, text="\n".join(json.dumps(l) for l in lines))
+            return httpx.Response(200, text="\n".join(json.dumps(line) for line in lines))
         assert body["think"] is False and body["options"] == {"temperature": 0, "num_predict": 9}
         return httpx.Response(200, json={"message": {"content": " ok "}})
 

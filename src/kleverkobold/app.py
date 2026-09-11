@@ -43,8 +43,8 @@ import pathlib
 import re
 import sys
 import time
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
-from typing import Iterable, Iterator
 
 import httpx
 import numpy as np
@@ -85,7 +85,8 @@ def machine_memory_gb() -> float:
                         ("ullTotalPageFile", ctypes.c_ulonglong), ("ullAvailPageFile", ctypes.c_ulonglong),
                         ("ullTotalVirtual", ctypes.c_ulonglong), ("ullAvailVirtual", ctypes.c_ulonglong),
                         ("ullAvailExtendedVirtual", ctypes.c_ulonglong)]
-        st = Status(); st.dwLength = ctypes.sizeof(Status)
+        st = Status()
+        st.dwLength = ctypes.sizeof(Status)
         ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(st))
         return st.ullTotalPhys / 2**30
     except Exception:
@@ -307,7 +308,7 @@ RE_NETHYS_NOTE = re.compile(r"^[ \t]*_?\*?Nethys Note:[^\n]*\n?", re.M | re.I)
 RE_STAT_HEAD = re.compile(r"^##\s+[^\n]*\((?:Creature|Hazard)\s+-?\d+\)\s*$", re.M)
 
 
-def stat_block_first(hit: "Hit") -> str:
+def stat_block_first(hit: Hit) -> str:
     """A creature's stat block ahead of its description, so the excerpt holds rules.
 
     An Archives creature entry opens with a page of flavour and the Recall
@@ -347,9 +348,9 @@ def parse_plan(raw: str) -> dict:
                 part = part.strip().lower().replace(" ", "-")
                 if part in CATEGORIES and part not in kinds:
                     kinds.append(part)
-        elif line.upper().startswith("SCOPE:"):
-            if line.split(":", 1)[1].strip().lower().rstrip(".") == "lore":
-                scope = "lore"
+        elif (line.upper().startswith("SCOPE:")
+              and line.split(":", 1)[1].strip().lower().rstrip(".") == "lore"):
+            scope = "lore"
     return {"summary": summary[:220], "categories": kinds[:3], "scope": scope}
 
 # The TREC default of 60 flattens rank differences almost to nothing when fusing a
@@ -701,7 +702,7 @@ class Assistant:
         if embed_model:
             self.manifest["ollama_embed"] = embed_model
 
-        meta = [orjson.loads(l) for l in (index_dir / "meta.jsonl").open("rb")]
+        meta = [orjson.loads(line) for line in (index_dir / "meta.jsonl").open("rb")]
 
         # Entry bodies are 48 MB of JSON that becomes ~500 MB of Python strings if
         # parsed eagerly, for the sake of the eight entries an answer actually
@@ -750,7 +751,7 @@ class Assistant:
     def variant(self, backend: str, base_url: str, llm_model: str = "",
                 api_key: str | None = None, context_chars: int | None = None,
                 answer_tokens: int | None = None,
-                remote_embedder: bool = False) -> "Assistant":
+                remote_embedder: bool = False) -> Assistant:
         """A second Assistant over the *same* loaded index, answering elsewhere.
 
         The index is 460 MB of memory-mapped arrays, a BM25 matrix and 73,922
@@ -1292,7 +1293,7 @@ class Assistant:
                     continue
                 found[key] = pos
         hits = []
-        for key, pos in found.items():
+        for pos in found.values():
             m = self.index.meta[pos]
             if exclude and m.get("url") in exclude:
                 continue

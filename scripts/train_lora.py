@@ -58,18 +58,18 @@ def main() -> int:
     ap.add_argument("--save-steps", type=int, default=50)
     args = ap.parse_args()
 
+    import sys
+
     import torch
     from datasets import Dataset
     from peft import LoraConfig
     from transformers import AutoTokenizer, BitsAndBytesConfig
     from trl import SFTConfig, SFTTrainer
-
-    import sys
     sys.path.insert(0, str(ROOT / "eval"))
     from run_eval import _load_hf
 
     tok = AutoTokenizer.from_pretrained(args.model)
-    rows = [orjson.loads(l) for l in args.data.open("rb")]
+    rows = [orjson.loads(line) for line in args.data.open("rb")]
     records = []
     for r in rows:
         msgs = r["messages"]

@@ -57,7 +57,7 @@ def main() -> int:
         shutil.rmtree(args.out)
     args.out.mkdir(parents=True)
 
-    rows = [orjson.loads(l) for path in args.chunks for l in path.open("rb")]
+    rows = [orjson.loads(line) for path in args.chunks for line in path.open("rb")]
     by_corpus = collections.Counter(r.get("corpus") or "aon" for r in rows)
     print(f"{len(rows):,} chunks  {dict(by_corpus)}")
 

@@ -4,7 +4,7 @@ import math
 
 import numpy as np
 
-from kleverkobold.bm25 import B, K1, BM25
+from kleverkobold.bm25 import BM25, K1, B
 
 DOCS = [["treat", "wounds", "medicine"], ["treat", "wounds"], ["magic", "missile"],
         ["medicine", "medicine", "check"]]

@@ -91,12 +91,13 @@ def main() -> int:
     args = ap.parse_args()
 
     import torch
-    from transformers import AutoTokenizer, BitsAndBytesConfig
     from run_eval import _load_hf
+    from transformers import AutoTokenizer, BitsAndBytesConfig
 
-    questions = [orjson.loads(l)["question"] for l in args.benchmark.open("rb")]
+    questions = [orjson.loads(line)["question"] for line in args.benchmark.open("rb")]
     cache = orjson.loads(args.out.read_bytes()) if args.out.exists() else {}
-    key = lambda q: f"{args.model}|{q}"
+    def key(q):
+        return f"{args.model}|{q}"
     todo = [q for q in questions if key(q) not in cache]
     print(f"{len(questions)} questions, {len(todo)} to rewrite")
     if not todo:
@@ -126,7 +127,7 @@ def main() -> int:
             gen = model.generate(**enc, max_new_tokens=args.max_tokens, do_sample=False,
                                  temperature=None, top_p=None, top_k=None,
                                  pad_token_id=tok.pad_token_id)
-        for q, seq in zip(batch, gen):
+        for q, seq in zip(batch, gen, strict=False):
             text = tok.decode(seq[enc["input_ids"].shape[1]:], skip_special_tokens=True)
             cache[key(q)] = parse(text)
         print(f"  {min(start + args.batch_size, len(todo))}/{len(todo)}", flush=True)

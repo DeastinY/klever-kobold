@@ -14,7 +14,7 @@ import orjson
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 
-from kleverkobold import retrieval  # noqa: E402
+from kleverkobold import retrieval
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PROC = ROOT / "data" / "processed"
@@ -56,7 +56,7 @@ def main() -> int:
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
-    rows = [orjson.loads(l) for path in args.chunks for l in path.open("rb")]
+    rows = [orjson.loads(line) for path in args.chunks for line in path.open("rb")]
     if args.field == "summary":
         texts = [summary_text(r) for r in rows]
     else:

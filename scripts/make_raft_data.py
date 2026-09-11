@@ -98,10 +98,7 @@ def render(rng: random.Random, templates: list[str], **kw) -> str:
 def ordinal(n: int) -> str:
     """1 -> 1st. Naive "{n}th" produced "1th level" in the first training set, and
     the adapter faithfully learned to say it."""
-    if 10 <= n % 100 <= 20:
-        suffix = "th"
-    else:
-        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    suffix = "th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
     return f"{n}{suffix}"
 
 
@@ -123,16 +120,17 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=11)
     args = ap.parse_args()
 
-    from kleverkobold import retrieval as R
     import retrieval_eval
     from run_eval import SYSTEM_RAG, format_context
 
-    rows = [orjson.loads(l) for l in args.chunks.open("rb")]
+    from kleverkobold import retrieval as R
+
+    rows = [orjson.loads(line) for line in args.chunks.open("rb")]
     by_id = {r["id"]: r for r in rows}
     bodies = {r["id"]: r["text"] for r in rows}
 
     # --- hygiene: nothing the benchmark touches may produce a training item ---
-    bench = [orjson.loads(l) for l in args.benchmark.open("rb")]
+    bench = [orjson.loads(line) for line in args.benchmark.open("rb")]
     # Alternates count: a benchmark item that accepts several Remaster names must
     # not have any of those entities appear as a training gold.
     banned_ids = {sid for item in bench
@@ -230,7 +228,7 @@ def main() -> int:
     qvecs = retrieval_eval.encode_queries(args.retriever, [s["question"] for s in specs])
 
     out: list[dict] = []
-    for spec, qvec in zip(specs, qvecs):
+    for spec, qvec in zip(specs, qvecs, strict=False):
         order = R.rrf([index.dense(qvec, mask, 50),
                        index.lexical(spec["question"], mask, 50)], args.k * 4)
         order = R.follow_remaster(index, order)

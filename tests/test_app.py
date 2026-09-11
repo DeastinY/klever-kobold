@@ -2,8 +2,18 @@
 
 import pytest
 
-from kleverkobold.app import (ANSWER_SYSTEM, FOLLOWUP_NOTE, LORE_ANSWER_SYSTEM, RULES_SLOTS,
-                              Assistant, Hit, OllamaError, Turn, parse_plan, stat_block_first)
+from kleverkobold.app import (
+    ANSWER_SYSTEM,
+    FOLLOWUP_NOTE,
+    LORE_ANSWER_SYSTEM,
+    RULES_SLOTS,
+    Assistant,
+    Hit,
+    OllamaError,
+    Turn,
+    parse_plan,
+    stat_block_first,
+)
 
 
 def hit(cid, name, corpus="aon", category="feat", level=None, text="body", summary=""):
@@ -51,7 +61,7 @@ def test_context_headers_and_tags():
     assert out.startswith("<rules_excerpts>\n[1] Treat Wounds (action) — https://x/a\nlink xxx")
     assert out.endswith("</rules_excerpts>")
     assert len(out.split("\n")[2]) <= 20
-    lore = rules + [hit("w", "Cheliax", corpus="pathfinderwiki", category="nation",
+    lore = [*rules, hit("w", "Cheliax", corpus="pathfinderwiki", category="nation",
                         text="Nethys Note: nothing\nDevils.")]
     out = a.context(lore)
     assert out.startswith("<excerpts>") and "Golarion lore from PathfinderWiki" in out

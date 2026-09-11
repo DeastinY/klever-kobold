@@ -97,7 +97,7 @@ def main() -> int:
     condense_s: list[float] = []
     for opening, follow_ups in THREADS:
         print(f"\n{opening}")
-        plan, hits, _ = a.retrieve(opening, k=args.k, rerank=args.rerank)
+        plan, _hits, _ = a.retrieve(opening, k=args.k, rerank=args.rerank)
         turn = Turn(question=opening, answer="", standalone="")
         # The probe answers nothing, so there is no previous answer to carry --
         # which makes this the *harder* arm for the feature: the condenser has

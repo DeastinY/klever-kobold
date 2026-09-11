@@ -25,8 +25,18 @@ import time
 
 import orjson
 
-from .app import (DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, DEFAULT_SCOPE, SCOPES, Assistant,
-                  Ollama, OllamaError, Turn, default_llm)
+from .app import (
+    DEFAULT_INDEX,
+    DEFAULT_K,
+    DEFAULT_OLLAMA,
+    DEFAULT_SCOPE,
+    SCOPES,
+    Assistant,
+    Ollama,
+    OllamaError,
+    Turn,
+    default_llm,
+)
 
 
 def _llm(args) -> tuple[str | None, bool]:
