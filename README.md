@@ -14,6 +14,10 @@ account, no cloud, nothing you type leaves the machine.
 | --- | --- |
 | ![An entry opened in the popout](docs/img/kobold-entry.png) | ![Dark theme](docs/img/kobold-dark.png) |
 
+<!-- coverage: `coverage run -a --source=src/kleverkobold eval/test_score.py eval/test_followup.py` -->
+![Python](https://img.shields.io/badge/python-3.11%2B-3776ab?logo=python&logoColor=white)
+![Coverage](https://img.shields.io/badge/coverage-16%25-c0392b)
+![Vibecoded](https://img.shields.io/badge/vibecoded-fully-8a1b2e)
 ![Runs offline](https://img.shields.io/badge/runs-fully%20offline-2f6b4f)
 ![Memory](https://img.shields.io/badge/needs-6%20GB%20RAM-informational)
 ![Corpus](https://img.shields.io/badge/corpus-41%2C743%20AoN%20entries%20%2B%2024%2C409%20wiki%20pages-8a1b2e)
