@@ -1,0 +1,19 @@
+{
+  "label": "creature-first-4b",
+  "model": "deployed",
+  "backend": "app",
+  "base_url": null,
+  "items": 109,
+  "seconds": 222.1,
+  "max_tokens": 1200,
+  "reasoning_effort": null,
+  "chat_kwargs": null,
+  "retrieval": null,
+  "quantization": "nf4-4bit",
+  "adapter": null,
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0
+  },
+  "empty_responses": 0
+}

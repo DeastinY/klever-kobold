@@ -1629,3 +1629,27 @@ One more thing found by reading outputs, not scores: on this machine the 4B
 gave the same 99/109 three times in three processes, item for item. The
 "not reproducible across processes" note above is about the MacBook's Ollama;
 here it is exact, which makes the ±3 floor a laptop number, not a law.
+
+## Creature stat block first in the excerpt (2026-09-11)
+
+An Archives creature entry opens with a page of flavour and the Recall
+Knowledge DCs; the stat block comes under "## Name (Creature N)". At 1,600
+characters of context the Owlbear's excerpt ended at its Traits line, so the
+model was handed the lore and none of the numbers. Commit 4f5db48 puts the
+stat block first for creatures and hazards, the description after.
+
+Re-measured on the same 109-question holdout, 4B, auto scope, rerank on,
+index-v3, same everything as `lore-v3-auto-4b`:
+
+| run | total | comparative | descriptive | false premise | legacy | situational |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| lore-v3-auto-4b (before) | 99/109 | 11/11 | 26/33 | 18/19 | 13/14 | 31/32 |
+| creature-first-4b (after) | **102/109** | 11/11 | 27/33 | 19/19 | 14/14 | 31/32 |
+
+Five items flipped, four won and one lost, none of them a creature question:
+the excerpt lists change wherever a creature entry sits among the eight, so
+the prompt moves for questions that merely retrieve one. Net +3, inside the
+noise floor of this set; what it is not is a regression, and the Owlbear's
+excerpt now carries both attacks and every degree of success of its screech.
+Scored run: `eval/runs/creature-first-4b.scores.json`.
+
