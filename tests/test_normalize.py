@@ -206,6 +206,8 @@ def test_wiki_infobox_and_facts():
 def test_wiki_infobox_empty_when_only_layout_templates():
     pytest.importorskip("mwparserfromhell")
     assert n.wiki_infobox("{{Badges|canon}} {{stub}} text") == {}
+    # "Coffee" opened with a {{Refs}} template and was filed under "refs".
+    assert n.wiki_infobox("{{Refs|source=Book|page=3}}\n{{Item|type=drink|origin=[[Casmaron]]}}")["_template"] == "Item"
 
 
 def test_wiki_category_aliases():

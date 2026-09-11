@@ -249,6 +249,9 @@ footer.thanks .sep{margin:0 .4rem}
 .was{margin:.05rem 0 0;font-size:.76rem;color:var(--muted);font-style:italic}
 .pop .was{margin:-.3rem 0 .5rem}
 .snip-t{margin:.3rem 0 0;font-size:.82rem;color:var(--soft);line-height:1.4}
+.secs{margin:.25rem 0 0;font-size:.76rem;color:var(--muted)}
+.secs a{color:var(--muted);text-decoration:underline dotted}
+.secs a:hover{color:var(--accent)}
 .tile .more{position:absolute;right:.6rem;bottom:.45rem;font-size:.7rem;color:var(--muted);
  opacity:0;transition:opacity .12s}
 .tile:hover .more{opacity:1}
@@ -945,18 +948,29 @@ function formerly(h){
   const names=[].concat(h.legacy_name||[]).filter(Boolean);
   return names.length?'<p class="was">formerly '+esc(names.join(', '))+'</p>':'';
 }
-function tile(h,i,src){
+/* A wiki page is split into sections for retrieval ("Coffee › In Casmaron");
+   the page is the entity a reader recognises. */
+const pageOf=h=>isLore(h)?(h.url||h.name||'').split('#')[0]:'';
+const pageName=h=>isLore(h)?(h.name||'').split(' › ')[0]:(h.name||'');
+const sectionName=h=>(h.name||'').split(' › ').slice(1).join(' › ');
+function tile(h,i,src,sections){
   src=src||'res';
   const p=parseHead(h),k=kindOf(h.category,h);
   const snippet=h.summary||firstLine(p.text);
+  const title=sections?pageName(h):p.title;
+  // Other sections of the same page that were retrieved: named, and openable
+  // in place, but not tiles of their own.
+  const secs=sections&&sections.length?'<p class="secs">also '+sections.map(j=>
+    '<a class="lnk ent" href="'+esc(SHOWN[j].url)+'" data-src="'+src+'" data-i="'+j+'">'+
+    esc(sectionName(SHOWN[j])||'the page')+'</a>').join(' · ')+'</p>':'';
   return '<div class="tile'+(p.rarity?' '+p.rarity:'')+'" style="--k:var(--k-'+k+')" data-i="'+i+
     '" data-src="'+src+'" role="button" tabindex="0" title="Open">'+kindBadge(h,p)+starBtn(h)+
-    '<div class="thead"><span class="tname">'+esc(p.title)+'</span>'+glyphs(p.cost)+'</div>'+
+    '<div class="thead"><span class="tname">'+esc(title)+'</span>'+glyphs(p.cost)+'</div>'+
     formerly(h)+
     (p.traits.length?'<div class="traits">'+p.traits.slice(0,4).map(t=>{
       const l=t.toLowerCase(),cls=RARITY.includes(l)?l:(SIZES.includes(l)?'size':'');
       return '<span class="trait'+(cls?' '+cls:'')+'">'+esc(t)+'</span>'}).join('')+'</div>':'')+
-    '<p class="snip-t">'+esc(snippet)+'</p><span class="more">open ↗</span></div>';
+    '<p class="snip-t">'+esc(snippet)+'</p>'+secs+'<span class="more">open ↗</span></div>';
 }
 function cards(hits,question){
   if(!hits||!hits.length)return '';
@@ -967,12 +981,24 @@ function cards(hits,question){
   // reads best; a person wants it first. Display order only -- data-i keeps
   // the real index, so citations and the popout still line up.
   const ql=(question||q.value||'').toLowerCase();
-  const order=hits.map((h,i)=>i).sort((a,b)=>{
-    const na=hits[a].name&&hits[a].name.length>=4&&ql.includes(hits[a].name.toLowerCase())?0:1;
-    const nb=hits[b].name&&hits[b].name.length>=4&&ql.includes(hits[b].name.toLowerCase())?0:1;
-    return na-nb||a-b});
+  const named=h=>h.name&&h.name.length>=4&&ql.includes(h.name.toLowerCase())?0:1;
+  const order=hits.map((h,i)=>i).sort((a,b)=>named(hits[a])-named(hits[b])||a-b);
+  // One tile per wiki page: "is there coffee?" retrieves the Coffee page's
+  // lead and four of its sections, which are one thing to a reader. The lead
+  // fronts the tile when it was retrieved, else the best-ranked section; the
+  // rest are listed on the tile. The model still reads every section.
+  const groups=new Map();
+  for(const i of order){
+    const key=pageOf(hits[i]);
+    if(!key){groups.set('#'+i,{rep:i,rest:[]});continue}
+    const g=groups.get(key);
+    if(!g)groups.set(key,{rep:i,rest:[]});
+    else if(!sectionName(hits[i])&&sectionName(hits[g.rep])){g.rest.unshift(g.rep);g.rep=i}
+    else g.rest.push(i);
+  }
   return '<p class="sources-h">Found proof · dug out of '+where+' — '+
-    'poke one to read it</p><div class="tiles">'+order.map(i=>tile(hits[i],i,'res')).join('')+'</div>';
+    'poke one to read it</p><div class="tiles">'+
+    [...groups.values()].map(g=>tile(hits[g.rep],g.rep,'res',pageOf(hits[g.rep])?g.rest:null)).join('')+'</div>';
 }
 const sheet=document.createElement('div');sheet.id='sheet';sheet.hidden=true;
 document.body.appendChild(sheet);
@@ -1593,23 +1619,26 @@ function charTimes(){
   return t;
 }
 function streamed(answer){
-  if(REDUCED||!ARRIVALS.length)return md(answer,true);
-  const times=charTimes(),now=Date.now();
-  let old=stableLength(answer,SETTLE_MS);
-  while(old>0&&old<answer.length&&!/\s/.test(answer[old]))old--;
-  if(old>=answer.length)return md(answer,true);
-  const settled=md(answer.slice(0,old),true);
-  // The Source line and anything after it is citation, not prose: it fades
-  // in as itself. Only the rules text is shown in Erathian first.
+  // The Source line and anything after it is citation, not prose. It is not
+  // written out character by character: it stays hidden while the answer
+  // streams and is added whole by the final paint, as the chips it becomes.
   const srcMatch=answer.match(/(^|\n)\s*Source:/i);
   const srcAt=srcMatch?srcMatch.index:Infinity;
+  const cut=Math.min(answer.length,srcAt);
+  const prose=answer.slice(0,cut);
+  if(REDUCED||!ARRIVALS.length)return md(prose,true);
+  const times=charTimes(),now=Date.now();
+  let old=Math.min(stableLength(answer,SETTLE_MS),cut);
+  while(old>0&&old<cut&&!/\s/.test(answer[old]))old--;
+  if(old>=cut)return md(prose,true);
+  const settled=md(answer.slice(0,old),true);
   // Runs of characters that share a look become one span: the look is the
   // face (Erathian or settled) and the opacity in twentieths.
   let tail='',key=null;
-  for(let i=old;i<answer.length;i++){
+  for(let i=old;i<cut;i++){
     const ch=answer[i],age=now-(times[i]||now);
     const op=Math.min(20,Math.round(20*age/FADE_MS)),f=Math.min(1,age/SETTLE_MS);
-    const er=i<srcAt&&!/\s/.test(ch)&&f<.25+.75*hash(i);
+    const er=!/\s/.test(ch)&&f<.25+.75*hash(i);
     const k=(er?'e':'s')+op;
     if(k!==key){if(key!==null)tail+='</span>';
       tail+='<span class="'+(er?'er':'st')+'" style="opacity:'+(op/20).toFixed(2)+'">';key=k}

@@ -279,7 +279,7 @@ RE_SKIP_KEY = re.compile(r"source|page|spoil|image|map$|^ref|latlong|^lat$|^long
 # Templates that open a page but are not its infobox: spoiler badges, map
 # embeds, timeline boxes, hatnotes, maintenance. The infobox is the first
 # template that is none of these and has named parameters.
-NON_INFOBOX = {"badges", "displaymap", "yearbox", "update", "ref", "legacy-content", "quote",
+NON_INFOBOX = {"badges", "displaymap", "yearbox", "update", "ref", "refs", "legacy-content", "quote",
                "characters", "spoiled", "stub", "cleanup", "main", "see-also", "for", "about",
                "redirect", "dablink", "hatnote", "disambig", "disambiguation", "toc", "clear",
                "reflist", "wip", "expand", "merge", "delete", "nsfw", "canon", "noncanon",
