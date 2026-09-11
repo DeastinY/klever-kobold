@@ -128,6 +128,11 @@ def test_one_line_cuts_at_a_sentence():
     out = n._one_line(long, limit=100)
     assert out.endswith(".") and len(out) <= 100
     assert n._one_line("x" * 300, limit=100).endswith("…")
+    # No sentence end in the second half: the cut lands on a word boundary.
+    words = "wordy " * 60
+    out = n._one_line(words, limit=100)
+    assert out.endswith("wordy…") and len(out) <= 101
+    assert n._one_line("alpha, beta, gamma delta epsilon zeta", limit=12) == "alpha…"
     assert n._one_line("  a   b  ") == "a b"
 
 

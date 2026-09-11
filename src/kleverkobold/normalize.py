@@ -176,7 +176,12 @@ def _one_line(text: str, limit: int = 240) -> str:
         return text
     cut = text[:limit]
     end = max(cut.rfind(". "), cut.rfind("; "))
-    return (cut[:end + 1] if end > limit // 2 else cut.rstrip() + "…")
+    if end > limit // 2:
+        return cut[:end + 1]
+    # No sentence to end on: cut at a word, never inside one.
+    if cut[-1:] != " " and " " in cut:
+        cut = cut[:cut.rfind(" ")]
+    return cut.rstrip(" ,;:") + "…"
 
 
 def resolve_embeds(chunk: dict, lookup: dict[str, dict]) -> dict:

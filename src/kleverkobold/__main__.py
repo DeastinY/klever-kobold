@@ -406,8 +406,9 @@ def cmd_setup(args) -> int:
             # The tag is whatever INDEX_URL points at, so a release bump cannot
             # leave this fallback fetching the previous index.
             tag = INDEX_URL.split("/releases/download/")[1].split("/")[0]
+            repo = "/".join(INDEX_URL.split("github.com/")[1].split("/")[:2])
             code = subprocess.call(["gh", "release", "download", tag,
-                                    "--repo", "DeastinY/kleverkobold",
+                                    "--repo", repo,
                                     "--pattern", "kobold-index.tar.gz",
                                     "--output", str(target)])
             if code != 0 or not target.exists():

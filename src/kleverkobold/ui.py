@@ -859,20 +859,28 @@ function creatureFields(block){
     // A whole bold sentence is a formatting slip in the source, not a key.
     return key.length<=48&&!/[.!?]$/.test(key)?{key,link:f[1],val:f[2]}:null;
   };
+  let gap=false;   // was the previous line blank?
   for(const raw of block.split('\n')){
-    const line=raw.trim();if(!line)continue;
-    if(/^(---|\*\*\*)$/.test(line)){secs.push([]);cur=null;continue}
+    const line=raw.trim();if(!line){gap=true;continue}
+    if(/^(---|\*\*\*)$/.test(line)){secs.push([]);cur=null;gap=false;continue}
     const f=start(line);
-    if(f&&f.key==='Damage'&&cur&&/^(Melee|Ranged)$/.test(cur.key)){cur.dmg=f.val;continue}
-    if(f){cur={key:f.key,link:f.link,val:f.val,dmg:''};secs[secs.length-1].push(cur);continue}
-    if(cur)cur.val+=(cur.val?'\n':'')+line;
+    if(f&&f.key==='Damage'&&cur&&/^(Melee|Ranged)$/.test(cur.key)){cur.dmg=f.val;gap=false;continue}
+    if(f){cur={key:f.key,link:f.link,val:f.val,dmg:''};secs[secs.length-1].push(cur);gap=false;continue}
+    // A value continues on the next line ("**Languages**\nCommon"); a paragraph
+    // after a blank line is prose of its own -- a hazard's description sits
+    // between its Complexity line and the first rule.
+    const prose=gap&&cur&&cur.val&&!/^[-\[*]/.test(line);
+    if(cur&&!prose)cur.val+=(cur.val?'\n':'')+line;
     else secs[secs.length-1].push(cur={key:'',link:'',val:line,dmg:''});
+    gap=false;
   }
   return secs;
 }
 function creatureBlock(h){
   const text=(h.text||'').replace(/\r/g,'');
-  const m=text.match(/^##\s+([^\n]*?)\s*\(Creature\s+(-?\d+)\)\s*$/m);
+  // A creature's block sits under "## Name (Creature N)" after its description;
+  // a hazard's is the whole entry under "# Name (Hazard N)".
+  const m=text.match(/^#{1,2}\s+([^\n]*?)\s*\((Creature|Hazard)\s+(-?\d+)\)\s*$/m);
   if(!m)return '';
   const about=text.slice(0,m.index).replace(/^#[^\n]*\n/,'').trim();
   const secs=creatureFields(text.slice(m.index+m[0].length));
@@ -883,7 +891,8 @@ function creatureBlock(h){
   const source=take('Source');
   const abil=ABILITIES.map(k=>take(k));
   const saves=SAVES.map(k=>take(k));
-  if(!saves[0]&&!saves[4])return '';   // no AC and no HP: not a stat block we know
+  const known=saves[0]||saves[4]||all.some(f=>/^(Stealth|Disable|Perception)$/.test(f.key));
+  if(!known)return '';   // not a stat block this knows how to set
   const val=f=>inline(esc(f.val.replace(/\s*\n\s*/g,' ')));
   const field=f=>f.key?md('**'+f.link+'** '+f.val):md(f.val);
   const line=f=>'<p><span class="field">'+inline(esc(f.link))+'</span> '+val(f)+'</p>';
@@ -894,7 +903,7 @@ function creatureBlock(h){
     return '<p class="cr-atk"><span class="field">'+esc(f.key)+'</span> '+(c?glyphs(c[1]):'')+
       inline(esc(v))+(f.dmg?', <span class="field">Damage</span> '+inline(esc(f.dmg)):'')+'</p>';
   };
-  const render=f=>/^(Melee|Ranged)$/.test(f.key)?attack(f):(/^(Perception|Languages|Skills|Items|Speed|Immunities|Resistances|Weaknesses)$/.test(f.key)?line(f):field(f));
+  const render=f=>/^(Melee|Ranged)$/.test(f.key)?attack(f):(/^(Perception|Languages|Skills|Items|Speed|Immunities|Resistances|Weaknesses|Complexity|Stealth|Disable|Reset|Hardness)$/.test(f.key)?line(f):field(f));
   const pills=traits.map(t=>{const l=t.toLowerCase();
     const cls=RARITY.includes(l)?l:(SIZES.includes(l)?'size':(/^[LNC]?[GNE]$/i.test(t)?'align':''));
     return '<span class="trait'+(cls?' '+cls:'')+'">'+esc(t)+'</span>'}).join('');
@@ -914,7 +923,7 @@ function creatureBlock(h){
     html+='<hr>';
     const def=secs[1].slice();
     const pull=key=>{const i=def.findIndex(f=>f.key===key);return i>=0?def.splice(i,1)[0]:null};
-    const guards=['Immunities','Resistances','Weaknesses'].map(k=>[k,pull(k)]);
+    const guards=['Hardness','Immunities','Resistances','Weaknesses'].map(k=>[k,pull(k)]);
     if(saves[0]||saves[1])html+='<p>'+joined([['AC',saves[0]]],';')+(saves[0]&&saves[1]?'<span class="sep">;</span> ':'')+
       joined([['Fort',saves[1]],['Ref',saves[2]],['Will',saves[3]]],',')+'</p>';
     const hpNote=saves[4]&&saves[4].val.includes('\n')?' '+inline(esc(saves[4].val.split('\n').slice(1).join(' '))):'';
@@ -930,12 +939,12 @@ function creatureBlock(h){
   html+='</div>';
   if(about)html+='<details class="cr-about"><summary>About, and what you can recall</summary>'+md(about)+'</details>';
   return '<div class="card"><div class="cr-head"><h2 class="cr-name"><a href="'+esc(h.url)+'" target="_blank" rel="noreferrer">'+
-    esc(m[1])+'</a></h2><span class="cr-lvl">Creature '+esc(m[2])+'</span></div>'+
+    esc(m[1])+'</a></h2><span class="cr-lvl">'+esc(m[2])+' '+esc(m[3])+'</span></div>'+
     (pills?'<div class="traits">'+pills+'</div>':'')+
     '<div class="body clip">'+html+'</div></div>';
 }
 function statblock(h){
-  if((h.category||'').toLowerCase()==='creature'){const c=creatureBlock(h);if(c)return c}
+  if(/^(creature|hazard)$/.test((h.category||'').toLowerCase())){const c=creatureBlock(h);if(c)return c}
   let text=(h.text||'').replace(/\r/g,'');
   let title=h.name,cost='',kind='';
   // The heading may wrap onto a second line (spells do this).
