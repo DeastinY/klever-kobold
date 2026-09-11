@@ -1653,3 +1653,27 @@ noise floor of this set; what it is not is a regression, and the Owlbear's
 excerpt now carries both attacks and every degree of success of its screech.
 Scored run: `eval/runs/creature-first-4b.scores.json`.
 
+## Abstention data, first full set (2026-09-11)
+
+`scripts/make_abstention_data.py`, Qwen3.8-27B in 4-bit through transformers,
+answer batch 2 with the flash-linear-attention kernel installed (7.3
+answers/min; 5.5 without it), about three hours end to end. Asked for
+520/240/180/180; 1,120 questions written, 1,100 kept after the length and
+topic filters.
+
+| kind | kept | dropped, and why |
+| --- | ---: | --- |
+| answerable | 235 | 147 did not name the entry, 133 refused |
+| nonexistent | 232 | 8 did not refuse |
+| withheld | 165 | 15 did not refuse |
+| false_mechanic | 153 | 13 did not refuse |
+
+785 items, ~1.9 M tokens, 2,419 per item, **70% teach refusal**. That is the
+wrong way round from the design, which wants answerable to be most of the
+set: the teacher declined or failed to name the entry on 280 of 515
+answerable prompts. Before training on this, either ask for ~1,000
+answerable to land ~450, or look at the 133 "refused" answerables -- a
+refusal is right when retrieval missed the entry, and those may be
+mislabelled withheld items rather than waste. Output:
+`data/processed/abstention_train.jsonl` (not in git).
+
