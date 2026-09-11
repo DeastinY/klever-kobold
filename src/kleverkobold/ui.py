@@ -312,6 +312,16 @@ footer.thanks .sep{margin:0 .4rem}
 .ov #settings,.ov #history,.ov #hoard-panel{border:0;background:none;padding:0;margin:0}
 .ov #hoard-panel .top{padding-right:2.4rem}
 .ov #hoard-panel .tiles{margin-top:.5rem}
+.ov #hoard-panel .top{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+#cmp-btn{padding:.3rem .6rem;font-size:.8rem}
+#cmp-btn.on{border-color:var(--accent);color:var(--accent)}
+.tile.picked{outline:2px solid var(--accent);outline-offset:1px}
+.pop.cmp{max-width:66rem}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:.4rem}
+.compare>div{min-width:0}
+.compare .card{border:0;padding:0;background:none}
+.compare .cite{display:inline-block;margin-top:.6rem;font-size:.82rem}
+@media(max-width:820px){.compare{grid-template-columns:1fr}}
 .ov .set-h:first-child{padding-right:2.4rem}
 .ov #history .top{padding-right:2.4rem}
 .pop{--k:var(--k-other);position:relative;background:var(--card);color:var(--ink);
@@ -583,8 +593,9 @@ the MCP setup for Claude Desktop and Claude Code: Settings →
 <div id="hoard-wrap" class="ov" hidden><div class="pop wide" role="dialog" aria-modal="true" aria-label="The hoard">
 <button type="button" class="x" data-close="hoard-wrap" title="Close (Esc)" aria-label="Close">×</button>
 <div id="hoard-panel">
-<div class="top"><p class="set-h">★ The hoard</p></div>
-<p class="note" style="margin:0 0 .5rem">Entries you starred. They are kept in this browser and open
+<div class="top"><p class="set-h">★ The hoard</p>
+ <button type="button" id="cmp-btn">Compare two</button></div>
+<p class="note" style="margin:0 0 .5rem" id="hoard-note">Entries you starred. They are kept in this browser and open
 offline like anything else here; the star on any entry adds or removes it.</p>
 <div class="tiles" id="fav-tiles"></div>
 <p class="empty" id="hoard-empty" hidden>Nothing hoarded yet. Star an entry and the kobold keeps it.</p>
@@ -1235,8 +1246,40 @@ function tileClick(e){
   if(e.target.closest('a')){followLink(e);return}
   const t=e.target.closest('.tile');if(t)openTile(t);
 }
-// An entry opened from the hoard popup takes the popup's place.
-function openTile(t){if(t.dataset.src==='fav')closeOverlays();openEntry(+t.dataset.i,t.dataset.src)}
+/* Two hoarded entries side by side: "Compare two", pick a pair of tiles. */
+let CMP=null;   // null when not picking; else the indices picked so far
+function setCompare(on){
+  CMP=on?[]:null;
+  const b=EL('cmp-btn');b.classList.toggle('on',on);
+  b.textContent=on?'Pick two entries… (cancel)':'Compare two';
+  EL('hoard-note').textContent=on?'Poke two entries and they open side by side.':
+    'Entries you starred. They are kept in this browser and open offline like anything else here; the star on any entry adds or removes it.';
+  for(const t of document.querySelectorAll('#fav-tiles .tile.picked'))t.classList.remove('picked');
+}
+EL('cmp-btn').addEventListener('click',()=>setCompare(!CMP));
+function openCompare(a,b){
+  const one=h=>{const p=parseHead(h),k=kindOf(h.category,h);
+    return '<div style="--k:var(--k-'+k+')">'+kindBadge(h,p)+statblock(h)+
+      '<a class="cite aon" href="'+esc(h.url)+'" target="_blank" rel="noreferrer">'+
+      (isLore(h)?'See it on PathfinderWiki ↗':'See it in the Archives ↗')+'</a></div>'};
+  OPEN=-1;
+  sheet.innerHTML='<div class="pop wide cmp" role="dialog" aria-modal="true" aria-label="Compare">'+
+    '<button type="button" class="x" id="sheet-x" title="Close (Esc)" aria-label="Close">×</button>'+
+    '<div class="compare">'+one(a)+one(b)+'</div></div>';
+  sheet.hidden=false;lockScroll();
+  EL('sheet-x').addEventListener('click',closeEntry);EL('sheet-x').focus();
+}
+// An entry opened from the hoard popup takes the popup's place -- unless a
+// pair is being picked, in which case the tile is one of the two.
+function openTile(t){
+  if(CMP&&t.dataset.src==='fav'){
+    const i=+t.dataset.i;
+    if(CMP.includes(i)){CMP=CMP.filter(x=>x!==i);t.classList.remove('picked');return}
+    CMP.push(i);t.classList.add('picked');
+    if(CMP.length===2){const [a,b]=CMP.map(j=>FAVS[j]);setCompare(false);closeOverlays();openCompare(a,b)}
+    return;
+  }
+  if(t.dataset.src==='fav')closeOverlays();openEntry(+t.dataset.i,t.dataset.src)}
 function tileKey(e){
   if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('tile')){
     e.preventDefault();openTile(e.target)}
@@ -1744,6 +1787,7 @@ hoardBtn.addEventListener('click',()=>{
   lockScroll();
 });
 function closeOverlays(){
+  if(CMP&&!EL('hoard-wrap').hidden)setCompare(false);
   for(const el of document.querySelectorAll('.ov'))el.hidden=true;
   gear.setAttribute('aria-expanded','false');histBtn.setAttribute('aria-expanded','false');
   hoardBtn.setAttribute('aria-expanded','false');
