@@ -93,6 +93,62 @@ QUESTION_SYSTEM = (
     "Reply with the question only. One sentence or two. No preamble, no quotation marks."
 )
 
+# A false-mechanic item is good when the teacher *corrects* the premise rather
+# than refusing outright: "Pathfinder 2e has no bardic inspiration dice; bards use
+# spell slots and a muse." The evaluator's refusal detector is anchored on
+# existence and presence, so it misses most of these. This is anchored on the
+# system being denied the mechanic, or the mechanic being placed in another game.
+RE_CORRECTS = re.compile(
+    r"\b(?:pathfinder|pf2e?|2e|this game|this system|the game|the system)\b[^.;]{0,40}?"
+    r"\b(?:has no|have no|does not have|doesn't have|does not use|doesn't use|lacks|"
+    r"does not include|doesn't include|has nothing|does not feature|doesn't feature)\b"
+    r"|\b(?:is|are|isn't|aren't|is not|are not)\s+(?:a|an)?\s*"
+    r"(?:pathfinder|pf2e?|2e)\b[^.;]{0,20}?\b(?:mechanic|rule|concept|feature|thing|term)\b"
+    r"|\b(?:not|isn't|aren't|is not|are not|no)\s+(?:a\s+|an\s+)?(?:part of|feature of|thing in|"
+    r"mechanic in|rule in|concept in|used in|present in|found in)\s+(?:pathfinder|pf2e?|2e|this)"
+    r"|\b(?:from|belongs to|comes from|is part of|is a|is an|that's a|that is a)\b[^.;]{0,20}?"
+    r"\b(?:d&d|dungeons\s*&\s*dragons|dungeons and dragons|5e|5th edition|fifth edition|"
+    r"another game|a different game|other (?:game|system)s?|another system|a different system)\b"
+    r"|\b(?:d&d|dungeons\s*&\s*dragons|5e|5th edition|fifth edition)\s+(?:mechanic|rule|concept|"
+    r"feature|term|thing)\b"
+    r"|\bno (?:such )?(?:mechanic|rule|concept|feature|system)\b",
+    re.I)
+
+# A refusal that nonetheless states the level of the thing that does not exist
+# is a fabrication dressed as a refusal. Only an *assertion* of a level counts:
+# "is a 4th-level feat", "Feat 6", "a level 3 spell". Mentions like "you cannot
+# take it at 1st level or any other" are how a good refusal talks and must pass,
+# so bare "level N" is not enough here (compare score.RE_LEVEL_CLAIM).
+RE_ASSERTS_LEVEL = re.compile(
+    r"\b(?:is|as|it's|its|being|was)\s+(?:a|an)\s+(?:\d{1,2}(?:st|nd|rd|th)[- ]level|level[- ]\d{1,2})\b"
+    r"|\b(?:a|an|the)\s+(?:\d{1,2}(?:st|nd|rd|th)[- ]level|level[- ]\d{1,2})\s+"
+    r"(?:feat|spell|item|creature|action|ritual|archetype|monster|weapon|hazard|ability)\b"
+    r"|\b(?:feat|spell|item|creature|ritual|hazard)\s+\d{1,2}\b"
+    r"|\brequires?\s+(?:you to be\s+)?level\s+\d{1,2}\b"
+    r"|\b(?:available|unlocked|gained|taken)\s+at\s+(?:level\s+\d{1,2}|\d{1,2}(?:st|nd|rd|th)\s+level)\b",
+    re.I)
+
+
+def asserts_level_for(answer: str, name: str | None) -> bool:
+    """Is a level asserted *about the thing that does not exist*?
+
+    Clause by clause: the invented name and the level assertion must sit in
+    the same clause, and that clause must not deny it. The trial run rejected
+    "there is no feat called X; you are likely thinking of Y, which is a level
+    18 feat", which is the best refusal there is -- it corrects the player.
+    Without a name to anchor on, any asserted level counts.
+    """
+    import score
+    if not name:
+        return bool(RE_ASSERTS_LEVEL.search(answer))
+    low = name.lower()
+    for clause in re.split(r"[.;:!?\n]", answer):
+        if (low in clause.lower() and RE_ASSERTS_LEVEL.search(clause)
+                and not re.search(rf"\b(?:{score.RE_NEGATION})\b", clause, re.I)):
+            return True
+    return False
+
+
 def looks_like_refusal(text: str) -> bool:
     """Share the evaluator's detector rather than keeping a second one.
 
@@ -342,7 +398,8 @@ def main() -> int:
             # A good refusal often mentions levels legitimately -- "you cannot take
             # it at 1st level or any other" -- and the first version of this rule
             # threw away ten of twelve good examples for saying so.
-            if RE_ASSERTS_LEVEL.search(answer) and spec["kind"] != "withheld":
+            if spec["kind"] != "withheld" and asserts_level_for(
+                    answer, spec.get("name") or spec.get("mechanic")):
                 dropped[spec["kind"] + ":asserted-a-level"] += 1
                 continue
         else:

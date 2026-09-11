@@ -9,9 +9,10 @@ Everything is fully local and offline with a small tuned model. It is based on t
 
 ![The Klever Kobold answering "How does Treat Wounds work?"](docs/img/kobold-light.png)
 
-<!-- coverage: `uv run pytest --cov`; CI writes the same number to coverage.json on the site -->
+<!-- coverage comes from CI: the Pages workflow publishes coverage.json next to the report -->
+[![CI](https://github.com/DeastinY/klever-kobold/actions/workflows/ci.yml/badge.svg)](https://github.com/DeastinY/klever-kobold/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-3776ab?logo=python&logoColor=white)
-![Coverage](https://img.shields.io/badge/coverage-81%25-2f6b4f)
+[![Coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fdeastiny.github.io%2Fklever-kobold%2Fcoverage.json)](https://deastiny.github.io/klever-kobold/coverage/)
 ![Vibecoded](https://img.shields.io/badge/vibecoded-fully-8a1b2e)
 ![Runs offline](https://img.shields.io/badge/runs-fully%20offline-2f6b4f)
 ![Memory](https://img.shields.io/badge/needs-6%20GB%20RAM-informational)
