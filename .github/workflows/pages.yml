@@ -1,0 +1,80 @@
+name: Pages
+
+# Builds the small site under site/ plus the coverage report and the tuning
+# dossier, and publishes it with GitHub Pages. Publishing needs Pages enabled
+# on the repository (Settings > Pages > Source: GitHub Actions), which a
+# private repository on the free plan does not get; until then the site is
+# built and uploaded as an artifact and the deploy step is skipped.
+
+on:
+  workflow_run:
+    workflows: [CI]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.pages.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+      - name: Coverage report
+        run: |
+          uv sync --group dev
+          uv run pytest --cov --cov-report=xml --cov-report=html
+          pct=$(uv run python -c "import xml.etree.ElementTree as E; print(round(float(E.parse('coverage.xml').getroot().get('line-rate'))*100))")
+          if [ "$pct" -ge 80 ]; then color=2f6b4f; elif [ "$pct" -ge 60 ]; then color=8a5a12; else color=c0392b; fi
+          echo "{\"schemaVersion\":1,\"label\":\"coverage\",\"message\":\"${pct}%\",\"color\":\"$color\"}" > coverage.json
+          echo "COVERAGE=$pct" >> "$GITHUB_ENV"
+      - name: Assemble the site
+        run: |
+          mkdir -p _site/dossier _site/img
+          cp site/index.html _site/index.html
+          cp coverage.json _site/coverage.json
+          cp -r htmlcov _site/coverage
+          cp docs/index.html _site/dossier/index.html
+          cp docs/img/*.png _site/img/
+          cp -r docs/img _site/dossier/img
+          sed -i "s/{{COVERAGE}}/${COVERAGE}%/; s/{{COMMIT}}/${GITHUB_SHA::7}/; s/{{DATE}}/$(date -u +%Y-%m-%d)/" _site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Is Pages enabled?
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/pages" >/dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "GitHub Pages is not enabled for this repository; the site was built but not published." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

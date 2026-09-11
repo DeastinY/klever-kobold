@@ -35,7 +35,15 @@ is one file, `src/kleverkobold/ui.py`, with no build step: edit it, restart, rel
 2. **Branch from `main`, keep the pull request to one thing**, and write the
    description for someone who has not read the code: what was wrong, what you
    changed, how you checked it.
-3. **If your change touches how answers are found or written, run the test set
+3. **Run the unit tests.** They need no model and no index and take a few seconds;
+   CI runs them on every push and pull request.
+
+   ```bash
+   uv sync --group dev
+   uv run pytest            # add --cov for the coverage table
+   ```
+
+4. **If your change touches how answers are found or written, run the test set
    before and after** and put both numbers in the pull request:
 
    ```bash
@@ -49,7 +57,7 @@ is one file, `src/kleverkobold/ui.py`, with no build step: edit it, restart, rel
    model. Differences under four questions are noise, so run it twice if it is
    close, and do not be discouraged by a small loss: say so, and we will look at
    which questions moved.
-4. **If you touch the scorer, add a case** to `eval/test_score.py` and run it.
+5. **If you touch the scorer, add a case** to `eval/test_score.py` and run it.
 
 Match the surrounding style. Comments say *why*, especially where a number was
 chosen by measurement. Commit messages say what changed and what it was checked

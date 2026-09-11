@@ -44,3 +44,9 @@ eval/runs/*.log
 
 # wrangler local cache
 .wrangler/
+
+# Test and coverage output
+.coverage
+coverage.xml
+htmlcov/
+_site/

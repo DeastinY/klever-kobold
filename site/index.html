@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Klever Kobold</title>
+<meta name="description" content="A Pathfinder 2e rules reference that runs on your own computer, cites every answer, and is wrong just often enough to keep you honest.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦎</text></svg>">
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f4f1; --card: #ffffff; --ink: #191517; --soft: #4a4341; --muted: #756c69;
+    --rule: #d9d1ce; --accent: #8a1b2e; --accent-ink: #ffffff; --good: #2f6b4f; --code: #ebe7e5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --bg: #131011; --card: #1b1718; --ink: #ece7e5; --soft: #c6bebb; --muted: #968c89;
+      --rule: #332d2e; --accent: #dd6d7d; --accent-ink: #17090c; --good: #6fb28c; --code: #242020;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif; }
+  main { max-width: 68ch; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+  h1 { font: 700 2.4rem/1.1 "Zilla Slab", "Iowan Old Style", Georgia, serif; margin: 0 0 .5rem; }
+  h2 { font: 600 1.25rem/1.2 "Zilla Slab", Georgia, serif; margin: 2.5rem 0 .75rem; }
+  .tag { color: var(--soft); font-size: 1.1rem; margin: 0 0 1.5rem; }
+  .badges { display: flex; flex-wrap: wrap; gap: .4rem .5rem; margin: 0 0 2rem; padding: 0; list-style: none; }
+  .badges li { font-size: .8rem; border: 1px solid var(--rule); border-radius: 999px; padding: .15rem .65rem; color: var(--soft); background: var(--card); }
+  .badges li b { color: var(--ink); font-weight: 600; }
+  .badges li.cov b { color: var(--good); }
+  img.shot { width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 8px; display: block; }
+  pre { background: var(--code); border: 1px solid var(--rule); border-radius: 8px; padding: .75rem 1rem; overflow-x: auto; font: .9rem/1.5 "IBM Plex Mono", ui-monospace, monospace; margin: .5rem 0 1rem; }
+  .os { font-size: .85rem; color: var(--muted); margin: 0; }
+  ul.plain { padding-left: 1.2rem; }
+  ul.plain li { margin: .35rem 0; }
+  a { color: var(--accent); }
+  .links { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .75rem; padding: 0; list-style: none; }
+  .links li { background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: .75rem .9rem; }
+  .links a { font-weight: 600; text-decoration: none; }
+  .links p { margin: .25rem 0 0; color: var(--soft); font-size: .9rem; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--muted); font-size: .85rem; }
+</style>
+</head>
+<body>
+<main>
+  <h1>The Klever Kobold</h1>
+  <p class="tag">A Pathfinder 2e rules reference that runs on your own computer, cites every answer, and is wrong just often enough to keep you honest.</p>
+
+  <ul class="badges">
+    <li>runs <b>fully offline</b></li>
+    <li>needs <b>6 GB RAM</b></li>
+    <li>python <b>3.11+</b></li>
+    <li class="cov">coverage <b>{{COVERAGE}}</b></li>
+    <li>vibecoded <b>fully</b></li>
+  </ul>
+
+  <img class="shot" src="img/kobold-light.png" alt="The Klever Kobold answering &quot;How does Treat Wounds work?&quot; with the Archives of Nethys entries it read from underneath">
+
+  <h2>Install</h2>
+  <p class="os">macOS or Linux</p>
+  <pre>curl -fsSL https://raw.githubusercontent.com/DeastinY/klever-kobold/main/deploy/install.sh | sh</pre>
+  <p class="os">Windows</p>
+  <pre>irm https://raw.githubusercontent.com/DeastinY/klever-kobold/main/deploy/install.ps1 | iex</pre>
+  <p class="os">Already have uv</p>
+  <pre>uv tool install git+https://github.com/DeastinY/klever-kobold
+kobold setup --install-ollama
+kobold serve</pre>
+  <p>Either way it installs <a href="https://ollama.com">Ollama</a> if missing, pulls two small models (about 4 GB), fetches the index of rules and lore (270 MB), and opens the kobold in your browser at <code>localhost:8765</code>.</p>
+
+  <h2>What it is</h2>
+  <ul class="plain">
+    <li><b>The Archives, not a memory.</b> Every answer is read from the Archives of Nethys and PathfinderWiki entries shown underneath it. Nothing you type leaves the machine.</li>
+    <li><b>Rules and lore, kept apart.</b> A rules question never gets a wiki answer. The kobold reads the question, picks the shelf, and sticks to the rules when unsure.</li>
+    <li><b>Wrong is a first-class state.</b> Lookups are reliable; "does X interact with Y?" is not, but the right pages are usually on screen. Every answer has a "Wrong? Tell the kobold" link.</li>
+  </ul>
+
+  <h2>Read more</h2>
+  <ul class="links">
+    <li><a href="https://github.com/DeastinY/klever-kobold">The repository</a><p>Code, README, every way to run it, how to report a wrong answer.</p></li>
+    <li><a href="dossier/">The tuning dossier</a><p>How it was measured: 109 hand-written questions, what moved the numbers, what did not.</p></li>
+    <li><a href="coverage/">Test coverage</a><p>The unit tests' line coverage of the shipped package, built by CI on each push.</p></li>
+    <li><a href="https://www.patreon.com/nethys">Support the Archives</a><p>Every answer is really theirs. That is what keeps the site free.</p></li>
+  </ul>
+
+  <footer>
+    Built from commit {{COMMIT}} on {{DATE}}. This work uses trademarks and copyrights owned by Paizo Inc., used under Paizo's <a href="https://paizo.com/communityuse">Community Use Policy</a>. It is not published, endorsed, or approved by Paizo. Code is MIT.
+  </footer>
+</main>
+</body>
+</html>

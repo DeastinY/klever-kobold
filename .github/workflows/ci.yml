@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: tests (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+      - name: Install
+        run: uv sync --group dev
+      - name: Syntax and undefined names
+        # The full ruff rule set is not clean yet; these are the ones that mean the
+        # program cannot run.
+        run: uvx ruff check src tests eval --select E9,F63,F7,F82
+      - name: Unit tests
+        run: uv run pytest --cov --cov-report=xml --cov-report=html --cov-report=term
+      - name: Regression scripts
+        # The older script-shaped tests; both print N/N cases pass and exit non-zero otherwise.
+        run: |
+          uv run python eval/test_score.py
+          uv run python eval/test_followup.py
+      - name: Coverage badge data
+        if: matrix.python == '3.13'
+        run: |
+          pct=$(uv run python -c "import xml.etree.ElementTree as E; print(round(float(E.parse('coverage.xml').getroot().get('line-rate'))*100))")
+          if [ "$pct" -ge 80 ]; then color=2f6b4f; elif [ "$pct" -ge 60 ]; then color=8a5a12; else color=c0392b; fi
+          echo "{\"schemaVersion\":1,\"label\":\"coverage\",\"message\":\"${pct}%\",\"color\":\"$color\"}" > htmlcov/coverage.json
+          echo "coverage ${pct}%" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload coverage report
+        if: matrix.python == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: htmlcov
+          retention-days: 30
