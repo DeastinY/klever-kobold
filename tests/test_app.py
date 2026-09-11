@@ -3,7 +3,7 @@
 import pytest
 
 from kleverkobold.app import (ANSWER_SYSTEM, FOLLOWUP_NOTE, LORE_ANSWER_SYSTEM, RULES_SLOTS,
-                              Assistant, Hit, OllamaError, Turn, parse_plan)
+                              Assistant, Hit, OllamaError, Turn, parse_plan, stat_block_first)
 
 
 def hit(cid, name, corpus="aon", category="feat", level=None, text="body", summary=""):
@@ -184,3 +184,25 @@ def test_condense_without_history_is_free():
     a = bare()
     a.ollama = Chat("anything")
     assert a.condense("q", []) == "q" and a.ollama.calls == []
+
+
+OWLBEAR = ("# Owlbear\n\nA territorial predator with the body of a bear. " + "Flavour. " * 40 +
+           "\n\n**Recall Knowledge - Animal** (Nature): DC 19\n\n## Owlbear (Creature 4)\n\n"
+           "**Traits** N, Large, Animal\n\n**AC** 21\n\n**HP** 70\n\n**Melee** talon +14")
+
+
+def test_stat_block_comes_first_for_creatures():
+    h = hit("o", "Owlbear", category="creature", level=4, text=OWLBEAR)
+    out = stat_block_first(h)
+    assert out.startswith("## Owlbear (Creature 4)\n\n**Traits** N, Large, Animal")
+    assert "**Melee** talon +14\n\nA territorial predator" in out
+    assert "# Owlbear\n" not in out and "Recall Knowledge" in out
+    # The excerpt at 1,600 characters now carries the numbers.
+    a = bare(context_chars=200)
+    assert "**AC** 21" in a.context([h])
+    # Anything else is left exactly as it was.
+    feat = hit("f", "Cat Fall", category="feat", text=OWLBEAR)
+    assert stat_block_first(feat) == OWLBEAR
+    plain = hit("p", "Plain", category="creature", text="## Plain (Creature 1)\n\n**AC** 1")
+    assert stat_block_first(plain) == plain.text
+    assert stat_block_first(hit("n", "No block", category="creature", text="just words")) == "just words"

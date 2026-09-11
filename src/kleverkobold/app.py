@@ -304,6 +304,29 @@ FOLLOWUP_NOTE = (
 )
 
 RE_NETHYS_NOTE = re.compile(r"^[ \t]*_?\*?Nethys Note:[^\n]*\n?", re.M | re.I)
+RE_STAT_HEAD = re.compile(r"^##\s+[^\n]*\((?:Creature|Hazard)\s+-?\d+\)\s*$", re.M)
+
+
+def stat_block_first(hit: "Hit") -> str:
+    """A creature's stat block ahead of its description, so the excerpt holds rules.
+
+    An Archives creature entry opens with a page of flavour and the Recall
+    Knowledge DCs; the stat block comes under "## Name (Creature N)". At 1,600
+    characters of context the Owlbear's excerpt ended at its Traits line -- the
+    model was handed the lore and none of the numbers. The description still
+    follows, for what the budget has left.
+    """
+    text = hit.text or ""
+    if hit.category not in ("creature", "hazard"):
+        return text
+    m = RE_STAT_HEAD.search(text)
+    if not m or m.start() == 0:
+        return text
+    before = text[:m.start()].strip()
+    # Drop the entry's own "# Name" heading; the excerpt header names it.
+    before = re.sub(r"^#\s[^\n]*\n?", "", before).strip()
+    return text[m.start():].rstrip() + ("\n\n" + before if before else "")
+
 RE_CLEAN = re.compile(r"^[\s\-*\d.)]+|[\s;:]+$")
 
 
@@ -1103,7 +1126,7 @@ class Assistant:
             head += f") — {h.url}"
             # The shipped index still carries AoN's "Nethys Note: No description…"
             # housekeeping line, which a small model reads as "does not exist".
-            body = RE_NETHYS_NOTE.sub("", retrieval.plain(h.text))
+            body = RE_NETHYS_NOTE.sub("", retrieval.plain(stat_block_first(h)))
             blocks.append(head + "\n" + body[:max_chars].strip())
         # The tag the rules path was measured with, unless lore is among them.
         tag = "excerpts" if any(h.lore for h in hits) else "rules_excerpts"
