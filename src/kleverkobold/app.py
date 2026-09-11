@@ -102,7 +102,7 @@ def default_llm() -> tuple[str, str]:
 
 
 INDEX_URL = ("https://github.com/DeastinY/klever-kobold/releases/download/"
-             "index-v2/kobold-index.tar.gz")
+             "index-v3/kobold-index.tar.gz")
 
 
 def default_index() -> pathlib.Path:
