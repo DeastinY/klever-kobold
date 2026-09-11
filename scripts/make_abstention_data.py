@@ -41,16 +41,23 @@ blanket habit of refusing:
 Generated items are filtered before they are kept: a refusal item survives only
 if the teacher actually refused, an answerable one only if the teacher named the
 entry. Roughly a fifth are discarded, which is the point of checking.
+
+The teacher is loaded here in 4-bit by default. ``--teacher-url`` sends its
+prompts to an OpenAI-compatible server instead (vLLM, or Ollama at
+``http://localhost:11434/v1``), all of them in flight at once, which is several
+times faster than decoding two at a time out of bitsandbytes.
 """
 
 from __future__ import annotations
 
 import argparse
 import collections
+import os
 import pathlib
 import random
 import re
 import sys
+import time
 
 import orjson
 
@@ -149,6 +156,77 @@ def asserts_level_for(answer: str, name: str | None) -> bool:
     return False
 
 
+def api_generator(base_url: str, model: str, api_key: str = "", workers: int = 16,
+                  client=None):
+    """A ``generate(pairs, max_tokens)`` over an OpenAI-compatible chat endpoint.
+
+    The transformers path below loads the 27B in 4-bit and decodes two
+    prompts at a time; a server with continuous batching (vLLM, Ollama) does
+    the same work several times faster, so the teacher can be whatever answers
+    at ``base_url``. Every prompt is in flight at once, ``workers`` deep; the
+    order of the results is the order of the prompts. Thinking is switched off
+    where the server understands the request, and stripped where it does not.
+    """
+    import concurrent.futures
+
+    import httpx
+    from run_eval import strip_thinking
+
+    url = base_url.rstrip("/") + "/chat/completions"
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+    client = client or httpx.Client(timeout=300.0)
+    # Learned once from the server, then kept: which field names the token
+    # budget, and whether it accepts the template switch for thinking.
+    state = {"tokens": "max_tokens", "thinking": True}
+
+    def one(pair: tuple[str, str], max_tokens: int) -> str:
+        system, user = pair
+        body: dict = {"model": model, "temperature": 0,
+                      "messages": [{"role": "system", "content": system},
+                                   {"role": "user", "content": user}]}
+        last = ""
+        for attempt in range(8):
+            body.pop("max_tokens", None)
+            body.pop("max_completion_tokens", None)
+            body.pop("chat_template_kwargs", None)
+            body[state["tokens"]] = max_tokens
+            if state["thinking"]:
+                body["chat_template_kwargs"] = {"enable_thinking": False}
+            try:
+                r = client.post(url, headers=headers, json=body)
+            except httpx.HTTPError as exc:
+                last = f"{type(exc).__name__}: {exc}"
+                time.sleep(min(2 ** attempt, 60))
+                continue
+            if r.status_code == 400 and state["thinking"] and "chat_template_kwargs" in r.text:
+                state["thinking"] = False
+                continue
+            if r.status_code == 400 and state["tokens"] == "max_tokens" and "max_tokens" in r.text:
+                state["tokens"] = "max_completion_tokens"
+                continue
+            if r.status_code in (408, 409, 429, 500, 502, 503, 504, 529):
+                last = f"HTTP {r.status_code}: {r.text[:200]}"
+                time.sleep(min(2 ** attempt, 60))
+                continue
+            if r.status_code >= 400:
+                raise RuntimeError(f"HTTP {r.status_code} on {user[:60]!r}: {r.text[:300]}")
+            data = orjson.loads(r.content)
+            return strip_thinking(data["choices"][0]["message"].get("content") or "")
+        raise RuntimeError(f"giving up after 8 attempts on {user[:60]!r}; last: {last}")
+
+    def generate(pairs: list[tuple[str, str]], max_tokens: int,
+                 batch_size: int | None = None) -> list[str]:
+        out: list[str] = []
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+            for text in pool.map(lambda pr: one(pr, max_tokens), pairs):
+                out.append(text)
+                if len(out) % 50 == 0 or len(out) == len(pairs):
+                    print(f"    {len(out)}/{len(pairs)}", flush=True)
+        return out
+
+    return generate
+
+
 def looks_like_refusal(text: str) -> bool:
     """Share the evaluator's detector rather than keeping a second one.
 
@@ -167,7 +245,16 @@ def excluded(text: str) -> bool:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--teacher", default="Qwen/Qwen3.8-27B")
+    ap.add_argument("--teacher", default="Qwen/Qwen3.8-27B",
+                    help="HF model id to load here, or the model name the server at "
+                         "--teacher-url knows it by")
+    ap.add_argument("--teacher-url", default=None,
+                    help="OpenAI-compatible base URL (vLLM, Ollama: http://localhost:11434/v1) "
+                         "to send the teacher's prompts to instead of loading it here")
+    ap.add_argument("--teacher-key-env", default="OPENAI_API_KEY",
+                    help="environment variable holding the key for --teacher-url, if any")
+    ap.add_argument("--workers", type=int, default=16,
+                    help="prompts in flight at once against --teacher-url")
     ap.add_argument("--chunks", type=pathlib.Path,
                     default=ROOT / "data" / "processed" / "aon_chunks.jsonl")
     ap.add_argument("--out", type=pathlib.Path,
@@ -184,9 +271,11 @@ def main() -> int:
     ap.add_argument("--dump-answers", help="write every raw answer before filtering")
     args = ap.parse_args()
 
-    import torch
-    from run_eval import SYSTEM_RAG, _load_hf, attach_context, format_context, strip_thinking
-    from transformers import AutoTokenizer, BitsAndBytesConfig
+    from run_eval import SYSTEM_RAG, attach_context, format_context
+    if not args.teacher_url:
+        import torch
+        from run_eval import _load_hf, strip_thinking
+        from transformers import AutoTokenizer, BitsAndBytesConfig
 
     rows = [orjson.loads(line) for line in args.chunks.open("rb")]
     by_id = {r["id"]: r for r in rows}
@@ -215,38 +304,47 @@ def main() -> int:
     print(f"{len(pool):,} eligible entries")
 
     rng = random.Random(args.seed)
-    tok = AutoTokenizer.from_pretrained(args.teacher, padding_side="left")
-    if tok.pad_token is None:
-        tok.pad_token = tok.eos_token
-    quant = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
-                              bnb_4bit_compute_dtype=torch.bfloat16,
-                              bnb_4bit_use_double_quant=True)
-    model = _load_hf(args.teacher, quant)
-    model.eval()
-    device = next(model.parameters()).device
+    if args.teacher_url:
+        generate = api_generator(args.teacher_url, args.teacher,
+                                 os.environ.get(args.teacher_key_env, ""), args.workers)
+        print(f"teacher   {args.teacher} at {args.teacher_url}, {args.workers} prompts in flight")
+    else:
+        tok = AutoTokenizer.from_pretrained(args.teacher, padding_side="left")
+        if tok.pad_token is None:
+            tok.pad_token = tok.eos_token
+        quant = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
+                                  bnb_4bit_compute_dtype=torch.bfloat16,
+                                  bnb_4bit_use_double_quant=True)
+        model = _load_hf(args.teacher, quant)
+        model.eval()
+        device = next(model.parameters()).device
 
-    def generate(pairs: list[tuple[str, str]], max_tokens: int,
-                 batch_size: int | None = None) -> list[str]:
-        # Answer prompts carry eight excerpts and run to several thousand tokens;
-        # the 27B OOMs at the batch size that is fine for one-line question prompts.
-        batch_size = batch_size or args.batch_size
-        out: list[str] = []
-        for start in range(0, len(pairs), batch_size):
-            batch = pairs[start:start + batch_size]
-            prompts = [tok.apply_chat_template(
-                [{"role": "system", "content": sysmsg}, {"role": "user", "content": user}],
-                tokenize=False, add_generation_prompt=True, enable_thinking=False)
-                for sysmsg, user in batch]
-            enc = tok(prompts, return_tensors="pt", padding=True).to(device)
-            with torch.inference_mode():
-                gen = model.generate(**enc, max_new_tokens=max_tokens, do_sample=False,
-                                     temperature=None, top_p=None, top_k=None,
-                                     pad_token_id=tok.pad_token_id)
-            for seq in gen:
-                text = tok.decode(seq[enc["input_ids"].shape[1]:], skip_special_tokens=True)
-                out.append(strip_thinking(text))
-            print(f"    {min(start + batch_size, len(pairs))}/{len(pairs)}", flush=True)
-        return out
+        def generate(pairs: list[tuple[str, str]], max_tokens: int,
+                     batch_size: int | None = None) -> list[str]:
+            # Answer prompts carry eight excerpts and run to several thousand
+            # tokens; the 27B OOMs at the batch size that is fine for one-line
+            # question prompts. Sorted by length so a batch pads as little as
+            # possible; the results go back in the callers' order.
+            batch_size = batch_size or args.batch_size
+            order = sorted(range(len(pairs)), key=lambda i: len(pairs[i][0]) + len(pairs[i][1]))
+            out: list[str] = [""] * len(pairs)
+            for start in range(0, len(order), batch_size):
+                idx = order[start:start + batch_size]
+                prompts = [tok.apply_chat_template(
+                    [{"role": "system", "content": pairs[i][0]},
+                     {"role": "user", "content": pairs[i][1]}],
+                    tokenize=False, add_generation_prompt=True, enable_thinking=False)
+                    for i in idx]
+                enc = tok(prompts, return_tensors="pt", padding=True).to(device)
+                with torch.inference_mode():
+                    gen = model.generate(**enc, max_new_tokens=max_tokens, do_sample=False,
+                                         temperature=None, top_p=None, top_k=None,
+                                         pad_token_id=tok.pad_token_id)
+                for i, seq in zip(idx, gen, strict=True):
+                    text = tok.decode(seq[enc["input_ids"].shape[1]:], skip_special_tokens=True)
+                    out[i] = strip_thinking(text)
+                print(f"    {min(start + batch_size, len(pairs))}/{len(pairs)}", flush=True)
+            return out
 
     # --- 1. questions ---------------------------------------------------------
     specs: list[dict] = []
