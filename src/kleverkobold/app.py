@@ -964,7 +964,8 @@ class Assistant:
 
     def search(self, question: str, k: int = DEFAULT_K, plan: dict | None = None,
                rerank: bool = True, pool: int | None = None,
-               expand: int = DEFAULT_EXPAND, scope: str = DEFAULT_SCOPE) -> list[Hit]:
+               expand: int = DEFAULT_EXPAND, scope: str = DEFAULT_SCOPE,
+               filters: dict | None = None) -> list[Hit]:
         plan = plan if plan is not None else self.rewrite(question)
         queries = [question]
         if plan.get("summary"):
@@ -974,6 +975,12 @@ class Assistant:
 
         lore = self.resolve_scope(scope, plan)
         mask = self._masks[lore]
+        # Hard filters from the asker -- a kind, a level range, traits -- sit
+        # under everything: the rewriter's kinds narrow within them, never past.
+        if filters:
+            mask = mask & self.index.narrow(**filters)
+            if not mask.any():
+                return []
         # Narrowing to the rewriter's entry kinds sharpens entity lookup and blinds
         # concept questions -- the rules chapters are excluded, and that is where
         # "is a critical failure a failure?" is answered. So both rankings are
@@ -1038,6 +1045,28 @@ class Assistant:
                         if n < k or (len(h.name or "") >= 4 and h.name.lower() in q)]
             hits = self.keep_rules(hits, eligible, k)
         return hits
+
+    def browse(self, filters: dict, scope: str = DEFAULT_SCOPE, limit: int = 24) -> list[Hit]:
+        """Entries matching the filters alone, no question and no model.
+
+        Current entries only (the legacy ones are what the Remaster replaced),
+        lore in only when asked for outright, ordered by level then name so a
+        list of feats reads the way a book lists them.
+        """
+        lore = self.resolve_scope(scope, None) if scope != "auto" else False
+        mask = self.index.allowed(exclude_legacy=True, lore=lore) & self.index.narrow(**filters)
+        if lore:
+            # A wiki page is listed once, as its lead; the sections are for search.
+            mask &= np.array(["#" not in cid for cid in self.index.ids])
+        rows = np.flatnonzero(mask)
+
+        def key(i: int) -> tuple:
+            level = self.index.meta[i].get("level")
+            return (level is None, level if level is not None else 0,
+                    (self.index.meta[i].get("name") or "").lower())
+
+        order = sorted(rows.tolist(), key=key)
+        return [self._hit(i) for i in retrieval.dedupe(self.index, order)[:limit]]
 
     @staticmethod
     def keep_rules(hits: list[Hit], candidates: list[Hit], k: int,
@@ -1140,7 +1169,8 @@ class Assistant:
     def retrieve(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
                  pool: int | None = None, expand: int = DEFAULT_EXPAND,
                  scope: str = DEFAULT_SCOPE,
-                 history: Iterable[Turn] | None = None) -> tuple:
+                 history: Iterable[Turn] | None = None,
+                 filters: dict | None = None) -> tuple:
         """Everything up to the answer call, timed per stage.
 
         Split out from `ask` so the web UI can put sources on screen while the
@@ -1171,7 +1201,8 @@ class Assistant:
 
         t = time.time()
         hits = self.search(asked, k=k, plan=plan, rerank=False,
-                           pool=pool or DEFAULT_POOL, expand=expand, scope=scope)
+                           pool=pool or DEFAULT_POOL, expand=expand, scope=scope,
+                           filters=filters)
         timings["retrieve"] = round(time.time() - t, 2)
 
         if rerank:
@@ -1230,11 +1261,12 @@ class Assistant:
     def ask(self, question: str, k: int = DEFAULT_K, rerank: bool = True,
             pool: int | None = None, expand: int = DEFAULT_EXPAND,
             max_tokens: int | None = None, scope: str = DEFAULT_SCOPE,
-            history: Iterable[Turn] | None = None) -> dict:
+            history: Iterable[Turn] | None = None,
+            filters: dict | None = None) -> dict:
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
                                             pool=pool, expand=expand, scope=scope,
-                                            history=history)
+                                            history=history, filters=filters)
         # The condensed question is the one that names things, so it is the one
         # `named_last` can match; the question the model answers is still the
         # one that was typed.
@@ -1329,12 +1361,13 @@ class Assistant:
                    pool: int | None = None, expand: int = DEFAULT_EXPAND,
                    max_tokens: int | None = None,
                    scope: str = DEFAULT_SCOPE,
-                   history: Iterable[Turn] | None = None) -> Iterator[dict]:
+                   history: Iterable[Turn] | None = None,
+                   filters: dict | None = None) -> Iterator[dict]:
         """Yield one `sources` event, then `token` events, then `done`."""
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
                                             pool=pool, expand=expand, scope=scope,
-                                            history=history)
+                                            history=history, filters=filters)
         hits = self.named_last(plan.get("standalone") or question, hits)
         # `hits` carries the Hit objects (full body text) for a caller that wants
         # to render cards; `sources` is the JSON-safe citation list.

@@ -148,6 +148,39 @@ class Index:
             mask &= ~self.lore_mask
         return mask
 
+    def narrow(self, categories: Sequence[str] | None = None,
+               level: tuple[int | None, int | None] | None = None,
+               traits: Sequence[str] | None = None) -> np.ndarray:
+        """Boolean mask of rows matching every filter given.
+
+        Entry kinds, a level range (either end open), and traits the entry
+        must all carry. This is the metadata the normaliser kept so that
+        "level 4 fighter feats with the flourish trait" could be a lookup
+        rather than a question; nothing here needs a model.
+        """
+        mask = np.ones(len(self.ids), dtype=bool)
+        if categories:
+            wanted = {c.strip().lower().replace(" ", "-") for c in categories if c.strip()}
+            if wanted:
+                mask &= np.array([(m.get("category") or "").lower() in wanted for m in self.meta])
+        if level and (level[0] is not None or level[1] is not None):
+            lo, hi = level
+
+            def within(value: object) -> bool:
+                try:
+                    v = int(value)  # type: ignore[arg-type]
+                except (TypeError, ValueError):
+                    return False
+                return (lo is None or v >= lo) and (hi is None or v <= hi)
+
+            mask &= np.array([within(m.get("level")) for m in self.meta])
+        if traits:
+            wanted = {t.strip().lower() for t in traits if t.strip()}
+            if wanted:
+                mask &= np.array([wanted <= {t.lower() for t in (m.get("traits") or [])}
+                                  for m in self.meta])
+        return mask
+
     # --- retrieval -----------------------------------------------------------
 
     def dense(self, query_vec: np.ndarray, mask: np.ndarray, k: int,

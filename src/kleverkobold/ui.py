@@ -94,6 +94,16 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
  margin:0 0 .75rem}
 #status.ready{color:var(--ok)}#status.bad{color:var(--accent)}
 #status[hidden]{display:none}
+#narrow{margin:0 0 .75rem;font-size:.82rem;color:var(--muted)}
+#narrow summary{cursor:pointer;user-select:none}
+#narrow summary b{color:var(--accent);font-weight:600}
+.narrow-row{display:flex;flex-wrap:wrap;gap:.4rem .6rem;align-items:center;margin-top:.45rem}
+.narrow-row select,.narrow-row input{font:inherit;font-size:.82rem;padding:.3rem .45rem;border:1px solid var(--line);
+ border-radius:6px;background:var(--card);color:var(--ink);width:auto}
+.narrow-row input[type=number]{width:4.2rem}
+.narrow-row #n-traits{flex:1;min-width:11rem}
+.narrow-row label{display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap}
+.narrow-row button{padding:.3rem .6rem;font-size:.8rem}
 #upd{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .7rem;font-size:.85rem;color:var(--soft);
  border:1px solid var(--line);border-left:3px solid var(--k-item);background:var(--card);border-radius:8px;
  padding:.5rem .8rem;margin:0 0 .75rem}
@@ -481,6 +491,22 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 <p class="hint"><kbd>Enter</kbd> asks · <kbd>Shift</kbd>+<kbd>Enter</kbd> shows only the entries
 · <kbd>↑</kbd> earlier questions</p>
 <p class="hint" id="thread" hidden></p>
+<details id="narrow"><summary>Narrow it down</summary>
+<div class="narrow-row">
+ <select id="n-kind" title="Entry kind"><option value="">any kind</option>
+  <option value="feat">feats</option><option value="spell">spells</option><option value="action">actions</option>
+  <option value="condition">conditions</option><option value="equipment">equipment</option><option value="weapon">weapons</option>
+  <option value="armor">armor</option><option value="shield">shields</option><option value="creature">creatures</option>
+  <option value="hazard">hazards</option><option value="trait">traits</option><option value="rules">rules</option>
+  <option value="class-feature">class features</option><option value="ritual">rituals</option><option value="archetype">archetypes</option>
+  <option value="background">backgrounds</option><option value="heritage">heritages</option><option value="deity">deities</option></select>
+ <label>level <input id="n-lo" type="number" min="-1" max="30" placeholder="from"> – <input id="n-hi" type="number" min="-1" max="30" placeholder="to"></label>
+ <input id="n-traits" placeholder="traits, e.g. flourish, press" title="Traits the entry must carry, comma-separated">
+ <button type="button" id="n-list">List them</button>
+ <button type="button" id="n-clear" hidden>Clear</button>
+</div>
+<p class="note" style="margin:.3rem 0 0">A filter applies to every question and look-up until it is cleared. “List them” shows what matches on its own, no model involved.</p>
+</details>
 
 <div id="history-wrap" class="ov" hidden><div class="pop" role="dialog" aria-modal="true" aria-label="Asked before">
 <button type="button" class="x" data-close="history-wrap" title="Close (Esc)" aria-label="Close">×</button>
@@ -1245,8 +1271,43 @@ function saveSettings(){
   try{localStorage.setItem('kobold-settings',JSON.stringify(SET))}catch(e){}
 }
 
+/* ---------- narrowing ----------
+   Hard filters the asker sets by hand: a kind, a level range, traits. They
+   ride along with every question and look-up, and on their own they list
+   what matches, straight off the index. */
+function narrowParams(){
+  const p={};
+  const k=EL('n-kind').value;if(k)p.kind=k;
+  const lo=EL('n-lo').value.trim(),hi=EL('n-hi').value.trim();
+  // "1..4", "1..", "..4": two dots, since "-1" is a level of its own.
+  if(lo||hi)p.lvl=lo&&hi&&lo===hi?lo:(lo||'')+'..'+(hi||'');
+  const t=EL('n-traits').value.trim();if(t)p.traits=t;
+  return p;
+}
+function paintNarrow(){
+  const n=Object.keys(narrowParams()).length;
+  EL('narrow').querySelector('summary').innerHTML='Narrow it down'+(n?' · <b>'+n+' filter'+(n>1?'s':'')+' on</b>':'');
+  EL('n-clear').hidden=!n;
+}
+for(const id of ['n-kind','n-lo','n-hi','n-traits'])EL(id).addEventListener('input',paintNarrow);
+EL('n-clear').addEventListener('click',()=>{for(const id of ['n-kind','n-lo','n-hi','n-traits'])EL(id).value='';paintNarrow()});
+EL('n-list').addEventListener('click',()=>go('browse'));
+EL('n-traits').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();go('browse')}});
+async function browse(){
+  const f=narrowParams();
+  if(!Object.keys(f).length){out.innerHTML='<p class="err">Pick a kind, a level or a trait first.</p>';return}
+  busy('search');
+  const d=await (await fetch('/api/search?'+settingsQuery(Object.assign({q:'',k:'48'},f)),
+    {headers:settingsHeaders()})).json();
+  clearInterval(timer);rolling(false);
+  if(d.error){out.innerHTML='<p class="err">'+esc(d.error)+'</p>';return}
+  setCites(d.hits);
+  const n=(d.hits||[]).length;
+  out.innerHTML=n?'<p class="from"><span>'+n+(n===48?'+':'')+' matching '+(n===1?'entry':'entries')+', by level</span></p>'+cards(d.hits,''):
+    '<p class="spin">Nothing in the index matches that.</p>';
+}
 function settingsQuery(extra){
-  const p=new URLSearchParams(extra||{});
+  const p=new URLSearchParams(Object.assign({},narrowParams(),extra||{}));
   p.set('backend',SET.backend);
   if(SET.base)p.set('base',SET.base);
   if(SET.model)p.set('model',SET.model);
@@ -2081,7 +2142,13 @@ async function ask(text){
   clearInterval(timer);funStop();settle=null;rolling(false);
 }
 async function go(mode,force){
-  const text=q.value.trim(); if(!text)return;
+  const text=q.value.trim();
+  if(mode==='browse'||(!text&&mode==='search'&&Object.keys(narrowParams()).length)){
+    if(!ready)return;showHome(false);enable(false);
+    try{await browse()}catch(e){clearInterval(timer);rolling(false);out.innerHTML='<p class="err">'+esc(String(e))+'</p>'}
+    enable(true);return;
+  }
+  if(!text)return;
   // Replaying a stored answer is only free because the same words mean the
   // same thing. Inside a thread they do not -- "and untrained?" is a different
   // question after Treat Wounds than after Battle Medicine -- so a follow-up

@@ -336,3 +336,40 @@ def test_serve_has_a_no_browser_flag():
     with pytest.raises(SystemExit) as exc:
         cli.main(["serve", "--no-browser", "--help"])
     assert exc.value.code == 0
+
+
+@pytest.mark.parametrize("query, want", [
+    ({}, None),
+    ({"kind": ["feat, Spell"]}, {"categories": ["feat", "spell"]}),
+    ({"lvl": ["4"]}, {"level": (4, 4)}),
+    ({"lvl": ["1-4"]}, {"level": (1, 4)}),
+    ({"lvl": ["10-"]}, {"level": (10, None)}),
+    ({"lvl": ["-1"]}, {"level": (-1, -1)}),     # a level, not "up to 1": creatures go to -1
+    ({"lvl": ["..2"]}, {"level": (None, 2)}),
+    ({"lvl": ["1..4"]}, {"level": (1, 4)}),
+    ({"lvl": ["99"]}, {"level": (30, 30)}),
+    ({"lvl": ["abc"]}, None),
+    ({"lvl": ["-"]}, None),
+    ({"traits": ["flourish, press"]}, {"traits": ["flourish", "press"]}),
+])
+def test_read_filters(query, want):
+    assert s._read_filters(query) == want
+
+
+def test_browse_route_needs_no_model(live, client):
+    url, health = live
+    health["state"] = "loading"
+    status, body, _ = get(url + "/api/search?kind=action&scope=rules")
+    payload = json.loads(body)
+    assert status == 200 and payload["browse"] is True
+    assert [h["name"] for h in payload["hits"]] == ["Treat Wounds"]
+    assert client.calls == [] and client.embedded == []
+    status, body, _ = get(url + "/api/search?kind=nation&scope=lore&k=1")
+    assert [h["name"] for h in json.loads(body)["hits"]] == ["Cheliax"]
+
+
+def test_search_route_passes_filters(live, client):
+    url, _ = live
+    client.replies = [plan_reply("", "")]
+    status, body, _ = get(url + "/api/search?q=medicine&rerank=0&kind=feat")
+    assert status == 200 and [h["category"] for h in json.loads(body)["hits"]] == ["feat"]

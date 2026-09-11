@@ -18,6 +18,7 @@ import hashlib
 import json
 import os
 import pathlib
+import re
 import threading
 import urllib.parse
 from dataclasses import dataclass
@@ -169,6 +170,36 @@ def _read_history(query: dict[str, list[str]]) -> list[Turn]:
                  standalone=one("prev_std")[:400])]
 
 
+RE_LEVEL = re.compile(r"^\s*(-?\d+)?\s*(?:(-|–|\.\.)\s*(-?\d+)?)?\s*$")
+
+
+def _read_filters(query: dict[str, list[str]]) -> dict | None:
+    """The asker's hard filters, or None. ``kind=feat,spell  lvl=1-4  traits=flourish,press``.
+
+    A level is one number or a range with either end open: "4", "1-4",
+    "10-", "..2". A leading minus is a negative level ("-1" is a creature
+    level), so "up to two" is written "..2". Clamped to what the corpus holds;
+    anything unparseable is simply not a filter.
+    """
+    def one(name: str) -> str:
+        return (query.get(name) or [""])[0].strip()
+
+    out: dict = {}
+    kinds = [k.strip().lower() for k in one("kind").split(",") if k.strip()][:8]
+    if kinds:
+        out["categories"] = kinds
+    m = RE_LEVEL.match(one("lvl"))
+    if m and one("lvl") and (m.group(1) or m.group(3)):
+        clamp = lambda v: None if v is None else max(-1, min(30, int(v)))  # noqa: E731
+        lo = clamp(m.group(1))
+        hi = clamp(m.group(3)) if m.group(2) else lo
+        out["level"] = (lo, hi)
+    traits = [t.strip() for t in one("traits").split(",") if t.strip()][:8]
+    if traits:
+        out["traits"] = traits
+    return out or None
+
+
 def _key_digest(api_key: str) -> str:
     return hashlib.sha256(api_key.encode()).hexdigest() if api_key else ""
 
@@ -247,6 +278,26 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
             # lifetime of this request and the httpx client it configures.
             api_key = (self.headers.get(KEY_HEADER) or "").strip()
             config = _read_config(query, pool.base_config, api_key)
+            filters = _read_filters(query)
+            scope = (query.get("scope") or [DEFAULT_SCOPE])[0]
+            if scope not in SCOPES:
+                scope = DEFAULT_SCOPE
+
+            # Filters and no question: a listing, straight off the index. No
+            # model is involved, so it does not wait for the warmup either.
+            if (parsed.path == "/api/search" and filters
+                    and not (query.get("q") or [""])[0].strip()):
+                try:
+                    hits = pool.base.browse(filters, scope=scope,
+                                            limit=_clamp((query.get("k") or [None])[0], 1, 60, 24))
+                except Exception as exc:
+                    self._send(500, json.dumps({"error": f"{type(exc).__name__}: {exc}"}).encode(),
+                               "application/json")
+                    return
+                self._send(200, json.dumps({"hits": _hits(hits), "browse": True,
+                                            "scope": "lore" if scope == "lore" else "rules"}).encode(),
+                           "application/json; charset=utf-8")
+                return
 
             if parsed.path == "/api/test":
                 self._test(config, api_key)
@@ -279,12 +330,10 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
             rerank = (query.get("rerank") or ["1"])[0] != "0"
             max_tokens = _clamp((query.get("tokens") or [None])[0], 32, 4000,
                                 pool.base.answer_tokens)
-            scope = (query.get("scope") or [DEFAULT_SCOPE])[0]
-            if scope not in SCOPES:
-                scope = DEFAULT_SCOPE
             history = _read_history(query)
             if parsed.path == "/api/ask":
-                self._ask_stream(question, config, api_key, k, rerank, max_tokens, scope, history)
+                self._ask_stream(question, config, api_key, k, rerank, max_tokens, scope, history,
+                                 filters)
                 return
             try:
                 assistant = pool.get(config, api_key)
@@ -298,7 +347,8 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                     plan = assistant.rewrite(asked)
                     lore = assistant.resolve_scope(scope, plan)
                     payload = {"hits": _hits(assistant.search(asked, k=k, plan=plan,
-                                                              rerank=rerank, scope=scope)),
+                                                              rerank=rerank, scope=scope,
+                                                              filters=filters)),
                                "scope": "lore" if lore else "rules"}
                     if history:
                         payload["standalone"] = asked
@@ -361,7 +411,8 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
 
         def _ask_stream(self, question: str, config: Config, api_key: str,
                         k: int, rerank: bool, max_tokens: int, scope: str,
-                        history: list[Turn] | None = None) -> None:
+                        history: list[Turn] | None = None,
+                        filters: dict | None = None) -> None:
             """Answer over server-sent events.
 
             The answer is the slow half and it decodes a token at a time. Sending
@@ -381,7 +432,7 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                 with lock:
                     for event in assistant.ask_stream(question, k=k, rerank=rerank,
                                                       max_tokens=max_tokens, scope=scope,
-                                                      history=history):
+                                                      history=history, filters=filters):
                         if event["event"] == "sources":
                             shown = event["hits"]
                             trimmed = {"event": "sources", "timings": event["timings"],

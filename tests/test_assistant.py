@@ -224,3 +224,29 @@ def test_embed_text_is_a_unit_vector():
     v = embed_text("treat wounds")
     assert abs(float(np.linalg.norm(v)) - 1.0) < 1e-5
     assert float(v @ embed_text("treat wounds now")) > float(v @ embed_text("cheliax devils"))
+
+
+def test_search_honours_hard_filters(assistant):
+    plan = {"summary": "", "categories": [], "scope": "rules"}
+    hits = assistant.search("heal wounds", k=4, plan=plan, rerank=False,
+                            filters={"categories": ["feat"]})
+    assert [h.category for h in hits] == ["feat"]
+    hits = assistant.search("heal wounds", k=4, plan=plan, rerank=False,
+                            filters={"traits": ["healing"]})
+    assert hits and all("Healing" in (assistant.index.meta[assistant.index.position(h.chunk_id)]
+                                      .get("traits") or []) for h in hits)
+    # A level filter excludes entries that have no level at all.
+    assert assistant.search("heal wounds", k=4, plan=plan, rerank=False,
+                            filters={"traits": ["healing"], "level": (None, 0)}) == []
+    assert assistant.search("heal", k=4, plan=plan, rerank=False,
+                            filters={"categories": ["ritual"]}) == []
+
+
+def test_browse_lists_by_level_then_name(assistant):
+    hits = assistant.browse({"traits": ["healing"]})
+    assert [h.name for h in hits] == ["Battle Medicine", "Treat Wounds"]   # level None last
+    hits = assistant.browse({"categories": ["spell"]})
+    assert [h.name for h in hits] == ["Force Barrage"]                     # the legacy one is out
+    assert assistant.browse({"categories": ["nation"]}) == []              # lore is out unless asked
+    assert [h.name for h in assistant.browse({"categories": ["nation"]}, scope="lore")] == ["Cheliax"]
+    assert len(assistant.browse({"level": (None, None)}, limit=3)) == 3

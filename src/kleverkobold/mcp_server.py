@@ -55,15 +55,40 @@ TOOLS = [
         "inputSchema": {
             "type": "object",
             "properties": {
-                "question": {"type": "string"},
+                "question": {"type": "string",
+                             "description": "What to search for. May be empty when kinds, level "
+                                            "or traits are given: then the matching entries are "
+                                            "listed, by level and name, with no model involved."},
                 "k": {"type": "integer", "description": "Excerpts to retrieve (default 8)."},
                 "scope": {"type": "string", "enum": list(SCOPES),
                           "description": "rules, lore, or auto (default)."},
+                "kinds": {"type": "array", "items": {"type": "string"},
+                          "description": "Entry kinds to allow: feat, spell, action, condition, "
+                                         "equipment, weapon, armor, creature, hazard, trait, "
+                                         "rules, class-feature, ritual, archetype, background, "
+                                         "heritage, deity, shield."},
+                "level": {"type": "string",
+                          "description": "A level or range: '4', '1-4', '10-' (10 and up), "
+                                         "'..2' (up to 2). '-1' is the level minus one."},
+                "traits": {"type": "array", "items": {"type": "string"},
+                           "description": "Traits the entry must carry, e.g. ['flourish']."},
             },
-            "required": ["question"],
         },
     },
 ]
+
+
+def _filters(args: dict) -> dict | None:
+    """The tool's kinds/level/traits as the Assistant's filters, or None."""
+    from .server import _read_filters
+    query = {}
+    if args.get("kinds"):
+        query["kind"] = [",".join(str(k) for k in args["kinds"])]
+    if args.get("level"):
+        query["lvl"] = [str(args["level"])]
+    if args.get("traits"):
+        query["traits"] = [",".join(str(t) for t in args["traits"])]
+    return _read_filters(query)
 
 
 def _result(text: str, is_error: bool = False) -> dict:
@@ -92,13 +117,20 @@ def serve(index_dir: pathlib.Path, ollama_url: str, llm_model: str | None = None
             name = params.get("name")
             args = params.get("arguments") or {}
             question = (args.get("question") or "").strip()
-            if not question:
+            filters = _filters(args) if name == "kobold_search" else None
+            if not question and not filters:
                 return _result("A question is required.", True)
             scope = args.get("scope") or DEFAULT_SCOPE
             if scope not in SCOPES:
                 return _result(f"scope must be one of {', '.join(SCOPES)}.", True)
             try:
                 a = get()
+                if name == "kobold_search" and not question:
+                    hits = a.browse(filters, scope=scope, limit=int(args.get("k") or 24))
+                    lines = [f"- {h.name} ({h.category}"
+                             f"{', level ' + str(h.level) if h.level is not None else ''}) "
+                             f"{h.url}" for h in hits]
+                    return _result("\n".join(lines) or "Nothing matched.")
                 if name == "kobold_ask":
                     out = a.ask(question, k=int(args.get("k") or DEFAULT_K), scope=scope)
                     lines = [out["answer"], "", "Sources:"]
@@ -107,7 +139,8 @@ def serve(index_dir: pathlib.Path, ollama_url: str, llm_model: str | None = None
                               f"{s['url']}" for s in out["sources"]]
                     return _result("\n".join(lines))
                 if name == "kobold_search":
-                    hits = a.search(question, k=int(args.get("k") or DEFAULT_K), scope=scope)
+                    hits = a.search(question, k=int(args.get("k") or DEFAULT_K), scope=scope,
+                                    filters=filters)
                     blocks = [f"## {h.name} ({h.category}{', Golarion lore' if h.lore else ''})"
                               f"\n{h.url}\n\n{h.text[:1600]}" for h in hits]
                     return _result("\n\n---\n\n".join(blocks) or "Nothing matched.")

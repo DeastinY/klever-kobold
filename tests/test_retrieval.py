@@ -144,3 +144,24 @@ def test_search_modes():
     assert "w" in [cid for cid, _ in r.search(idx, "cheliax", q, k=6, lore=True)]
     with pytest.raises(ValueError):
         r.search(idx, "x", q, mode="sideways")
+
+
+def test_narrow_by_kind_level_and_traits():
+    rows = [
+        {"id": "a", "name": "A", "category": "feat", "level": 1, "traits": ["Flourish", "Press"]},
+        {"id": "b", "name": "B", "category": "feat", "level": 4, "traits": ["Flourish"]},
+        {"id": "c", "name": "C", "category": "spell", "level": 4, "traits": []},
+        {"id": "d", "name": "D", "category": "class-feature", "level": None, "traits": ["press"]},
+    ]
+    idx = _index(rows)
+    assert list(idx.narrow()) == [True] * 4
+    assert list(idx.narrow(categories=["feat"])) == [True, True, False, False]
+    assert list(idx.narrow(categories=["Class Feature", " "])) == [False, False, False, True]
+    assert list(idx.narrow(level=(2, 4))) == [False, True, True, False]
+    assert list(idx.narrow(level=(None, 1))) == [True, False, False, False]
+    assert list(idx.narrow(level=(4, None))) == [False, True, True, False]
+    assert list(idx.narrow(level=(None, None))) == [True] * 4
+    assert list(idx.narrow(traits=["flourish", "PRESS"])) == [True, False, False, False]
+    assert list(idx.narrow(traits=["press"])) == [True, False, False, True]
+    assert list(idx.narrow(categories=["feat"], level=(3, 5), traits=["flourish"])) == [
+        False, True, False, False]

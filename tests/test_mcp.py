@@ -75,3 +75,19 @@ def test_tool_failures_keep_the_transport_alive(monkeypatch, assistant, client):
     assert replies[0]["result"]["isError"] and "RuntimeError: kaput" in \
         replies[0]["result"]["content"][0]["text"]
     assert "tools" in replies[1]["result"]
+
+
+def test_search_tool_filters_and_lists(monkeypatch, assistant, client):
+    client.replies = [plan_reply()]
+    replies = run(monkeypatch, assistant, [
+        {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+         "params": {"name": "kobold_search", "arguments": {"kinds": ["feat", "action"]}}},
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+         "params": {"name": "kobold_search", "arguments": {"question": "medicine", "traits": ["skill"]}}},
+        {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+         "params": {"name": "kobold_search", "arguments": {"level": "abc"}}},
+    ])
+    listing = replies[0]["result"]["content"][0]["text"]
+    assert listing.startswith("- Battle Medicine (feat, level 1)") and "Treat Wounds (action)" in listing
+    assert "## Battle Medicine" in replies[1]["result"]["content"][0]["text"]
+    assert replies[2]["result"]["isError"]
