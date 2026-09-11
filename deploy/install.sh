@@ -48,8 +48,4 @@ kobold setup            # both models (about 4 GB) and the rules-and-lore index 
 
 say "4/4  Starting"
 echo "Runs at http://localhost:8765 — next time, just:  kobold serve"
-case "$OS" in
-  Darwin) (sleep 3; open http://localhost:8765) & ;;
-  Linux)  (sleep 3; xdg-open http://localhost:8765 >/dev/null 2>&1 || true) & ;;
-esac
-exec kobold serve
+exec kobold serve       # opens the page itself

@@ -34,5 +34,4 @@ kobold setup
 
 Say "4/4  Starting"
 Write-Host "Runs at http://localhost:8765 - next time, just:  kobold serve"
-Start-Job { Start-Sleep 3; Start-Process "http://localhost:8765" } | Out-Null
-kobold serve
+kobold serve   # opens the page itself

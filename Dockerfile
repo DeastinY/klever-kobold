@@ -21,4 +21,6 @@ ENV PYTHONPATH=/app/src \
     KOBOLD_INDEX_URL=https://github.com/DeastinY/klever-kobold/releases/download/index-v1/kobold-index.tar.gz
 
 EXPOSE 8765
+# No browser in a container; the address is printed instead.
+ENV KOBOLD_NO_BROWSER=1
 ENTRYPOINT ["deploy/entrypoint.sh"]

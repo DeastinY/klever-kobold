@@ -434,11 +434,29 @@ def _hits(hits) -> list[dict]:
              "legacy_name": h.legacy_name, "traits": [], "corpus": h.corpus} for h in hits]
 
 
+def open_browser(url: str, wanted: bool = True) -> bool:
+    """Open the page in the user's browser, once the server is listening.
+
+    Off with --no-browser or KOBOLD_NO_BROWSER, and after a self-upgrade, when
+    the page that asked for it is already open and about to reload. A machine
+    with no browser (a headless box, Docker) is not an error: webbrowser says
+    so and the address is printed either way.
+    """
+    if not wanted or os.environ.get("KOBOLD_NO_BROWSER") or os.environ.get(update.JUST_UPGRADED):
+        return False
+    import webbrowser
+    try:
+        return bool(webbrowser.open(url, new=2))
+    except Exception:
+        return False
+
+
 def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLLAMA,
           host: str = "127.0.0.1", port: int = 8765, backend: str = "ollama",
           llm_model: str | None = None, embed_model: str | None = None,
           context_chars: int | None = None, auto_model: bool = False,
-          report_url: str | None = None, update_check: bool = True) -> None:
+          report_url: str | None = None, update_check: bool = True,
+          browser: bool = True) -> None:
     # Upgrade on start, if asked to and something newer is out. Before the
     # index loads, so a restart costs nothing; never twice in a row.
     if update_check and update.auto_upgrade() and not os.environ.get(update.JUST_UPGRADED):
@@ -528,6 +546,10 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
     server = ThreadingHTTPServer((host, port), make_handler(pool, threading.Lock(), health))
     shown = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
     print(f"The Klever Kobold on http://{shown}:{port}  (ctrl-c to stop)")
+    # The socket is bound, so the page can be opened now; it shows the models
+    # loading rather than a connection error.
+    threading.Thread(target=open_browser, args=(f"http://{shown}:{port}", browser),
+                     daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:

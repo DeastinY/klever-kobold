@@ -420,7 +420,8 @@ def cmd_serve(args) -> int:
           model, getattr(args, "embed_override", None),
           context_chars=getattr(args, "context_chars", None), auto_model=auto,
           report_url=getattr(args, "report_url", None),
-          update_check=not (args.no_update_check or os.environ.get("KOBOLD_NO_UPDATE_CHECK")))
+          update_check=not (args.no_update_check or os.environ.get("KOBOLD_NO_UPDATE_CHECK")),
+          browser=not args.no_browser)
     return 0
 
 
@@ -526,6 +527,8 @@ def main(argv: list[str] | None = None) -> int:
                    help="characters of each entry shown to the model (default 1600). "
                         "1000 scored the same on the holdout and cuts prompt-processing "
                         "time on a laptop, at the cost of truncating longer entries.")
+    p.add_argument("--no-browser", action="store_true",
+                   help="do not open the page in a browser (or set KOBOLD_NO_BROWSER)")
     p.add_argument("--no-update-check", action="store_true",
                    help="do not ask GitHub whether a newer kobold is out (or set "
                         "KOBOLD_NO_UPDATE_CHECK). The check sends nothing but the request.")

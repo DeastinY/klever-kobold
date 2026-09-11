@@ -5,11 +5,11 @@
 ```bash
 uv tool install git+https://github.com/DeastinY/klever-kobold
 kobold setup --install-ollama     # Ollama if missing, both models, the index
-kobold serve                      # http://localhost:8765
+kobold serve                      # opens http://localhost:8765 in your browser
 ```
 
 The one-line installers in the README do exactly this, plus installing
-[uv](https://docs.astral.sh/uv/) itself and opening the browser:
+[uv](https://docs.astral.sh/uv/) itself:
 [`deploy/install.sh`](../deploy/install.sh) for macOS and Linux,
 [`deploy/install.ps1`](../deploy/install.ps1) for Windows. Both are safe to re-run.
 
@@ -68,6 +68,10 @@ index with a different encoder returns plausible, unrelated entries.
   the box says which one, with a way to start fresh. Costs one extra model
   call, roughly a sixth of an answer — see
   [notes/followup-design.md](../notes/followup-design.md).
+
+`kobold serve` opens the page in your browser as soon as it is listening;
+`--no-browser` (or `KOBOLD_NO_BROWSER=1`) leaves that to you, which is what a
+headless machine or a service unit wants.
 
 `kobold serve --host 0.0.0.0` makes it reachable from a phone or tablet on your
 network. There is no login; do not expose it to the internet.

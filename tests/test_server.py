@@ -307,3 +307,32 @@ def test_upgrade_refused_off_the_loopback(live, monkeypatch):
     monkeypatch.setattr(handler, "_local", lambda self: False)
     assert post(url + "/api/upgrade")[0] == 403
     assert post(url + "/api/auto-upgrade", {"on": True})[0] == 403
+
+
+def test_open_browser_respects_the_switches(monkeypatch):
+    import webbrowser
+    opened = []
+    monkeypatch.setattr(webbrowser, "open", lambda url, new=0: opened.append(url) or True)
+    monkeypatch.delenv("KOBOLD_NO_BROWSER", raising=False)
+    monkeypatch.delenv(update.JUST_UPGRADED, raising=False)
+    assert s.open_browser("http://localhost:1", wanted=False) is False
+    monkeypatch.setenv("KOBOLD_NO_BROWSER", "1")
+    assert s.open_browser("http://localhost:1") is False
+    monkeypatch.delenv("KOBOLD_NO_BROWSER")
+    monkeypatch.setenv(update.JUST_UPGRADED, "1")
+    assert s.open_browser("http://localhost:1") is False     # the page is already open
+    monkeypatch.delenv(update.JUST_UPGRADED)
+    assert s.open_browser("http://localhost:1") is True and opened == ["http://localhost:1"]
+
+    def no_browser(url, new=0):
+        raise webbrowser.Error("no browser")
+
+    monkeypatch.setattr(webbrowser, "open", no_browser)
+    assert s.open_browser("http://localhost:1") is False
+
+
+def test_serve_has_a_no_browser_flag():
+    from kleverkobold import __main__ as cli
+    with pytest.raises(SystemExit) as exc:
+        cli.main(["serve", "--no-browser", "--help"])
+    assert exc.value.code == 0
