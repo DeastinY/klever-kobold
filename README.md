@@ -20,11 +20,8 @@ account, no cloud, nothing you type leaves the machine.
 ![Vibecoded](https://img.shields.io/badge/vibecoded-fully-8a1b2e)
 ![Runs offline](https://img.shields.io/badge/runs-fully%20offline-2f6b4f)
 ![Memory](https://img.shields.io/badge/needs-6%20GB%20RAM-informational)
-![Corpus](https://img.shields.io/badge/corpus-41%2C743%20AoN%20entries%20%2B%2024%2C409%20wiki%20pages-8a1b2e)
-![Lookups](https://img.shields.io/badge/lookups-93%2F109-2f6b4f)
-![License](https://img.shields.io/badge/content-ORC%20%2F%20Paizo%20CUP-lightgrey)
 
-## Get it
+## Install
 
 **macOS or Linux** — one line in a terminal:
 
