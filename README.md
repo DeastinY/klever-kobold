@@ -1,7 +1,7 @@
 # The Klever Kobold
 
 ***Disclaimer:***
-> This thing is pretty much fully vibecoded. The architecture, design, steering, and prompting is done by me. Mostly this originated from the desire to look at different techniques to fine-tune a local LLM based on the awesome Qwen3.5 line. When I realized things were working pretty well I whipped up claude to build a small UI around it and finalize it into something useable. 
+> This thing is pretty much fully vibecoded. The architecture, design, steering, and prompting are done by me. Mostly this originated from the desire to look at different techniques to fine-tune a local LLM based on the awesome Qwen3.5 line. When I realized things were working pretty well I whipped up Claude to build a small UI around it and finalize it into something usable.
 
 **The Klever Kobold is a small LLM (Lazy-Lizard-Man) hustling locally on your computer. He often gets you better replies than big paid options as he was kept in his cave and forced to learn Pathfinder rules all day.**
 
@@ -38,6 +38,17 @@ if they are missing, pulls the two models (about 4 GB), fetches the index
 kobold serve
 ```
 
+**With uv**, if you already have it and would rather not pipe a script into a shell:
+
+```bash
+uv tool install git+https://github.com/DeastinY/klever-kobold
+kobold setup --install-ollama     # Ollama if missing, both models, the index
+kobold serve                      # http://localhost:8765
+```
+
+Later, `uv tool upgrade kleverkobold` updates the program and `kobold setup`
+picks up a new index; `uv tool uninstall kleverkobold` removes it.
+
 Needs about 6 GB of memory and 5 GB of disk. Apple Silicon, Linux, and Windows
 are all fine; a GPU helps but is not required. Details, other ways to install,
 and every option are in [docs/running.md](docs/running.md).
@@ -66,7 +77,7 @@ No. Of course not. He is a Kobold.
 | "What level is Battle Medicine?" | **Yeah.** |
 | "How does Treat Wounds work?" | **Yeah.** |
 | "Is there a feat that makes falling less dangerous?" | **Maybe** — Too many options for small head. |
-| **"Does X interact with Y?"** | **No.** May find the right pages, but he aint no wizard. |
+| **"Does X interact with Y?"** | **No.** May find the right pages, but he ain't no wizard. |
 | "Who rules Cheliax?" | **Mostly.** Apparently he likes lore? |
 
 Evaluation was pretty tight, around 95% on synthetic test data. Will report back how it plays at my table.
@@ -77,9 +88,9 @@ Evaluation was pretty tight, around 95% on synthetic test data. Will report back
 | --- | --- | --- |
 | Trained for | Pathfinder. | Everything, so knows about all RPGs and Life. |
 | Where the answer comes from | Big Books (AoN & Wiki) | Memory of anything and all. |
-| When it does not know | Trained to says so, but is also bad at lying. | Deception +20 |
-| How much water and power it needs | Very little, fully offline and local | Lets not get into it |
-| What it costs | Small, old PC/Laptop | Subscription or API callse |
+| When it does not know | Trained to say so, but is also bad at lying. | Deception +20 |
+| How much water and power it needs | Very little, fully offline and local | Let's not get into it |
+| What it costs | Small, old PC/Laptop | Subscription or API calls |
 | Who trains it | Well me, but also the community and maybe you! | Big Corpo. |
 | Who can fix it | Anyone! It is all here. | Nobody you can reach |
 | Complex Questions | Unreliable — **but he shows you the rule** | Unreliable, and confident. Will make up things |
