@@ -10,6 +10,7 @@ import pytest
 
 from conftest import plan_reply
 from kleverkobold import server as s
+from kleverkobold import update
 from kleverkobold.app import HISTORY_CHARS, OllamaError
 
 
@@ -258,3 +259,51 @@ def test_test_route_reports_unreachable_backend(live):
     assert status == 200 and payload["ok"] is False and payload["models"] == []
     assert "secret" not in body.decode()
     assert payload["backend"] == "openai" and payload["base_url"] == "http://127.0.0.1:9"
+
+
+def post(url, body=None):
+    data = json.dumps(body or {}).encode()
+    req = urllib.request.Request(url, data=data, method="POST",
+                                 headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status, json.loads(r.read())
+    except urllib.error.HTTPError as exc:
+        return exc.code, json.loads(exc.read())
+
+
+def test_upgrade_routes(live, monkeypatch, tmp_path):
+    url, health = live
+    monkeypatch.setattr(update, "config_path", lambda: tmp_path / "config.json")
+    assert post(url + "/api/nothing")[0] == 404
+    status, body = post(url + "/api/auto-upgrade", {"on": True})
+    assert status == 200 and body == {"auto_upgrade": True}
+    assert update.auto_upgrade() is True and health["defaults"]["auto_upgrade"] is True
+    assert post(url + "/api/auto-upgrade", {"on": False})[1] == {"auto_upgrade": False}
+
+    monkeypatch.setattr(update, "upgrade", lambda: (False, "uv: not found"))
+    status, body = post(url + "/api/upgrade")
+    assert status == 500 and body["ok"] is False and "not found" in body["output"]
+
+    restarted = []
+    monkeypatch.setattr(update, "upgrade", lambda: (True, "Updated kleverkobold"))
+    monkeypatch.setattr(update, "restart", lambda: restarted.append(1))
+    status, body = post(url + "/api/upgrade")
+    assert status == 200 and body["ok"] and body["restarting"]
+    import time
+    time.sleep(0.8)
+    assert restarted == [1]
+
+
+def test_upgrade_refused_off_the_loopback(live, monkeypatch):
+    url, _ = live
+    monkeypatch.setattr(s.BaseHTTPRequestHandler, "client_address", ("10.0.0.7", 1), raising=False)
+    # The handler reads client_address from the instance; force the check itself.
+    handler = None
+    for cls in s.BaseHTTPRequestHandler.__subclasses__():
+        if cls.__name__ == "Handler":
+            handler = cls
+    assert handler is not None
+    monkeypatch.setattr(handler, "_local", lambda self: False)
+    assert post(url + "/api/upgrade")[0] == 403
+    assert post(url + "/api/auto-upgrade", {"on": True})[0] == 403

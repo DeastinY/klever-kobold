@@ -25,6 +25,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from .app import (BIG_LLM, DEFAULT_INDEX, DEFAULT_K, DEFAULT_OLLAMA, DEFAULT_SCOPE, HISTORY_CHARS,
                   INDEX_URL, SCOPES, SMALL_LLM, Assistant, OllamaError, Turn, probe_backend)
+from . import update
 from .ui import PAGE
 
 # The header the API key travels in. A header rather than a query parameter so it
@@ -176,6 +177,38 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+
+        def _local(self) -> bool:
+            return self.client_address[0] in ("127.0.0.1", "::1", "::ffff:127.0.0.1")
+
+        def do_POST(self) -> None:
+            """Two requests that act on the host: both refused off the loopback."""
+            parsed = urllib.parse.urlparse(self.path)
+            if parsed.path not in ("/api/upgrade", "/api/auto-upgrade"):
+                self._send(404, b'{"error":"not found"}', "application/json")
+                return
+            if not self._local():
+                self._send(403, b'{"error":"only a browser on this machine may do that"}',
+                           "application/json")
+                return
+            length = int(self.headers.get("Content-Length") or 0)
+            try:
+                body = json.loads(self.rfile.read(length) or b"{}") if length else {}
+            except ValueError:
+                body = {}
+            if parsed.path == "/api/auto-upgrade":
+                cfg = update.write_config(auto_upgrade=bool(body.get("on")))
+                health.setdefault("defaults", {})["auto_upgrade"] = bool(cfg.get("auto_upgrade"))
+                self._send(200, json.dumps({"auto_upgrade": bool(cfg.get("auto_upgrade"))}).encode(),
+                           "application/json")
+                return
+            ok, out = update.upgrade()
+            self._send(200 if ok else 500, json.dumps({"ok": ok, "output": out,
+                                                       "restarting": ok}).encode(),
+                       "application/json; charset=utf-8")
+            if ok:
+                # After the reply is out. The new process takes the same port.
+                threading.Timer(0.5, update.restart).start()
 
         def do_GET(self) -> None:
             parsed = urllib.parse.urlparse(self.path)
@@ -405,7 +438,18 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
           host: str = "127.0.0.1", port: int = 8765, backend: str = "ollama",
           llm_model: str | None = None, embed_model: str | None = None,
           context_chars: int | None = None, auto_model: bool = False,
-          report_url: str | None = None) -> None:
+          report_url: str | None = None, update_check: bool = True) -> None:
+    # Upgrade on start, if asked to and something newer is out. Before the
+    # index loads, so a restart costs nothing; never twice in a row.
+    if update_check and update.auto_upgrade() and not os.environ.get(update.JUST_UPGRADED):
+        seen = update.check()
+        if seen.get("behind"):
+            print(f"  a newer kobold is out ({seen['latest']}, {seen['date']}); upgrading…",
+                  flush=True)
+            ok, out = update.upgrade()
+            print("  " + out.splitlines()[-1] if out else "", flush=True)
+            if ok:
+                update.restart()
     assistant = Assistant(index_dir, ollama_url, backend=backend,
                           llm_model=llm_model, embed_model=embed_model,
                           **({"context_chars": context_chars} if context_chars else {}))
@@ -440,11 +484,24 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
                            # page can offer the scope control and lore examples.
                            "lore": assistant.has_lore,
                            "scope": DEFAULT_SCOPE,
+                           "auto_upgrade": update.auto_upgrade(),
                            "corpus": assistant.manifest.get("chunks_by_corpus")
                            or {"aon": assistant.manifest.get("chunks", 0)}},
               # Drives how loudly the panel warns about typing an API key into a
               # page with no authentication in front of it.
-              "local_only": host in ("127.0.0.1", "localhost", "::1")}
+              "local_only": host in ("127.0.0.1", "localhost", "::1"),
+              # Filled in by a thread: what is installed and whether main has
+              # moved on. Absent until the check answers, and if it never does.
+              "update": None}
+
+    if update_check:
+        def look() -> None:
+            health["update"] = update.check()
+            if health["update"].get("behind"):
+                print(f"  a newer kobold is out: {health['update']['latest']} "
+                      f"({health['update']['date']}). {health['update']['command'] or 'git pull'}",
+                      flush=True)
+        threading.Thread(target=look, daemon=True).start()
 
     def warm() -> None:
         # In a thread so the page is servable immediately and can *say* what is

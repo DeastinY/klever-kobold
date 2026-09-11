@@ -124,7 +124,8 @@ On a Mac use the installer or uv.
 ## Updating and removing
 
 ```bash
-uv tool upgrade kleverkobold      # the program
+kobold upgrade                    # the program, if a newer one is out (or the page's Upgrade button)
+uv tool upgrade kleverkobold      # the same, by hand
 kobold setup                      # picks up a new index release if one is out
 uv tool uninstall kleverkobold    # the program; models stay with Ollama, the index in the data directory
 ```

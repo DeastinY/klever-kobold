@@ -47,8 +47,10 @@ kobold setup --install-ollama     # Ollama if missing, both models, the index
 kobold serve                      # http://localhost:8765
 ```
 
-Later, `uv tool upgrade kleverkobold` updates the program and `kobold setup`
-picks up a new index; `uv tool uninstall kleverkobold` removes it.
+The page says when a newer kobold is out and offers to upgrade and restart
+itself; `kobold upgrade` does the same from a terminal, and there is a switch
+to upgrade on every start. `kobold setup` picks up a new index;
+`uv tool uninstall kleverkobold` removes it.
 
 Needs about 6 GB of memory and 5 GB of disk. Apple Silicon, Linux, and Windows
 are all fine; a GPU helps but is not required. Details, other ways to install,

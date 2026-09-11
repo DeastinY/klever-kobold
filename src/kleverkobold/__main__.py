@@ -419,8 +419,35 @@ def cmd_serve(args) -> int:
     serve(args.index, args.ollama, args.host, args.port, args.backend,
           model, getattr(args, "embed_override", None),
           context_chars=getattr(args, "context_chars", None), auto_model=auto,
-          report_url=getattr(args, "report_url", None))
+          report_url=getattr(args, "report_url", None),
+          update_check=not (args.no_update_check or os.environ.get("KOBOLD_NO_UPDATE_CHECK")))
     return 0
+
+
+def cmd_upgrade(args) -> int:
+    """Say what is installed and what is out; fetch the newer one unless told only to look."""
+    from . import update
+    seen = update.check()
+    current = seen["current"] or "unknown"
+    if not seen["checked"]:
+        print(f"installed {current}; could not reach GitHub to see what is newer.")
+    elif not seen["behind"]:
+        print(f"installed {current}; that is the newest ({seen['date']}). Nothing to do.")
+        if not args.force:
+            return 0
+    else:
+        print(f"installed {current}; newest is {seen['latest']} ({seen['date']}): {seen['message']}")
+    if args.check:
+        return 1 if seen["behind"] else 0
+    if not seen["tool"]:
+        print("This kobold runs from a checkout: update it with `git pull`.")
+        return 1
+    print(f"running {seen['command']}", flush=True)
+    ok, out = update.upgrade()
+    print(out)
+    if ok:
+        print("Upgraded. Restart `kobold serve` to run the new one.")
+    return 0 if ok else 1
 
 
 def cmd_mcp(args) -> int:
@@ -499,6 +526,15 @@ def main(argv: list[str] | None = None) -> int:
                    help="characters of each entry shown to the model (default 1600). "
                         "1000 scored the same on the holdout and cuts prompt-processing "
                         "time on a laptop, at the cost of truncating longer entries.")
+    p.add_argument("--no-update-check", action="store_true",
+                   help="do not ask GitHub whether a newer kobold is out (or set "
+                        "KOBOLD_NO_UPDATE_CHECK). The check sends nothing but the request.")
+
+    p = sub.add_parser("upgrade", help="fetch the newest kobold, if there is one")
+    p.set_defaults(func=cmd_upgrade)
+    p.add_argument("--check", action="store_true",
+                   help="only say whether one is out; exit 1 if so")
+    p.add_argument("--force", action="store_true", help="run the upgrade even when up to date")
 
     p = sub.add_parser("mcp", help="run as an MCP server over stdio")
     p.set_defaults(func=cmd_mcp)

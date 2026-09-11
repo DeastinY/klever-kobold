@@ -105,6 +105,18 @@ INDEX_URL = ("https://github.com/DeastinY/klever-kobold/releases/download/"
              "index-v3/kobold-index.tar.gz")
 
 
+def data_home() -> pathlib.Path:
+    """The user data directory for this program: the index, and one settings file."""
+    if sys.platform == "darwin":
+        base = pathlib.Path.home() / "Library" / "Application Support"
+    elif os.name == "nt":
+        base = pathlib.Path(os.environ.get("LOCALAPPDATA", pathlib.Path.home()))
+    else:
+        base = pathlib.Path(os.environ.get("XDG_DATA_HOME",
+                                           pathlib.Path.home() / ".local" / "share"))
+    return base / "kleverkobold"
+
+
 def default_index() -> pathlib.Path:
     """Where the index lives, whether this is a clone or an installed tool.
 
@@ -119,14 +131,8 @@ def default_index() -> pathlib.Path:
     env = os.environ.get("KOBOLD_INDEX")
     if env:
         return pathlib.Path(env).expanduser()
-    if sys.platform == "darwin":
-        base = pathlib.Path.home() / "Library" / "Application Support"
-    elif os.name == "nt":
-        base = pathlib.Path(os.environ.get("LOCALAPPDATA", pathlib.Path.home()))
-    else:
-        base = pathlib.Path(os.environ.get("XDG_DATA_HOME",
-                                           pathlib.Path.home() / ".local" / "share"))
-    new = base / "kleverkobold" / "kobold-index"
+    base = data_home().parent
+    new = data_home() / "kobold-index"
     # Installs from before the rename keep working: an index under the old
     # names is moved to the new ones once, and never looked for again.
     old = base / "pf2etune" / "pf2e-index"

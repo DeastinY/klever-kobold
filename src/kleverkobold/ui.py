@@ -94,6 +94,16 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
  margin:0 0 .75rem}
 #status.ready{color:var(--ok)}#status.bad{color:var(--accent)}
 #status[hidden]{display:none}
+#upd{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .7rem;font-size:.85rem;color:var(--soft);
+ border:1px solid var(--line);border-left:3px solid var(--k-item);background:var(--card);border-radius:8px;
+ padding:.5rem .8rem;margin:0 0 .75rem}
+#upd[hidden]{display:none}
+#upd b{color:var(--ink)}
+#upd .what{color:var(--muted);font-style:italic}
+#upd button{padding:.25rem .6rem;font-size:.8rem}
+#upd label{display:inline-flex;align-items:center;gap:.3rem;font-size:.78rem;color:var(--muted)}
+#upd label input{width:auto;margin:0}
+#upd code{font-size:.78rem;background:var(--chip);padding:0 .3rem;border-radius:4px}
 .dot{width:.5rem;height:.5rem;border-radius:50%;background:currentColor;flex:none}
 .dot.pulse{animation:p 1.1s ease-in-out infinite}
 @keyframes p{0%,100%{opacity:.25}50%{opacity:1}}
@@ -166,26 +176,35 @@ footer.thanks .sep{margin:0 .4rem}
 .trait.unique{background:#800080;border-color:#560056}
 .trait.size,.trait.align{background:#3b7a57;border-color:#2a5a3f}
 .field{font-weight:700;color:var(--ink)}
-/* Creature sheet: the Archives' stat block laid out the way a VTT sheet is,
-   general / defense / offense, with the numbers a GM reaches for in boxes. */
-.cr{font-size:.9rem;color:var(--soft)}
-.cr p{margin:.3rem 0}
-.cr-sec{margin:.75rem 0 .4rem;padding:.16rem .55rem;font-size:.68rem;letter-spacing:.1em;
- text-transform:uppercase;font-weight:700;color:#fff;background:var(--k);border-radius:3px}
-.cr-abil{display:grid;grid-template-columns:repeat(6,1fr);gap:.35rem;margin:.5rem 0}
-.cr-boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:.35rem;margin:.45rem 0}
-.cr-abil div,.cr-box{border:1px solid var(--line);border-radius:6px;padding:.3rem .2rem;text-align:center;
- font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink);background:var(--chip);font-size:1rem}
-.cr-abil small,.cr-box small{display:block;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;
- color:var(--muted);font-weight:600;margin-bottom:.1rem}
-.cr-box.hp{color:var(--accent);font-size:1.15rem}
-.cr-atk{margin:.35rem 0;padding-left:1.5rem;text-indent:-1.5rem}
-.cr-atk .acts{margin-right:.3rem}
-.cr-atk .dmg{display:block;text-indent:0;color:var(--muted);font-size:.85rem;margin-top:.05rem}
-.cr-about{margin-top:.9rem;border-top:1px solid var(--rule);padding-top:.5rem;font-size:.86rem}
+/* Creature stat block, set the way the books and the Archives set it: a
+   red band with the name and level, the traits, then the three blocks --
+   general, defense, offense -- as bold-labelled lines between thin rules. */
+.cr{font-size:.9rem;color:var(--ink);line-height:1.45}
+.cr p{margin:.2rem 0}
+.cr-head{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;
+ background:var(--accent);color:#fff;padding:.3rem .65rem;border-radius:4px;margin:0 0 .45rem}
+.cr-head .cr-name{font-family:ui-serif,Georgia,"Iowan Old Style",serif;font-weight:700;font-size:1.05rem;
+ letter-spacing:.04em;text-transform:uppercase;margin:0}
+.cr-head .cr-name a{color:inherit;text-decoration:none}
+.cr-head .cr-lvl{font-family:ui-serif,Georgia,serif;font-weight:700;font-size:.85rem;letter-spacing:.08em;
+ text-transform:uppercase;white-space:nowrap}
+.cr .traits{margin:.35rem 0 .5rem}
+.cr .field{font-weight:700;color:var(--ink)}
+.cr .src{font-size:.8rem;color:var(--muted);margin:.15rem 0 .35rem}
+.cr .src .field{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cr hr{border:0;border-top:1px solid var(--accent);opacity:.55;margin:.5rem 0}
+.cr .sep{color:var(--muted);padding:0 .15rem}
+.cr-atk{padding-left:1.3rem;text-indent:-1.3rem}
+/* text-indent is inherited into inline-flex boxes and shifts their content: the
+   glyph and the die must start where they are. */
+.cr-atk .acts,.cr-atk .dice,.cr-atk a{text-indent:0}
+.cr-atk .acts{margin-right:.2rem}
+.cr .ab{margin-top:.35rem}
+.cr .ab .field{font-family:ui-serif,Georgia,serif}
+.cr-about{margin-top:.8rem;border-top:1px solid var(--rule);padding-top:.5rem;font-size:.86rem;color:var(--soft)}
 .cr-about summary{cursor:pointer;color:var(--muted);font-size:.74rem;letter-spacing:.07em;
  text-transform:uppercase;font-weight:600;margin-bottom:.3rem}
-@media(max-width:520px){.cr-abil{grid-template-columns:repeat(3,1fr)}.cr-boxes{grid-template-columns:repeat(3,1fr)}}
+.pop .cr-head{margin-top:.3rem;padding-right:.65rem}
 .body{font-size:.9rem;color:var(--soft)}
 .body p{margin:.4rem 0}
 .body hr{border:0;border-top:1px solid var(--rule);margin:.6rem 0}
@@ -455,6 +474,7 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 <button id="help" title="How this works" aria-expanded="false">?</button>
 <button id="theme" title="Theme"></button></header>
 <div id="status"><span class="dot pulse"></span><span id="statustext">starting…</span></div>
+<div id="upd" hidden></div>
 <form id="f"><input id="q" placeholder="ask the kobold what happens, name a thing, or describe it…" autofocus
  autocomplete="off" disabled><button class="primary" id="askbtn" disabled>Ask</button>
 <button id="lookbtn" type="button" disabled>Look up</button></form>
@@ -871,38 +891,46 @@ function creatureBlock(h){
     let v=f.val.replace(/\s*\n\s*/g,' ').trim();
     const c=v.match(/^\[([^\]]+)\]\s*/);if(c)v=v.slice(c[0].length);
     v=v.replace(/,\s*$/,'');
-    return '<p class="cr-atk">'+(c?glyphs(c[1]):'')+'<span class="field">'+esc(f.key)+'</span> '+
-      inline(esc(v))+(f.dmg?'<span class="dmg"><span class="field">Damage</span> '+inline(esc(f.dmg))+'</span>':'')+'</p>';
+    return '<p class="cr-atk"><span class="field">'+esc(f.key)+'</span> '+(c?glyphs(c[1]):'')+
+      inline(esc(v))+(f.dmg?', <span class="field">Damage</span> '+inline(esc(f.dmg)):'')+'</p>';
   };
   const render=f=>/^(Melee|Ranged)$/.test(f.key)?attack(f):(/^(Perception|Languages|Skills|Items|Speed|Immunities|Resistances|Weaknesses)$/.test(f.key)?line(f):field(f));
   const pills=traits.map(t=>{const l=t.toLowerCase();
     const cls=RARITY.includes(l)?l:(SIZES.includes(l)?'size':(/^[LNC]?[GNE]$/i.test(t)?'align':''));
     return '<span class="trait'+(cls?' '+cls:'')+'">'+esc(t)+'</span>'}).join('');
+  // "**Str** +4, **Dex** +1, …" on one line, as printed; the same for
+  // AC and the saves, and for HP with what protects it.
+  const joined=(pairs,sep)=>pairs.filter(([,f])=>f).map(([k,f])=>'<span class="field">'+k+'</span> '+
+    esc(f.val.split('\n')[0]))
+    .join('<span class="sep">'+sep+'</span> ');
   let html='<div class="cr">';
   if(source)html+='<p class="src"><span class="field">Source</span> '+val(source)+'</p>';
-  // The six modifiers sit under the senses and skills, before items and the
-  // general abilities, the way a sheet lays them out.
   const gen=secs[0]||[];
   let cut=0;gen.forEach((f,i)=>{if(/^(Perception|Languages|Skills)$/.test(f.key))cut=i+1});
   html+=gen.slice(0,cut).map(render).join('');
-  if(abil.every(Boolean))html+='<div class="cr-abil">'+abil.map((f,i)=>'<div><small>'+ABILITIES[i]+'</small>'+esc(f.val)+'</div>').join('')+'</div>';
+  if(abil.every(Boolean))html+='<p>'+joined(ABILITIES.map((k,i)=>[k,abil[i]]),',')+'</p>';
   html+=gen.slice(cut).map(render).join('');
   if(secs.length>1){
-    html+='<div class="cr-sec">Defense</div>';
-    if(saves.some(Boolean))html+='<div class="cr-boxes">'+saves.map((f,i)=>f?'<div class="cr-box'+(SAVES[i]==='HP'?' hp':'')+'"><small>'+SAVES[i]+'</small>'+
-      esc(f.val.split('\n')[0])+'</div>':'').join('')+'</div>';
-    const hpNote=saves[4]&&saves[4].val.includes('\n')?saves[4].val.split('\n').slice(1).join(' '):'';
-    if(hpNote)html+='<p><span class="field">HP</span> '+inline(esc(hpNote))+'</p>';
-    html+=secs[1].map(render).join('');
+    html+='<hr>';
+    const def=secs[1].slice();
+    const pull=key=>{const i=def.findIndex(f=>f.key===key);return i>=0?def.splice(i,1)[0]:null};
+    const guards=['Immunities','Resistances','Weaknesses'].map(k=>[k,pull(k)]);
+    if(saves[0]||saves[1])html+='<p>'+joined([['AC',saves[0]]],';')+(saves[0]&&saves[1]?'<span class="sep">;</span> ':'')+
+      joined([['Fort',saves[1]],['Ref',saves[2]],['Will',saves[3]]],',')+'</p>';
+    const hpNote=saves[4]&&saves[4].val.includes('\n')?' '+inline(esc(saves[4].val.split('\n').slice(1).join(' '))):'';
+    if(saves[4]||guards.some(([,f])=>f))html+='<p>'+(saves[4]?'<span class="field">HP</span> '+esc(saves[4].val.split('\n')[0])+hpNote:'')+
+      guards.filter(([,f])=>f).map(([k,f])=>(saves[4]?'<span class="sep">;</span> ':'')+'<span class="field">'+k+'</span> '+val(f)).join('')+'</p>';
+    html+=def.map(f=>'<div class="ab">'+render(f)+'</div>').join('');
   }
   if(secs.length>2){
-    html+='<div class="cr-sec">Offense</div>'+secs.slice(2).flat().map(render).join('');
+    html+='<hr>';
+    const off=secs.slice(2).flat();
+    html+=off.map(f=>/^(Melee|Ranged|Speed)$/.test(f.key)?render(f):'<div class="ab">'+render(f)+'</div>').join('');
   }
   html+='</div>';
   if(about)html+='<details class="cr-about"><summary>About, and what you can recall</summary>'+md(about)+'</details>';
-  return '<div class="card"><div class="head">'+
-    '<h2 class="name"><a href="'+esc(h.url)+'" target="_blank" rel="noreferrer">'+esc(m[1])+'</a></h2>'+
-    '<span class="rank">Creature '+esc(m[2])+'</span></div>'+
+  return '<div class="card"><div class="cr-head"><h2 class="cr-name"><a href="'+esc(h.url)+'" target="_blank" rel="noreferrer">'+
+    esc(m[1])+'</a></h2><span class="cr-lvl">Creature '+esc(m[2])+'</span></div>'+
     (pills?'<div class="traits">'+pills+'</div>':'')+
     '<div class="body clip">'+html+'</div></div>';
 }
@@ -1462,10 +1490,56 @@ writeForm();
 </script>
 <script>
 let ready=false;
+/* ---------- a newer kobold ----------
+   The server asked GitHub once at start whether main has moved on. If it
+   has, say so, and offer the upgrade -- which runs on the host, so only a
+   browser on the same machine gets the button; anyone else gets the command. */
+let UPD_SHOWN=false,UPGRADING=false;
+function paintUpdate(d){
+  const u=d.update,el=EL('upd');
+  if(!u||!u.behind||UPD_SHOWN||UPGRADING)return;
+  UPD_SHOWN=true;
+  const auto=!!(d.defaults&&d.defaults.auto_upgrade);
+  el.innerHTML='<span>A newer kobold is out'+(u.date?' ('+esc(u.date)+')':'')+
+    (u.message?': <span class="what">'+esc(u.message)+'</span>':'')+'</span>'+
+    (LOCAL_ONLY||d.local_only!==false?
+      '<button type="button" class="primary" id="upd-go">Upgrade and restart</button>'+
+      '<label><input type="checkbox" id="upd-auto"'+(auto?' checked':'')+'> always upgrade when the kobold starts</label>':
+      '<span>On the machine that runs it: <code>'+esc(u.command||'git pull')+'</code></span>')+
+    '<button type="button" class="x" id="upd-x" title="Not now" aria-label="Dismiss">×</button>';
+  el.hidden=false;
+  const x=EL('upd-x');if(x)x.addEventListener('click',()=>{el.hidden=true});
+  const go=EL('upd-go');if(go)go.addEventListener('click',upgradeNow);
+  const au=EL('upd-auto');if(au)au.addEventListener('change',async()=>{
+    try{await fetch('/api/auto-upgrade',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({on:au.checked})})}catch(e){}});
+}
+async function upgradeNow(){
+  const el=EL('upd');UPGRADING=true;
+  el.innerHTML='<span class="spin">Fetching the newer kobold… this takes a minute</span>';
+  let r=null;
+  try{r=await (await fetch('/api/upgrade',{method:'POST'})).json()}catch(e){r={ok:false,output:String(e)}}
+  if(!r||!r.ok){
+    el.innerHTML='<span>The upgrade did not go through.</span><code>'+esc((r&&r.output||'').split('\n').slice(-3).join(' · ')||'no output')+'</code>';
+    UPGRADING=false;return;
+  }
+  el.innerHTML='<span class="spin">Upgraded. The kobold is restarting…</span>';
+  // The old process is gone within a second; wait for the new one to answer,
+  // then reload into it.
+  const t0=Date.now();
+  const tick=async()=>{
+    try{const d=await (await fetch('/api/health',{cache:'no-store'})).json();
+      if(d&&d.update!==undefined&&Date.now()-t0>2500){location.reload();return}
+    }catch(e){}
+    if(Date.now()-t0<120000)setTimeout(tick,1000);
+    else el.innerHTML='<span>The kobold has not come back yet. Reload the page in a moment.</span>';
+  };
+  setTimeout(tick,2000);
+}
 async function poll(){
   try{
     const d=await (await fetch('/api/health')).json();
-    seedFromServer(d);
+    seedFromServer(d);paintUpdate(d);
     stt.textContent=d.detail||d.state;
     st.className=d.state==='ready'?'ready':(d.state==='error'?'bad':'');
     st.querySelector('.dot').classList.toggle('pulse',d.state!=='ready'&&d.state!=='error');
