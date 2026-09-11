@@ -1677,3 +1677,26 @@ refusal is right when retrieval missed the entry, and those may be
 mislabelled withheld items rather than waste. Output:
 `data/processed/abstention_train.jsonl` (not in git).
 
+### Second set, through Ollama, rebalanced (2026-09-11)
+
+Same script, `--teacher-url http://localhost:11434/v1 --teacher qwen3.8:27b
+--workers 8 --answerable 1000`: 1,600 questions in about ten minutes, 1,541
+kept, answers at ~20 a minute, 1 h 40 min end to end against three hours for
+the transformers path -- and that with the OpenAI-compatible endpoint
+rejected, since it ignores the thinking switch and returned empty content
+(every question dropped on the first try); Ollama is spoken to natively.
+
+| kind | kept | dropped, and why |
+| --- | ---: | --- |
+| answerable | 442 | 329 did not name the entry, 223 refused |
+| nonexistent | 207 | 4 did not refuse |
+| withheld | 165 | 11 did not refuse |
+| false_mechanic | 154 | 6 did not refuse |
+
+968 items, ~2.5 M tokens, **54% teach refusal**, from 70% -- the answerable
+share is where the design wanted it. The answerable drop rate is stable at
+just over half (552 of 994): a third of the time the teacher does not name
+the entry the question was written from, which says as much about the
+generated questions as about the teacher. The first set is kept as
+`abstention_train_v1.jsonl`; this one is `abstention_train.jsonl`.
+
