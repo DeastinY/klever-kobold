@@ -1,0 +1,27 @@
+{
+  "label": "holdout_4b_abstention_hf",
+  "model": "unsloth/Qwen3.5-4B",
+  "backend": "hf",
+  "base_url": null,
+  "items": 109,
+  "seconds": 612.8,
+  "max_tokens": 600,
+  "reasoning_effort": null,
+  "chat_kwargs": {
+    "enable_thinking": false
+  },
+  "retrieval": {
+    "k": 8,
+    "retriever": "Qwen/Qwen3-Embedding-0.6B",
+    "mode": "hybrid+hop",
+    "rewriter": "Qwen/Qwen3.5-9B",
+    "context_chars": 1600
+  },
+  "quantization": "nf4-4bit",
+  "adapter": "outputs/abstention-4b/final",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0
+  },
+  "empty_responses": 0
+}

@@ -1700,3 +1700,35 @@ the entry the question was written from, which says as much about the
 generated questions as about the teacher. The first set is kept as
 `abstention_train_v1.jsonl`; this one is `abstention_train.jsonl`.
 
+## The abstention adapter on the 4B: a wash, and terser (2026-09-11)
+
+QLoRA on unsloth/Qwen3.5-4B over the second abstention set (929 train / 39
+held out, rank 32, two epochs, 138 steps, 11 minutes on the 5090; train loss
+0.94 → 0.22, eval loss 0.39 at step 100 and 0.36 at the end, which is the
+mild memorisation signature). Adapter: `outputs/abstention-4b/final`.
+
+Measured the way the RAFT adapter was: base and base+adapter through the
+transformers path with the same retrieval (hybrid+hop, eight excerpts,
+thinking off) on the 109-question holdout.
+
+| family | base 4B | + abstention LoRA |
+| --- | ---: | ---: |
+| comparative | 11/11 | 11/11 |
+| descriptive | 25/33 | 21/33 |
+| false premise | 17/19 | 18/19 |
+| legacy | 14/14 | 14/14 |
+| situational | 30/32 | 32/32 |
+| **overall** | **97/109** | **96/109** |
+
+Four won, five lost: net zero, inside the noise, and the wrong shape. What
+it lost was not refusals -- the adapter did not decline any of the five --
+but breadth: "Thieves' Toolkit" without the "Thieves' Tools" the gold names,
+"Sure Strike" without the "formerly True Strike", one feat where the base
+listed three. The teacher writes tersely and the adapter learned the
+terseness; the grader, which looks for the gold's names, then misses them.
+Same finding as the RAFT adapter ("more accurate and less forthcoming").
+Fabricated levels stayed at zero either way. Not shipped. If this is tried
+again: one epoch or a lower rate, and answerable examples written in the
+base model's own register rather than the teacher's.
+Runs: `eval/runs/holdout_4b_{base,abstention}_hf.scores.json`.
+
