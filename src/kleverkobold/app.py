@@ -1046,6 +1046,33 @@ class Assistant:
             hits = self.keep_rules(hits, eligible, k)
         return hits
 
+    def entry(self, name: str | None = None, url: str | None = None) -> Hit | None:
+        """One entry, by its URL or its exact name.
+
+        Names collide: a feat and a spell can share one, a Remaster entry has
+        its legacy twin, a wiki page has its sections. By URL there is one
+        answer; by name the current Archives entry wins over a legacy one,
+        the Archives over the wiki, and a page over its sections.
+        """
+        if url:
+            url = url.strip()
+            for pos, m in enumerate(self.index.meta):
+                if m.get("url") == url:
+                    return self._hit(pos)
+            return None
+        key = " ".join((name or "").split()).lower()
+        if not key:
+            return None
+        best: tuple | None = None
+        for pos, m in enumerate(self.index.meta):
+            if (m.get("name") or "").lower() != key:
+                continue
+            rank = (m.get("remaster_status") == "legacy", m.get("corpus") == "pathfinderwiki",
+                    "#" in (m.get("id") or ""), pos)
+            if best is None or rank < best:
+                best = rank
+        return self._hit(best[3]) if best else None
+
     def browse(self, filters: dict, scope: str = DEFAULT_SCOPE, limit: int = 24) -> list[Hit]:
         """Entries matching the filters alone, no question and no model.
 

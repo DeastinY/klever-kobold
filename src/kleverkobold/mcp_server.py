@@ -78,6 +78,21 @@ TOOLS = [
             },
         },
     },
+    {
+        "name": "kobold_entry",
+        "description": (
+            "Fetch one Pathfinder 2e entry in full by its exact name or its Archives of "
+            "Nethys / PathfinderWiki URL: the whole stat block or article, with its URL. "
+            "Use after a search to read an entry the excerpt only sampled."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string", "description": "The entry's exact name, e.g. 'Owlbear'."},
+                "url": {"type": "string", "description": "Its URL, from a search result."},
+            },
+        },
+    },
 ]
 
 
@@ -119,6 +134,19 @@ def serve(index_dir: pathlib.Path, ollama_url: str, llm_model: str | None = None
             params = request.get("params") or {}
             name = params.get("name")
             args = params.get("arguments") or {}
+            if name == "kobold_entry":
+                ident = (args.get("url") or args.get("name") or "").strip()
+                if not ident:
+                    return _result("A name or a URL is required.", True)
+                try:
+                    h = get().entry(url=args.get("url"), name=args.get("name"))
+                except OllamaError as exc:
+                    return _result(str(exc), True)
+                if not h:
+                    return _result(f"No entry called {ident!r}.", True)
+                level = f", level {h.level}" if h.level is not None else ""
+                return _result(f"## {h.name} ({h.category}{level}{', Golarion lore' if h.lore else ''})"
+                               f"\n{h.url}\n\n{h.text}")
             question = (args.get("question") or "").strip()
             filters = _filters(args) if name == "kobold_search" else None
             if not question and not filters:

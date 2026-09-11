@@ -259,3 +259,15 @@ def test_ask_carries_the_persona(assistant, client):
     client.replies = [plan_reply()]
     list(assistant.ask_stream("can I take it", k=2, rerank=False, persona="level 5 rogue"))
     assert "level 5 rogue" in client.calls[-1][1]
+
+
+def test_entry_by_name_prefers_current_archives_pages(assistant):
+    assert assistant.entry(name="magic missile").name == "Magic Missile"   # only the legacy one exists
+    assert assistant.entry(name="  Desna ").corpus == "aon"                 # the Archives over the wiki
+    assert assistant.entry(name="cheliax").chunk_id == "wiki:100"          # the page, not a section
+    assert assistant.entry(name="Treat Wounds").chunk_id == "aon:action:2399"
+    assert assistant.entry(name="nope") is None and assistant.entry() is None
+    by_url = assistant.entry(url="https://pathfinderwiki.com/wiki/Cheliax#Government")
+    assert by_url.chunk_id == "wiki:100#Government"                       # by URL, the section itself
+    assert assistant.entry(url="https://2e.aonprd.com/Spell.aspx?ID=1585").name == "Force Barrage"
+    assert assistant.entry(url="https://x/none") is None

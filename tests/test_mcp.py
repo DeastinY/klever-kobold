@@ -33,7 +33,7 @@ def test_initialize_and_list(monkeypatch, assistant):
     assert [r["id"] for r in replies] == [1, 2, 3]
     assert replies[0]["result"]["serverInfo"]["name"] == "kleverkobold"
     names = {t["name"] for t in replies[1]["result"]["tools"]}
-    assert names == {"kobold_ask", "kobold_search"}
+    assert names == {"kobold_ask", "kobold_search", "kobold_entry"}
     assert replies[2]["error"]["code"] == -32601
 
 
@@ -100,3 +100,23 @@ def test_ask_tool_takes_a_persona(monkeypatch, assistant, client):
          "params": {"name": "kobold_ask", "arguments": {"question": "prone?", "k": 1,
                                                         "persona": "level 2 wizard"}}}])
     assert "The person asking plays: level 2 wizard" in client.calls[-1][1]
+
+
+def test_entry_tool(monkeypatch, assistant):
+    replies = run(monkeypatch, assistant, [
+        {"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+         "params": {"name": "kobold_entry", "arguments": {"name": "Gurglegut"}}},
+        {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+         "params": {"name": "kobold_entry", "arguments": {"url": "https://pathfinderwiki.com/wiki/Cheliax"}}},
+        {"jsonrpc": "2.0", "id": 4, "method": "tools/call",
+         "params": {"name": "kobold_entry", "arguments": {"name": "Nothing Here"}}},
+        {"jsonrpc": "2.0", "id": 5, "method": "tools/call",
+         "params": {"name": "kobold_entry", "arguments": {}}},
+    ])
+    assert "kobold_entry" in {t["name"] for t in replies[0]["result"]["tools"]}
+    text = replies[1]["result"]["content"][0]["text"]
+    assert text.startswith("## Gurglegut (creature, level 12)\nhttps://") and "swamp dragon" in text
+    assert "Golarion lore" in replies[2]["result"]["content"][0]["text"]
+    assert replies[3]["result"]["isError"] and "Nothing Here" in replies[3]["result"]["content"][0]["text"]
+    assert replies[4]["result"]["isError"]
