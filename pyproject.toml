@@ -36,6 +36,9 @@ local = [
     "bitsandbytes>=0.45",
     "huggingface_hub>=0.26",
     "hf_transfer>=0.1",
+    # Qwen3.5/3.8's linear-attention layers fall back to reference PyTorch
+    # without this, and the teacher runs at half speed. Pure Triton, no build.
+    "flash-linear-attention>=0.5",
 ]
 # 41k chunks is small enough that brute-force cosine over a numpy matrix beats
 # carrying a vector database; the whole index is ~60 MB.
