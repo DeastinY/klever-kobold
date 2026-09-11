@@ -166,6 +166,26 @@ footer.thanks .sep{margin:0 .4rem}
 .trait.unique{background:#800080;border-color:#560056}
 .trait.size,.trait.align{background:#3b7a57;border-color:#2a5a3f}
 .field{font-weight:700;color:var(--ink)}
+/* Creature sheet: the Archives' stat block laid out the way a VTT sheet is,
+   general / defense / offense, with the numbers a GM reaches for in boxes. */
+.cr{font-size:.9rem;color:var(--soft)}
+.cr p{margin:.3rem 0}
+.cr-sec{margin:.75rem 0 .4rem;padding:.16rem .55rem;font-size:.68rem;letter-spacing:.1em;
+ text-transform:uppercase;font-weight:700;color:#fff;background:var(--k);border-radius:3px}
+.cr-abil{display:grid;grid-template-columns:repeat(6,1fr);gap:.35rem;margin:.5rem 0}
+.cr-boxes{display:grid;grid-template-columns:repeat(5,1fr);gap:.35rem;margin:.45rem 0}
+.cr-abil div,.cr-box{border:1px solid var(--line);border-radius:6px;padding:.3rem .2rem;text-align:center;
+ font-variant-numeric:tabular-nums;font-weight:700;color:var(--ink);background:var(--chip);font-size:1rem}
+.cr-abil small,.cr-box small{display:block;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;
+ color:var(--muted);font-weight:600;margin-bottom:.1rem}
+.cr-box.hp{color:var(--accent);font-size:1.15rem}
+.cr-atk{margin:.35rem 0;padding-left:1.5rem;text-indent:-1.5rem}
+.cr-atk .acts{margin-right:.3rem}
+.cr-atk .dmg{display:block;text-indent:0;color:var(--muted);font-size:.85rem;margin-top:.05rem}
+.cr-about{margin-top:.9rem;border-top:1px solid var(--rule);padding-top:.5rem;font-size:.86rem}
+.cr-about summary{cursor:pointer;color:var(--muted);font-size:.74rem;letter-spacing:.07em;
+ text-transform:uppercase;font-weight:600;margin-bottom:.3rem}
+@media(max-width:520px){.cr-abil{grid-template-columns:repeat(3,1fr)}.cr-boxes{grid-template-columns:repeat(3,1fr)}}
 .body{font-size:.9rem;color:var(--soft)}
 .body p{margin:.4rem 0}
 .body hr{border:0;border-top:1px solid var(--rule);margin:.6rem 0}
@@ -188,7 +208,6 @@ footer.thanks .sep{margin:0 .4rem}
 .star:hover,.star.on{color:#d19a1a}
 .tile .star{position:absolute;top:.35rem;right:.5rem}
 .pop .star{position:absolute;top:.75rem;right:3rem;font-size:1.25rem}
-#favs[hidden]{display:none}
 .body .clip{max-height:16rem;overflow:auto}
 .tw{overflow-x:auto;margin:.45rem 0}
 .body table{border-collapse:collapse;font-size:.85rem;min-width:50%}
@@ -261,7 +280,9 @@ footer.thanks .sep{margin:0 .4rem}
  justify-content:center;padding:3vh 1rem;z-index:15;overflow:auto}
 #sheet[hidden],.ov[hidden]{display:none}
 .pop.wide{max-width:50rem}
-.ov #settings,.ov #history{border:0;background:none;padding:0;margin:0}
+.ov #settings,.ov #history,.ov #hoard-panel{border:0;background:none;padding:0;margin:0}
+.ov #hoard-panel .top{padding-right:2.4rem}
+.ov #hoard-panel .tiles{margin-top:.5rem}
 .ov .set-h:first-child{padding-right:2.4rem}
 .ov #history .top{padding-right:2.4rem}
 .pop{--k:var(--k-other);position:relative;background:var(--card);color:var(--ink);
@@ -329,12 +350,13 @@ footer.thanks .sep{margin:0 .4rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 @media(prefers-reduced-motion:reduce){.d20.rolling{animation:none}}
-#help,#hist{padding:.35rem .65rem;font-size:.8rem;border:1px solid var(--line);
+#help,#hist,#hoard{padding:.35rem .65rem;font-size:.8rem;border:1px solid var(--line);
  background:var(--card);color:var(--soft);border-radius:6px;cursor:pointer;
  display:flex;align-items:center;gap:.35rem}
 #help{width:2rem;justify-content:center;font-family:ui-serif,Georgia,serif;font-weight:700}
-#hist[aria-expanded=true],#help[aria-expanded=true]{border-color:var(--accent);color:var(--accent)}
-#hist b{font-weight:600;background:var(--chip);border-radius:999px;padding:0 .4rem;
+#hist[aria-expanded=true],#hoard[aria-expanded=true],#help[aria-expanded=true]{border-color:var(--accent);color:var(--accent)}
+#hoard .st{color:#d19a1a;font-size:.95rem;line-height:1}
+#hist b,#hoard b{font-weight:600;background:var(--chip);border-radius:999px;padding:0 .4rem;
  font-size:.72rem;color:var(--accent)}
 kbd{font:inherit;font-size:.75rem;background:var(--chip);border:1px solid var(--line);
  border-bottom-width:2px;border-radius:4px;padding:0 .35rem;color:var(--soft)}
@@ -428,6 +450,7 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 <header><a href="/" id="home-link" title="Start over"><span class="d20" id="d20" aria-hidden="true"></span>
 <h1>The Klever Kobold <small>— Pathfinder 2e rules, offline</small></h1></a>
 <button id="hist" title="Questions you have asked" aria-expanded="false" aria-controls="history"></button>
+<button id="hoard" title="Entries you starred" aria-expanded="false" aria-controls="hoard-panel"></button>
 <button id="gear" title="Settings" aria-expanded="false" aria-controls="settings"></button>
 <button id="help" title="How this works" aria-expanded="false">?</button>
 <button id="theme" title="Theme"></button></header>
@@ -510,7 +533,15 @@ the MCP setup for Claude Desktop and Claude Code: Settings →
  <span id="r-stat" class="note" style="margin:0"></span></div>
 </div></div>
 
-<div id="favs" hidden><p class="tryh">★ The hoard</p><div class="tiles" id="fav-tiles"></div></div>
+<div id="hoard-wrap" class="ov" hidden><div class="pop wide" role="dialog" aria-modal="true" aria-label="The hoard">
+<button type="button" class="x" data-close="hoard-wrap" title="Close (Esc)" aria-label="Close">×</button>
+<div id="hoard-panel">
+<div class="top"><p class="set-h">★ The hoard</p></div>
+<p class="note" style="margin:0 0 .5rem">Entries you starred. They are kept in this browser and open
+offline like anything else here; the star on any entry adds or removes it.</p>
+<div class="tiles" id="fav-tiles"></div>
+<p class="empty" id="hoard-empty" hidden>Nothing hoarded yet. Star an entry and the kobold keeps it.</p>
+</div></div></div>
 <div id="home" hidden>
 <p class="tryh">Ask the kobold</p>
 <div class="chips" id="examples"></div>
@@ -791,7 +822,92 @@ function md(src,cites){
    body so they can be laid out as a header rather than read as prose. */
 const RARITY=['common','uncommon','rare','unique'];
 const SIZES=['tiny','small','medium','large','huge','gargantuan'];
+/* ---------- creatures ----------
+   A creature entry is a description, Recall Knowledge DCs, then the stat block
+   under "## Name (Creature N)": general lines, "---", defense, "---", offense.
+   Fields are "**Key** value", the value often on the next line; an attack is
+   "**Melee**" then its cost, its line and a "**Damage**" field of its own.
+   Anything this does not recognise stays a field line in its section, and a
+   creature that does not parse falls back to the plain stat block. */
+const ABILITIES=['Str','Dex','Con','Int','Wis','Cha'];
+const SAVES=['AC','Fort','Ref','Will','HP'];
+function creatureFields(block){
+  const secs=[[]];let cur=null;
+  const start=line=>{
+    const f=line.match(/^\*\*(.+?)\*\*:?\s*(.*)$/);if(!f)return null;
+    const key=f[1].replace(/\[([^\]]+)\]\([^)]+\)/g,'$1').trim();
+    // A whole bold sentence is a formatting slip in the source, not a key.
+    return key.length<=48&&!/[.!?]$/.test(key)?{key,link:f[1],val:f[2]}:null;
+  };
+  for(const raw of block.split('\n')){
+    const line=raw.trim();if(!line)continue;
+    if(/^(---|\*\*\*)$/.test(line)){secs.push([]);cur=null;continue}
+    const f=start(line);
+    if(f&&f.key==='Damage'&&cur&&/^(Melee|Ranged)$/.test(cur.key)){cur.dmg=f.val;continue}
+    if(f){cur={key:f.key,link:f.link,val:f.val,dmg:''};secs[secs.length-1].push(cur);continue}
+    if(cur)cur.val+=(cur.val?'\n':'')+line;
+    else secs[secs.length-1].push(cur={key:'',link:'',val:line,dmg:''});
+  }
+  return secs;
+}
+function creatureBlock(h){
+  const text=(h.text||'').replace(/\r/g,'');
+  const m=text.match(/^##\s+([^\n]*?)\s*\(Creature\s+(-?\d+)\)\s*$/m);
+  if(!m)return '';
+  const about=text.slice(0,m.index).replace(/^#[^\n]*\n/,'').trim();
+  const secs=creatureFields(text.slice(m.index+m[0].length));
+  const all=secs.flat();
+  const take=key=>{for(const sec of secs){const i=sec.findIndex(f=>f.key===key);
+    if(i>=0)return sec.splice(i,1)[0]}return null};
+  const traits=(take('Traits')||{val:''}).val.split(',').map(t=>t.trim()).filter(Boolean);
+  const source=take('Source');
+  const abil=ABILITIES.map(k=>take(k));
+  const saves=SAVES.map(k=>take(k));
+  if(!saves[0]&&!saves[4])return '';   // no AC and no HP: not a stat block we know
+  const val=f=>inline(esc(f.val.replace(/\s*\n\s*/g,' ')));
+  const field=f=>f.key?md('**'+f.link+'** '+f.val):md(f.val);
+  const line=f=>'<p><span class="field">'+inline(esc(f.link))+'</span> '+val(f)+'</p>';
+  const attack=f=>{
+    let v=f.val.replace(/\s*\n\s*/g,' ').trim();
+    const c=v.match(/^\[([^\]]+)\]\s*/);if(c)v=v.slice(c[0].length);
+    v=v.replace(/,\s*$/,'');
+    return '<p class="cr-atk">'+(c?glyphs(c[1]):'')+'<span class="field">'+esc(f.key)+'</span> '+
+      inline(esc(v))+(f.dmg?'<span class="dmg"><span class="field">Damage</span> '+inline(esc(f.dmg))+'</span>':'')+'</p>';
+  };
+  const render=f=>/^(Melee|Ranged)$/.test(f.key)?attack(f):(/^(Perception|Languages|Skills|Items|Speed|Immunities|Resistances|Weaknesses)$/.test(f.key)?line(f):field(f));
+  const pills=traits.map(t=>{const l=t.toLowerCase();
+    const cls=RARITY.includes(l)?l:(SIZES.includes(l)?'size':(/^[LNC]?[GNE]$/i.test(t)?'align':''));
+    return '<span class="trait'+(cls?' '+cls:'')+'">'+esc(t)+'</span>'}).join('');
+  let html='<div class="cr">';
+  if(source)html+='<p class="src"><span class="field">Source</span> '+val(source)+'</p>';
+  // The six modifiers sit under the senses and skills, before items and the
+  // general abilities, the way a sheet lays them out.
+  const gen=secs[0]||[];
+  let cut=0;gen.forEach((f,i)=>{if(/^(Perception|Languages|Skills)$/.test(f.key))cut=i+1});
+  html+=gen.slice(0,cut).map(render).join('');
+  if(abil.every(Boolean))html+='<div class="cr-abil">'+abil.map((f,i)=>'<div><small>'+ABILITIES[i]+'</small>'+esc(f.val)+'</div>').join('')+'</div>';
+  html+=gen.slice(cut).map(render).join('');
+  if(secs.length>1){
+    html+='<div class="cr-sec">Defense</div>';
+    if(saves.some(Boolean))html+='<div class="cr-boxes">'+saves.map((f,i)=>f?'<div class="cr-box'+(SAVES[i]==='HP'?' hp':'')+'"><small>'+SAVES[i]+'</small>'+
+      esc(f.val.split('\n')[0])+'</div>':'').join('')+'</div>';
+    const hpNote=saves[4]&&saves[4].val.includes('\n')?saves[4].val.split('\n').slice(1).join(' '):'';
+    if(hpNote)html+='<p><span class="field">HP</span> '+inline(esc(hpNote))+'</p>';
+    html+=secs[1].map(render).join('');
+  }
+  if(secs.length>2){
+    html+='<div class="cr-sec">Offense</div>'+secs.slice(2).flat().map(render).join('');
+  }
+  html+='</div>';
+  if(about)html+='<details class="cr-about"><summary>About, and what you can recall</summary>'+md(about)+'</details>';
+  return '<div class="card"><div class="head">'+
+    '<h2 class="name"><a href="'+esc(h.url)+'" target="_blank" rel="noreferrer">'+esc(m[1])+'</a></h2>'+
+    '<span class="rank">Creature '+esc(m[2])+'</span></div>'+
+    (pills?'<div class="traits">'+pills+'</div>':'')+
+    '<div class="body clip">'+html+'</div></div>';
+}
 function statblock(h){
+  if((h.category||'').toLowerCase()==='creature'){const c=creatureBlock(h);if(c)return c}
   let text=(h.text||'').replace(/\r/g,'');
   let title=h.name,cost='',kind='';
   // The heading may wrap onto a second line (spells do this).
@@ -911,8 +1027,10 @@ function starBtn(h){
     (on?'★':'☆')+'</button>';
 }
 function paintFavs(){
-  const w=EL('favs');w.hidden=!FAVS.length;
+  const n=FAVS.length;
+  EL('hoard').innerHTML='<span class="st">★</span><span>Hoard</span>'+(n?'<b>'+n+'</b>':'');
   EL('fav-tiles').innerHTML=FAVS.map((h,i)=>tile(h,i,'fav')).join('');
+  EL('hoard-empty').hidden=!!n;
 }
 let EXTRA=[];   // entries the answer mentions that were not among the eight shown
 const LISTS={res:()=>SHOWN,fav:()=>FAVS,ext:()=>EXTRA};
@@ -1045,14 +1163,16 @@ function tileClick(e){
   if(star){e.stopPropagation();const t=star.closest('.tile');
     toggleFav(LISTS[t.dataset.src]()[+t.dataset.i]);return}
   if(e.target.closest('a')){followLink(e);return}
-  const t=e.target.closest('.tile');if(t)openEntry(+t.dataset.i,t.dataset.src);
+  const t=e.target.closest('.tile');if(t)openTile(t);
 }
+// An entry opened from the hoard popup takes the popup's place.
+function openTile(t){if(t.dataset.src==='fav')closeOverlays();openEntry(+t.dataset.i,t.dataset.src)}
 function tileKey(e){
   if((e.key==='Enter'||e.key===' ')&&e.target.classList.contains('tile')){
-    e.preventDefault();openEntry(+e.target.dataset.i,e.target.dataset.src)}
+    e.preventDefault();openTile(e.target)}
 }
 out.addEventListener('click',tileClick);out.addEventListener('keydown',tileKey);
-EL('favs').addEventListener('click',tileClick);EL('favs').addEventListener('keydown',tileKey);
+EL('hoard-panel').addEventListener('click',tileClick);EL('hoard-panel').addEventListener('keydown',tileKey);
 paintFavs();
 document.addEventListener('keydown',e=>{
   if(sheet.hidden)return;
@@ -1271,7 +1391,8 @@ function lockScroll(){document.body.style.overflow=
   [...document.querySelectorAll('.ov,#sheet,#onboard')].some(el=>!el.hidden)?'hidden':''}
 gear.addEventListener('click',()=>{
   const open=panel.hidden;panel.hidden=!open;gear.setAttribute('aria-expanded',String(open));
-  if(open){EL('history-wrap').hidden=true;EL('hist').setAttribute('aria-expanded','false')}
+  if(open){EL('history-wrap').hidden=true;EL('hist').setAttribute('aria-expanded','false');
+    EL('hoard-wrap').hidden=true;EL('hoard').setAttribute('aria-expanded','false')}
   lockScroll();
   // Fill the model list the first time it is opened, not on every page load:
   // it is one request to the backend and nobody who never opens this needs it.
@@ -1452,14 +1573,20 @@ EL('h-clear').addEventListener('click',()=>{
 });
 const histBtn=EL('hist'),histPanel=EL('history-wrap');
 histBtn.addEventListener('click',()=>{
-  const open=histPanel.hidden;histPanel.hidden=!open;
+  const open=histPanel.hidden;closeOverlays();histPanel.hidden=!open;
   histBtn.setAttribute('aria-expanded',String(open));
-  if(open){panel.hidden=true;gear.setAttribute('aria-expanded','false')}
+  lockScroll();
+});
+const hoardBtn=EL('hoard'),hoardPanel=EL('hoard-wrap');
+hoardBtn.addEventListener('click',()=>{
+  const open=hoardPanel.hidden;closeOverlays();hoardPanel.hidden=!open;
+  hoardBtn.setAttribute('aria-expanded',String(open));
   lockScroll();
 });
 function closeOverlays(){
   for(const el of document.querySelectorAll('.ov'))el.hidden=true;
   gear.setAttribute('aria-expanded','false');histBtn.setAttribute('aria-expanded','false');
+  hoardBtn.setAttribute('aria-expanded','false');
   lockScroll();
 }
 document.addEventListener('click',e=>{
