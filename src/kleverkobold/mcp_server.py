@@ -41,6 +41,9 @@ TOOLS = [
                           "description": "rules: Archives of Nethys only. lore: rules and "
                                          "PathfinderWiki. auto (default): decided per question; "
                                          "a rules question never sees lore."},
+                "persona": {"type": "string",
+                            "description": "Who is asking, e.g. 'level 5 human rogue, free "
+                                           "archetype', so the answer applies to them."},
             },
             "required": ["question"],
         },
@@ -132,7 +135,8 @@ def serve(index_dir: pathlib.Path, ollama_url: str, llm_model: str | None = None
                              f"{h.url}" for h in hits]
                     return _result("\n".join(lines) or "Nothing matched.")
                 if name == "kobold_ask":
-                    out = a.ask(question, k=int(args.get("k") or DEFAULT_K), scope=scope)
+                    out = a.ask(question, k=int(args.get("k") or DEFAULT_K), scope=scope,
+                                persona=(args.get("persona") or None))
                     lines = [out["answer"], "", "Sources:"]
                     lines += [f"- {s['name']} ({s['category']}"
                               f"{', lore' if s.get('corpus') == 'pathfinderwiki' else ''}) "

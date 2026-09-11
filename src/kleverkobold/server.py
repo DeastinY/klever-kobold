@@ -331,9 +331,11 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
             max_tokens = _clamp((query.get("tokens") or [None])[0], 32, 4000,
                                 pool.base.answer_tokens)
             history = _read_history(query)
+            # Who is asking, for the answer only; retrieval does not see it.
+            persona = (query.get("who") or [""])[0].strip()[:Assistant.PERSONA_CHARS]
             if parsed.path == "/api/ask":
                 self._ask_stream(question, config, api_key, k, rerank, max_tokens, scope, history,
-                                 filters)
+                                 filters, persona)
                 return
             try:
                 assistant = pool.get(config, api_key)
@@ -412,7 +414,7 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
         def _ask_stream(self, question: str, config: Config, api_key: str,
                         k: int, rerank: bool, max_tokens: int, scope: str,
                         history: list[Turn] | None = None,
-                        filters: dict | None = None) -> None:
+                        filters: dict | None = None, persona: str = "") -> None:
             """Answer over server-sent events.
 
             The answer is the slow half and it decodes a token at a time. Sending
@@ -432,7 +434,8 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                 with lock:
                     for event in assistant.ask_stream(question, k=k, rerank=rerank,
                                                       max_tokens=max_tokens, scope=scope,
-                                                      history=history, filters=filters):
+                                                      history=history, filters=filters,
+                                                      persona=persona or None):
                         if event["event"] == "sources":
                             shown = event["hits"]
                             trimmed = {"event": "sources", "timings": event["timings"],

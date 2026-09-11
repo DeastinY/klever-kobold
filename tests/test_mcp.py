@@ -91,3 +91,12 @@ def test_search_tool_filters_and_lists(monkeypatch, assistant, client):
     assert listing.startswith("- Battle Medicine (feat, level 1)") and "Treat Wounds (action)" in listing
     assert "## Battle Medicine" in replies[1]["result"]["content"][0]["text"]
     assert replies[2]["result"]["isError"]
+
+
+def test_ask_tool_takes_a_persona(monkeypatch, assistant, client):
+    client.replies = [plan_reply(), "1", "Yes."]
+    run(monkeypatch, assistant, [
+        {"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+         "params": {"name": "kobold_ask", "arguments": {"question": "prone?", "k": 1,
+                                                        "persona": "level 2 wizard"}}}])
+    assert "The person asking plays: level 2 wizard" in client.calls[-1][1]

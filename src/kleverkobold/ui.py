@@ -491,6 +491,7 @@ button.link{background:none;border:0;padding:0;font:inherit;color:var(--accent);
 <p class="hint"><kbd>Enter</kbd> asks · <kbd>Shift</kbd>+<kbd>Enter</kbd> shows only the entries
 · <kbd>↑</kbd> earlier questions</p>
 <p class="hint" id="thread" hidden></p>
+<p class="hint" id="who" hidden></p>
 <details id="narrow"><summary>Narrow it down</summary>
 <div class="narrow-row">
  <select id="n-kind" title="Entry kind"><option value="">any kind</option>
@@ -605,6 +606,12 @@ offline like anything else here; the star on any entry adds or removes it.</p>
   <span>100 of 109 · half the speed · ~7 GB</span></button>
 </div>
 <p class="note" id="p-note"></p>
+<p class="set-h" style="margin-top:.9rem">Who is asking</p>
+<div class="grid">
+ <label for="s-who">Ask as</label>
+ <input id="s-who" maxlength="300" placeholder="level 5 human rogue, free archetype — or leave empty">
+ <p class="note">Sent with every question so the answer applies to this character. Retrieval does not see it.</p>
+</div>
 <div id="scope-wrap" hidden>
 <p class="set-h" style="margin-top:.9rem">What it digs through</p>
 <div class="grid">
@@ -1256,7 +1263,7 @@ document.addEventListener('keydown',e=>{
    different encoder does not fail, it returns plausible and unrelated entries,
    so "this server's own" is the default and the alternative is fingerprinted
    against the index before the first question. */
-const SDEF={backend:'ollama',base:'http://localhost:11434',model:'',key:'',
+const SDEF={who:'',backend:'ollama',base:'http://localhost:11434',model:'',key:'',
  k:8,rerank:true,ctx:1600,tokens:400,embed:'server',scope:'auto',followup:false};
 let SET=Object.assign({},SDEF),SEEDED=false,LOCAL_ONLY=true,EMBED_MODEL='',AUTO_MODEL=false;
 // Whether the index this server loaded carries PathfinderWiki. Without it the
@@ -1271,6 +1278,14 @@ function saveSettings(){
   try{localStorage.setItem('kobold-settings',JSON.stringify(SET))}catch(e){}
 }
 
+/* The character the answers are for, when one is set: said under the box,
+   because a wrong answer to the wrong character looks like a wrong answer. */
+function paintWho(){
+  const el=EL('who');if(!el)return;
+  el.hidden=!SET.who;
+  if(SET.who)el.innerHTML='asking as <b>'+esc(SET.who)+'</b> · <a href="#" id="who-x">not any more</a>';
+  const x=EL('who-x');if(x)x.addEventListener('click',e=>{e.preventDefault();SET.who='';EL('s-who').value='';saveSettings();paintWho()});
+}
 /* ---------- narrowing ----------
    Hard filters the asker sets by hand: a kind, a level range, traits. They
    ride along with every question and look-up, and on their own they list
@@ -1315,6 +1330,7 @@ function settingsQuery(extra){
   p.set('ctx',SET.ctx);p.set('tokens',SET.tokens);
   p.set('embed',SET.embed);
   if(LORE)p.set('scope',SET.scope||'auto');
+  if(SET.who)p.set('who',SET.who);
   return p.toString();
 }
 function settingsHeaders(){
@@ -1363,10 +1379,10 @@ function writeForm(){
   EL('s-backend').value=SET.backend;EL('s-base').value=SET.base;
   EL('s-model').value=SET.model;EL('s-key').value=SET.key;
   EL('s-k').value=SET.k;EL('s-rerank').checked=!!SET.rerank;
-  EL('s-ctx').value=SET.ctx;EL('s-tokens').value=SET.tokens;
+  EL('s-ctx').value=SET.ctx;EL('s-tokens').value=SET.tokens;EL('s-who').value=SET.who||'';
   EL('s-embed').value=SET.embed;EL('s-followup').checked=!!SET.followup;
   EL('s-scope').value=SET.scope||'auto';
-  paintSettings();
+  paintSettings();paintWho();
 }
 function readForm(){
   SET.backend=EL('s-backend').value;
@@ -1375,7 +1391,7 @@ function readForm(){
   SET.key=EL('s-key').value;
   SET.k=+EL('s-k').value||SDEF.k;
   SET.rerank=EL('s-rerank').checked;
-  SET.ctx=+EL('s-ctx').value||SDEF.ctx;
+  SET.ctx=+EL('s-ctx').value||SDEF.ctx;SET.who=EL('s-who').value.trim().slice(0,300);paintWho();
   SET.tokens=+EL('s-tokens').value||SDEF.tokens;
   SET.embed=EL('s-embed').value;
   SET.scope=EL('s-scope').value||'auto';
@@ -1496,7 +1512,7 @@ gear.addEventListener('click',()=>{
   // it is one request to the backend and nobody who never opens this needs it.
   if(open&&!EL('s-models').children.length)probeModels(true);
 });
-for(const id of ['s-backend','s-base','s-model','s-key','s-k','s-rerank','s-ctx','s-tokens',
+for(const id of ['s-who','s-backend','s-base','s-model','s-key','s-k','s-rerank','s-ctx','s-tokens',
                  's-embed','s-scope','s-followup'])
   EL(id).addEventListener('change',readForm);
 for(const name of ['better','faster'])

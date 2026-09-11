@@ -373,3 +373,14 @@ def test_search_route_passes_filters(live, client):
     client.replies = [plan_reply("", "")]
     status, body, _ = get(url + "/api/search?q=medicine&rerank=0&kind=feat")
     assert status == 200 and [h["category"] for h in json.loads(body)["hits"]] == ["feat"]
+
+
+def test_ask_route_passes_who(live, client):
+    url, _ = live
+    client.replies = [plan_reply("prone", "condition")]
+    events = sse(get(url + "/api/ask?q=am+I+off-guard&rerank=0&who=level+3+fighter")[1])
+    assert events[-1]["event"] == "done"
+    assert "The person asking plays: level 3 fighter" in client.calls[-1][1]
+    client.replies = [plan_reply("prone", "condition")]
+    sse(get(url + "/api/ask?q=am+I+off-guard&rerank=0")[1])
+    assert "<asker>" not in client.calls[-1][1]

@@ -250,3 +250,12 @@ def test_browse_lists_by_level_then_name(assistant):
     assert assistant.browse({"categories": ["nation"]}) == []              # lore is out unless asked
     assert [h.name for h in assistant.browse({"categories": ["nation"]}, scope="lore")] == ["Cheliax"]
     assert len(assistant.browse({"level": (None, None)}, limit=3)) == 3
+
+
+def test_ask_carries_the_persona(assistant, client):
+    client.replies = [plan_reply(), "Yes."]
+    assistant.ask("can I take it", k=2, rerank=False, persona="level 5 rogue")
+    assert "The person asking plays: level 5 rogue" in client.calls[-1][1]
+    client.replies = [plan_reply()]
+    list(assistant.ask_stream("can I take it", k=2, rerank=False, persona="level 5 rogue"))
+    assert "level 5 rogue" in client.calls[-1][1]

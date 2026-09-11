@@ -216,3 +216,16 @@ def test_stat_block_comes_first_for_creatures():
     plain = hit("p", "Plain", category="creature", text="## Plain (Creature 1)\n\n**AC** 1")
     assert stat_block_first(plain) == plain.text
     assert stat_block_first(hit("n", "No block", category="creature", text="just words")) == "just words"
+
+
+def test_persona_sits_before_the_excerpts():
+    a = bare()
+    hits = [hit("a", "A")]
+    assert a.prompt("q", hits) == a.prompt("q", hits, persona="")
+    out = a.prompt("q", hits, persona="  level 5   human rogue ")
+    assert out.startswith("<asker>\nThe person asking plays: level 5 human rogue\n</asker>\n\n<rules_excerpts>")
+    assert out.endswith("\n\nQuestion: q")
+    turn = Turn(question="earlier", answer="a")
+    both = a.prompt("q", hits, [turn], persona="rogue")
+    assert both.index("<earlier_exchange>") < both.index("<asker>") < both.index("<rules_excerpts>")
+    assert len(a.asker("x" * 1000)) < 400

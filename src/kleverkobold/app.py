@@ -1235,9 +1235,22 @@ class Assistant:
         base = self.system_for(hits)
         return (base + FOLLOWUP_NOTE) if history else base
 
+    PERSONA_CHARS = 300
+
+    def asker(self, persona: str | None) -> str:
+        """Who is asking, as a block before the excerpts, or nothing at all.
+
+        "level 5 human rogue, free archetype" changes what "can I take this
+        feat" means. It sits with the earlier exchange, ahead of the excerpts,
+        so the entry the question names still ends up next to the question.
+        """
+        persona = " ".join((persona or "").split())[:self.PERSONA_CHARS]
+        return f"<asker>\nThe person asking plays: {persona}\n</asker>\n\n" if persona else ""
+
     def prompt(self, question: str, hits: Iterable[Hit],
-               history: Iterable[Turn] | None = None) -> str:
-        return self.earlier(history) + self.context(hits) + "\n\nQuestion: " + question
+               history: Iterable[Turn] | None = None, persona: str | None = None) -> str:
+        return (self.earlier(history) + self.asker(persona) + self.context(hits)
+                + "\n\nQuestion: " + question)
 
     @staticmethod
     def named_last(question: str, hits: list[Hit]) -> list[Hit]:
@@ -1262,7 +1275,7 @@ class Assistant:
             pool: int | None = None, expand: int = DEFAULT_EXPAND,
             max_tokens: int | None = None, scope: str = DEFAULT_SCOPE,
             history: Iterable[Turn] | None = None,
-            filters: dict | None = None) -> dict:
+            filters: dict | None = None, persona: str | None = None) -> dict:
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
                                             pool=pool, expand=expand, scope=scope,
@@ -1273,7 +1286,7 @@ class Assistant:
         hits = self.named_last(plan.get("standalone") or question, hits)
         t = time.time()
         answer = self.ollama.chat(self.answer_system(history, hits),
-                                  self.prompt(question, hits, history),
+                                  self.prompt(question, hits, history, persona),
                                   self.manifest["ollama_llm"], max_tokens=max_tokens)
         timings["answer"] = round(time.time() - t, 2)
         timings["total"] = round(sum(timings.values()), 2)
@@ -1362,7 +1375,7 @@ class Assistant:
                    max_tokens: int | None = None,
                    scope: str = DEFAULT_SCOPE,
                    history: Iterable[Turn] | None = None,
-                   filters: dict | None = None) -> Iterator[dict]:
+                   filters: dict | None = None, persona: str | None = None) -> Iterator[dict]:
         """Yield one `sources` event, then `token` events, then `done`."""
         max_tokens = self.answer_tokens if max_tokens is None else max_tokens
         plan, hits, timings = self.retrieve(question, k=k, rerank=rerank,
@@ -1379,7 +1392,7 @@ class Assistant:
         first = None
         pieces: list[str] = []
         for piece in self.ollama.stream(self.answer_system(history, hits),
-                                        self.prompt(question, hits, history),
+                                        self.prompt(question, hits, history, persona),
                                         self.manifest["ollama_llm"],
                                         max_tokens=max_tokens):
             if first is None:
