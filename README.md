@@ -42,7 +42,7 @@ kobold serve
 **With uv**, if you already have it and would rather not pipe a script into a shell:
 
 ```bash
-uv tool install git+https://github.com/DeastinY/klever-kobold
+uv tool install --python 3.13 git+https://github.com/DeastinY/klever-kobold
 kobold setup --install-ollama     # Ollama if missing, both models, the index
 kobold serve                      # http://localhost:8765
 ```

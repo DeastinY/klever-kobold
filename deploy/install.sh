@@ -42,7 +42,9 @@ fi
 ollama --version
 
 say "3/4  The Klever Kobold"
-uv tool install --force "git+$REPO"
+# A pinned interpreter: whatever Python a machine happens to have, the wheels
+# for 3.13 exist on every platform this runs on, and it is what CI tests.
+uv tool install --force --python 3.13 "git+$REPO"
 export PATH="$HOME/.local/bin:$PATH"
 kobold setup            # both models (about 4 GB) and the rules-and-lore index (270 MB); idempotent
 

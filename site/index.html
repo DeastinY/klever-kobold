@@ -75,7 +75,7 @@
   <p class="os">Windows</p>
   <pre>irm https://raw.githubusercontent.com/DeastinY/klever-kobold/main/deploy/install.ps1 | iex</pre>
   <p class="os">Already have uv</p>
-  <pre>uv tool install git+https://github.com/DeastinY/klever-kobold
+  <pre>uv tool install --python 3.13 git+https://github.com/DeastinY/klever-kobold
 kobold setup --install-ollama
 kobold serve</pre>
   <p>Either way it installs <a href="https://ollama.com">Ollama</a> if missing, pulls two small models (about 4 GB), fetches the index of rules and lore (270 MB), and opens the kobold in your browser at <code>localhost:8765</code>.</p>

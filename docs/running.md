@@ -3,7 +3,7 @@
 ## The short version
 
 ```bash
-uv tool install git+https://github.com/DeastinY/klever-kobold
+uv tool install --python 3.13 git+https://github.com/DeastinY/klever-kobold
 kobold setup --install-ollama     # Ollama if missing, both models, the index
 kobold serve                      # opens http://localhost:8765 in your browser
 ```

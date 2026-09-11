@@ -28,7 +28,7 @@ catch { Start-Process ollama -ArgumentList "serve" -WindowStyle Hidden; Start-Sl
 ollama --version
 
 Say "3/4  The Klever Kobold"
-uv tool install --force "git+$repo"
+uv tool install --force --python 3.13 "git+$repo"
 $env:Path = "$env:USERPROFILE\.local\bin;$env:Path"
 kobold setup
 
