@@ -157,41 +157,65 @@ def asserts_level_for(answer: str, name: str | None) -> bool:
 
 
 def api_generator(base_url: str, model: str, api_key: str = "", workers: int = 16,
-                  client=None):
-    """A ``generate(pairs, max_tokens)`` over an OpenAI-compatible chat endpoint.
+                  client=None, backend: str = "auto"):
+    """A ``generate(pairs, max_tokens)`` over a chat server instead of local weights.
 
     The transformers path below loads the 27B in 4-bit and decodes two
-    prompts at a time; a server with continuous batching (vLLM, Ollama) does
-    the same work several times faster, so the teacher can be whatever answers
-    at ``base_url``. Every prompt is in flight at once, ``workers`` deep; the
-    order of the results is the order of the prompts. Thinking is switched off
-    where the server understands the request, and stripped where it does not.
+    prompts at a time; a server with continuous batching does the same work
+    several times faster, so the teacher can be whatever answers at
+    ``base_url``. Every prompt is in flight at once, ``workers`` deep; the
+    order of the results is the order of the prompts.
+
+    Two dialects. An OpenAI-compatible endpoint gets ``/chat/completions``
+    with thinking switched off through the chat template where the server
+    honours that. Ollama does not: its compatible endpoint ignores the switch
+    and the model thinks through the whole token budget, returning nothing --
+    so Ollama, recognised by its ``/api/version`` beside the URL, is spoken to
+    natively, where ``think: false`` is a first-class field. A thinking block
+    that slips through either way is stripped.
     """
     import concurrent.futures
 
     import httpx
     from run_eval import strip_thinking
 
-    url = base_url.rstrip("/") + "/chat/completions"
-    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
     client = client or httpx.Client(timeout=300.0)
-    # Learned once from the server, then kept: which field names the token
-    # budget, and whether it accepts the template switch for thinking.
+    root = base_url.rstrip("/")
+    if root.endswith("/v1"):
+        root = root[:-3]
+    if backend == "auto":
+        try:
+            backend = "ollama" if client.get(f"{root}/api/version", timeout=5.0).status_code == 200 \
+                else "openai"
+        except httpx.HTTPError:
+            backend = "openai"
+    headers = {"Authorization": f"Bearer {api_key}"} if api_key else {}
+    # Learned once from an OpenAI-style server, then kept: which field names
+    # the token budget, and whether it accepts the template switch for thinking.
     state = {"tokens": "max_tokens", "thinking": True}
+
+    def request(system: str, user: str, max_tokens: int) -> tuple[str, dict]:
+        messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+        if backend == "ollama":
+            return f"{root}/api/chat", {"model": model, "messages": messages, "stream": False,
+                                        "think": False, "keep_alive": "2h",
+                                        "options": {"temperature": 0, "num_predict": max_tokens}}
+        body: dict = {"model": model, "temperature": 0, "messages": messages,
+                      state["tokens"]: max_tokens}
+        if state["thinking"]:
+            body["chat_template_kwargs"] = {"enable_thinking": False}
+        return f"{base_url.rstrip('/')}/chat/completions", body
+
+    def content(data: dict) -> str:
+        if backend == "ollama":
+            return (data.get("message") or {}).get("content") or ""
+        return data["choices"][0]["message"].get("content") or ""
 
     def one(pair: tuple[str, str], max_tokens: int) -> str:
         system, user = pair
-        body: dict = {"model": model, "temperature": 0,
-                      "messages": [{"role": "system", "content": system},
-                                   {"role": "user", "content": user}]}
         last = ""
         for attempt in range(8):
-            body.pop("max_tokens", None)
-            body.pop("max_completion_tokens", None)
-            body.pop("chat_template_kwargs", None)
-            body[state["tokens"]] = max_tokens
-            if state["thinking"]:
-                body["chat_template_kwargs"] = {"enable_thinking": False}
+            url, body = request(system, user, max_tokens)
             try:
                 r = client.post(url, headers=headers, json=body)
             except httpx.HTTPError as exc:
@@ -210,8 +234,7 @@ def api_generator(base_url: str, model: str, api_key: str = "", workers: int = 1
                 continue
             if r.status_code >= 400:
                 raise RuntimeError(f"HTTP {r.status_code} on {user[:60]!r}: {r.text[:300]}")
-            data = orjson.loads(r.content)
-            return strip_thinking(data["choices"][0]["message"].get("content") or "")
+            return strip_thinking(content(orjson.loads(r.content)))
         raise RuntimeError(f"giving up after 8 attempts on {user[:60]!r}; last: {last}")
 
     def generate(pairs: list[tuple[str, str]], max_tokens: int,
@@ -251,6 +274,8 @@ def main() -> int:
     ap.add_argument("--teacher-url", default=None,
                     help="OpenAI-compatible base URL (vLLM, Ollama: http://localhost:11434/v1) "
                          "to send the teacher's prompts to instead of loading it here")
+    ap.add_argument("--teacher-backend", choices=("auto", "openai", "ollama"), default="auto",
+                    help="how to talk to --teacher-url; auto recognises Ollama by /api/version")
     ap.add_argument("--teacher-key-env", default="OPENAI_API_KEY",
                     help="environment variable holding the key for --teacher-url, if any")
     ap.add_argument("--workers", type=int, default=16,
@@ -306,7 +331,8 @@ def main() -> int:
     rng = random.Random(args.seed)
     if args.teacher_url:
         generate = api_generator(args.teacher_url, args.teacher,
-                                 os.environ.get(args.teacher_key_env, ""), args.workers)
+                                 os.environ.get(args.teacher_key_env, ""), args.workers,
+                                 backend=args.teacher_backend)
         print(f"teacher   {args.teacher} at {args.teacher_url}, {args.workers} prompts in flight")
     else:
         tok = AutoTokenizer.from_pretrained(args.teacher, padding_side="left")

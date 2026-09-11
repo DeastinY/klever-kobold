@@ -41,7 +41,7 @@ def test_results_come_back_in_prompt_order(script, monkeypatch):
         return reply(f"<think>hmm</think>answer to {user}")
 
     gen = script.api_generator("http://teacher/v1", "qwen", api_key="k", workers=4,
-                               client=server(handle))
+                               client=server(handle), backend="openai")
     pairs = [("sys", f"q{i}") for i in range(9)]
     out = gen(pairs, 70)
     assert out == [f"answer to q{i}" for i in range(9)]           # thinking stripped, order kept
@@ -64,7 +64,8 @@ def test_learns_the_servers_dialect(script, monkeypatch):
             return httpx.Response(400, text="use max_completion_tokens instead of max_tokens")
         return reply("fine")
 
-    gen = script.api_generator("http://teacher/v1/", "m", workers=1, client=server(handle))
+    gen = script.api_generator("http://teacher/v1/", "m", workers=1, client=server(handle),
+                               backend="openai")
     assert gen([("s", "a"), ("s", "b")], 10) == ["fine", "fine"]
     # Learned once: the second prompt goes straight through in the right dialect.
     assert "chat_template_kwargs" not in calls[-1] and calls[-1]["max_completion_tokens"] == 10
@@ -79,20 +80,21 @@ def test_retries_then_gives_up(script, monkeypatch):
         n["calls"] += 1
         return httpx.Response(503, text="busy") if n["calls"] < 3 else reply("ok")
 
-    gen = script.api_generator("http://t/v1", "m", workers=1, client=server(flaky))
+    gen = script.api_generator("http://t/v1", "m", workers=1, client=server(flaky), backend="openai")
     assert gen([("s", "u")], 5) == ["ok"] and n["calls"] == 3
 
     def refuse(request):
         return httpx.Response(401, text="who are you")
 
-    gen = script.api_generator("http://t/v1", "m", workers=1, client=server(refuse))
+    gen = script.api_generator("http://t/v1", "m", workers=1, client=server(refuse), backend="openai")
     with pytest.raises(RuntimeError, match="HTTP 401"):
         gen([("s", "u")], 5)
 
     def always_busy(request):
         return httpx.Response(503, text="busy")
 
-    gen = script.api_generator("http://t/v1", "m", workers=1, client=server(always_busy))
+    gen = script.api_generator("http://t/v1", "m", workers=1, client=server(always_busy),
+                               backend="openai")
     with pytest.raises(RuntimeError, match="giving up"):
         gen([("s", "u")], 5)
 
@@ -100,3 +102,35 @@ def test_retries_then_gives_up(script, monkeypatch):
 def test_regexes_still_defined(script):
     assert script.RE_CORRECTS.search("That is a D&D 5e mechanic, not Pathfinder.")
     assert script.asserts_level_for("Shoony Lore is a 4th-level feat.", "Shoony Lore")
+
+
+def test_ollama_is_recognised_and_spoken_to_natively(script):
+    seen = []
+
+    def handle(request):
+        if request.url.path == "/api/version":
+            return httpx.Response(200, json={"version": "0.33.3"})
+        assert request.url.path == "/api/chat"
+        body = json.loads(request.content)
+        seen.append(body)
+        return httpx.Response(200, json={"message": {"role": "assistant",
+                                                     "content": "What does Cat Fall do?"}})
+
+    gen = script.api_generator("http://localhost:11434/v1", "qwen3.8:27b", workers=2,
+                               client=server(handle))
+    assert gen([("sys", "ask about Cat Fall")], 70) == ["What does Cat Fall do?"]
+    body = seen[0]
+    assert body["think"] is False and body["stream"] is False
+    assert body["options"] == {"temperature": 0, "num_predict": 70}
+    assert body["messages"][1]["content"] == "ask about Cat Fall"
+
+
+def test_openai_when_no_ollama_answers(script):
+    def handle(request):
+        if request.url.path == "/api/version":
+            return httpx.Response(404)
+        assert request.url.path == "/v1/chat/completions"
+        return reply("via openai")
+
+    gen = script.api_generator("http://vllm:8000/v1", "m", workers=1, client=server(handle))
+    assert gen([("s", "u")], 5) == ["via openai"]
