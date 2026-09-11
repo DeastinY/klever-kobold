@@ -104,6 +104,9 @@ button[disabled],input[disabled]{opacity:.55;cursor:progress}
 .narrow-row #n-traits{flex:1;min-width:11rem}
 .narrow-row label{display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap}
 .narrow-row button{padding:.3rem .6rem;font-size:.8rem}
+#phone{display:flex;gap:.9rem;align-items:center;flex-wrap:wrap}
+#phone svg{width:7.5rem;height:7.5rem;background:#fff;padding:.3rem;border-radius:6px;border:1px solid var(--line)}
+#phone code{font-size:.85rem;background:var(--chip);padding:.1rem .4rem;border-radius:4px;color:var(--ink)}
 #upd{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .7rem;font-size:.85rem;color:var(--soft);
  border:1px solid var(--line);border-left:3px solid var(--k-item);background:var(--card);border-radius:8px;
  padding:.5rem .8rem;margin:0 0 .75rem}
@@ -623,6 +626,8 @@ offline like anything else here; the star on any entry adds or removes it.</p>
  <input id="s-who" maxlength="300" placeholder="level 5 human rogue, free archetype — or leave empty">
  <p class="note">Sent with every question so the answer applies to this character. Retrieval does not see it.</p>
 </div>
+<p class="set-h" style="margin-top:.9rem">On a phone at the table</p>
+<div id="phone" class="note" style="margin:0"></div>
 <div id="scope-wrap" hidden>
 <p class="set-h" style="margin-top:.9rem">What it digs through</p>
 <div class="grid">
@@ -1321,6 +1326,17 @@ function saveSettings(){
   try{localStorage.setItem('kobold-settings',JSON.stringify(SET))}catch(e){}
 }
 
+/* A phone on the same network: the address as a QR code, when the server
+   listens beyond this machine; else how to make it. */
+let PHONE_URL=null;
+async function paintPhone(url){
+  const el=EL('phone');if(!el||PHONE_URL===url)return;
+  PHONE_URL=url;
+  if(!url){el.innerHTML='Start it with <code>kobold serve --host 0.0.0.0</code> and a code to scan appears here.';return}
+  el.innerHTML='<span>Scan, or type <code>'+esc(url)+'</code>. Same network only; nothing leaves it.</span>';
+  try{const svg=await (await fetch('/api/qr.svg')).text();
+    if(svg.startsWith('<svg'))el.insertAdjacentHTML('afterbegin',svg)}catch(e){}
+}
 /* The character the answers are for, when one is set: said under the box,
    because a wrong answer to the wrong character looks like a wrong answer. */
 function paintWho(){
@@ -1471,7 +1487,7 @@ function seedFromServer(health){
   // The panel shows what `kobold serve` was actually launched with rather than a
   // second copy of the defaults, so --llm-model on the command line is visible.
   if(SEEDED||!health)return;
-  SEEDED=true;LOCAL_ONLY=health.local_only!==false;
+  SEEDED=true;LOCAL_ONLY=health.local_only!==false;paintPhone(health.lan_url||'');
   const d=health.defaults||{};EMBED_MODEL=d.embed_model||'';
   if(d.backend)SDEF.backend=d.backend;
   if(d.base_url)SDEF.base=d.base_url;

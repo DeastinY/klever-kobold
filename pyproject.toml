@@ -13,6 +13,7 @@ dependencies = [
     "httpx>=0.27",
     "numpy>=1.26",
     "orjson>=3.10",
+    "segno>=1.6",      # the QR code for a phone at the table; pure Python, no dependencies
 ]
 
 [project.scripts]

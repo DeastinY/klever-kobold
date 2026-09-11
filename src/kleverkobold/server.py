@@ -262,6 +262,16 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
             if parsed.path == "/api/health":
                 self._send(200, json.dumps(health).encode(), "application/json")
                 return
+            if parsed.path == "/api/qr.svg":
+                # Only ever this server's own network address: the page cannot
+                # ask for arbitrary text to be encoded.
+                url = health.get("lan_url") or ""
+                if not url:
+                    self._send(404, b'{"error":"not reachable beyond this machine"}',
+                               "application/json")
+                    return
+                self._send(200, qr_svg(url).encode(), "image/svg+xml; charset=utf-8")
+                return
             if parsed.path == "/api/examples":
                 # A few random current entries, so the page can suggest questions
                 # the corpus can actually answer. No model, no index scan beyond
@@ -487,6 +497,33 @@ def _random_entries(assistant: Assistant, n: int = 8) -> list[dict]:
     return out
 
 
+def lan_address(host: str, port: int) -> str:
+    """The address a phone on the same network reaches this server at, or "".
+
+    Only when the server listens beyond the loopback. The machine's own
+    address is read off a UDP socket "connected" to a public address, which
+    sends nothing: it just asks the kernel which interface it would use.
+    """
+    if host in ("127.0.0.1", "localhost", "::1"):
+        return ""
+    if host not in ("0.0.0.0", "::", ""):
+        return f"http://{host}:{port}"
+    import socket
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("192.0.2.1", 9))     # TEST-NET-1: never routed, never sent to
+            ip = s.getsockname()[0]
+    except OSError:
+        return ""
+    return f"http://{ip}:{port}" if ip and not ip.startswith("127.") else ""
+
+
+def qr_svg(url: str) -> str:
+    """The address as an inline SVG QR code, for the settings panel."""
+    import segno
+    return segno.make(url, error="m").svg_inline(scale=4, dark="#1e1715", light=None)
+
+
 def _report_url(flag: str | None) -> str:
     """The flag, else the environment, else the default; an explicit '' disables."""
     if flag is not None:
@@ -575,6 +612,8 @@ def serve(index_dir: pathlib.Path = DEFAULT_INDEX, ollama_url: str = DEFAULT_OLL
               # Drives how loudly the panel warns about typing an API key into a
               # page with no authentication in front of it.
               "local_only": host in ("127.0.0.1", "localhost", "::1"),
+              # Where a phone on the same network finds this, when it can.
+              "lan_url": lan_address(host, port),
               # Filled in by a thread: what is installed and whether main has
               # moved on. Absent until the check answers, and if it never does.
               "update": None}

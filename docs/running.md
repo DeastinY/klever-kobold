@@ -74,7 +74,8 @@ index with a different encoder returns plausible, unrelated entries.
 headless machine or a service unit wants.
 
 `kobold serve --host 0.0.0.0` makes it reachable from a phone or tablet on your
-network. There is no login; do not expose it to the internet.
+network, and the settings panel then shows the address as a QR code to scan.
+There is no login; do not expose it to the internet.
 
 ## The command line
 

@@ -384,3 +384,48 @@ def test_ask_route_passes_who(live, client):
     client.replies = [plan_reply("prone", "condition")]
     sse(get(url + "/api/ask?q=am+I+off-guard&rerank=0")[1])
     assert "<asker>" not in client.calls[-1][1]
+
+
+def test_lan_address(monkeypatch):
+    import socket
+    assert s.lan_address("127.0.0.1", 8765) == ""
+    assert s.lan_address("localhost", 8765) == ""
+    assert s.lan_address("192.168.1.20", 8765) == "http://192.168.1.20:8765"
+
+    class Sock:
+        def __init__(self, *a):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def connect(self, addr):
+            assert addr == ("192.0.2.1", 9)
+
+        def getsockname(self):
+            return ("10.0.0.7", 51234)
+
+    monkeypatch.setattr(socket, "socket", Sock)
+    assert s.lan_address("0.0.0.0", 8765) == "http://10.0.0.7:8765"
+
+    class Down(Sock):
+        def connect(self, addr):
+            raise OSError("no network")
+
+    monkeypatch.setattr(socket, "socket", Down)
+    assert s.lan_address("0.0.0.0", 8765) == ""
+
+
+def test_qr_route_encodes_only_the_servers_own_address(live):
+    url, health = live
+    assert get(url + "/api/qr.svg")[0] == 404
+    health["lan_url"] = "http://10.0.0.7:8765"
+    status, body, ctype = get(url + "/api/qr.svg")
+    assert status == 200 and ctype.startswith("image/svg+xml")
+    assert body.startswith(b"<svg") and b"#1e1715" in body
+    import segno
+    assert segno.make("http://10.0.0.7:8765", error="m").svg_inline(
+        scale=4, dark="#1e1715", light=None).encode() == body
