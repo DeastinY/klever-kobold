@@ -636,6 +636,7 @@ offline like anything else here; the star on any entry adds or removes it.</p>
   <option value="auto">Rules, and Golarion lore when the question is about the world</option>
   <option value="rules">Rules only — the Archives of Nethys</option>
   <option value="lore">Rules and lore together, every time</option>
+  <option value="campaign">Your campaign notes (a shelf), plus two rules entries</option>
  </select>
  <p class="note" id="s-scopenote"></p>
 </div>

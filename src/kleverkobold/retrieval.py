@@ -38,6 +38,31 @@ def tokenize(text: str) -> list[str]:
     return RE_TOKEN.findall(text.lower())
 
 
+# Shelves of German notes need their own tokenizer: the one above keeps a-z only,
+# so "Enterkämpfe" falls apart into "enterk" and "mpfe". This one keeps every
+# letter, folds umlauts and strips the commonest German and English endings, so
+# "Enterkämpfe" and "Enterkampf" meet at "enterkampf". It is used only for a
+# shelf's own BM25 (build and query alike); the packaged index is untouched.
+RE_WORD = re.compile(r"[^\W_]+", re.UNICODE)
+_FOLD = str.maketrans({"ä": "a", "ö": "o", "ü": "u", "ß": "ss", "é": "e", "è": "e"})
+_ENDINGS = ("ern", "en", "er", "es", "e", "n", "s")
+
+
+def tokenize_de(text: str) -> list[str]:
+    out = []
+    for word in RE_WORD.findall(text.lower().translate(_FOLD)):
+        if len(word) > 5:
+            for end in _ENDINGS:
+                if word.endswith(end) and len(word) - len(end) >= 4:
+                    word = word[:-len(end)]
+                    break
+        out.append(word)
+    return out
+
+
+TOKENIZERS = {"ascii": tokenize, "unicode-de": tokenize_de}
+
+
 RE_MD_LINK = re.compile(r"\[([^\]]*)\]\([^)]*\)")
 
 
@@ -72,6 +97,8 @@ def chunk_text(chunk: dict, max_chars: int = 1200) -> str:
     # separates "Desna (deity)" the stat block from "Desna" the wiki article.
     if chunk.get("corpus") == "pathfinderwiki":
         head.append("Golarion lore")
+    elif chunk.get("corpus") == "campaign":
+        head.append("campaign notes")
     body = (chunk.get("summary") or "") + "\n" + plain(chunk.get("text") or "")
     return " | ".join(h for h in head if h) + "\n" + body[:max_chars].strip()
 
@@ -85,6 +112,10 @@ class Index:
     canonical: list[int] = field(default_factory=list, repr=False)
     lore_mask: np.ndarray | None = field(default=None, repr=False)
     has_lore: bool = False
+    # Rows from a shelf (see shelves.py), e.g. a GM's own campaign notes. Kept out
+    # of every scope but "campaign", so neither measured path ever sees them.
+    campaign_mask: np.ndarray | None = field(default=None, repr=False)
+    has_campaign: bool = False
     embeddings: np.ndarray | None = None
     summary_embeddings: np.ndarray | None = None
     bm25: object | None = None
@@ -113,6 +144,9 @@ class Index:
         self.lore_mask = np.array([m.get("corpus") == "pathfinderwiki" for m in self.meta],
                                   dtype=bool)
         self.has_lore = bool(self.lore_mask.any())
+        self.campaign_mask = np.array([m.get("corpus") == "campaign" for m in self.meta],
+                                      dtype=bool)
+        self.has_campaign = bool(self.campaign_mask.any())
 
     def __len__(self) -> int:
         return len(self.ids)
@@ -124,7 +158,7 @@ class Index:
 
     def allowed(self, exclude_legacy: bool = True,
                 categories: Sequence[str] | None = None,
-                lore: bool = False) -> np.ndarray:
+                lore: bool = False, campaign: bool = False) -> np.ndarray:
         """Boolean mask of chunks a query is allowed to retrieve.
 
         Legacy entries are excluded by default: they are the pre-Remaster text,
@@ -143,9 +177,15 @@ class Index:
         if categories:
             wanted = set(categories)
             wanted_mask = np.array([m.get("category") in wanted for m in self.meta])
-            mask &= (wanted_mask | self.lore_mask) if lore else wanted_mask
+            if lore:
+                wanted_mask = wanted_mask | self.lore_mask
+            if campaign:
+                wanted_mask = wanted_mask | self.campaign_mask
+            mask &= wanted_mask
         if not lore:
             mask &= ~self.lore_mask
+        if not campaign:
+            mask &= ~self.campaign_mask
         return mask
 
     def narrow(self, categories: Sequence[str] | None = None,
@@ -208,7 +248,10 @@ class Index:
     def lexical(self, query: str, mask: np.ndarray, k: int) -> list[int]:
         if self.bm25 is None:
             return []
-        scores = np.asarray(self.bm25.get_scores(tokenize(query)))
+        # A split BM25 (packaged index plus shelves) tokenizes each part its own way.
+        score_text = getattr(self.bm25, "score_text", None)
+        scores = np.asarray(score_text(query) if score_text else
+                            self.bm25.get_scores(tokenize(query)))
         scores = np.where(mask, scores, -np.inf)
         k = min(k, int(mask.sum()))
         if k <= 0:

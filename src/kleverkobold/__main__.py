@@ -36,6 +36,7 @@ from .app import (
     OllamaError,
     Turn,
     default_llm,
+    scope_name,
 )
 
 
@@ -77,6 +78,8 @@ def cmd_ask(args) -> int:
             sources = event["sources"]
             if event.get("scope") == "lore":
                 print("(answering from Golarion lore as well as the rules)\n", file=sys.stderr)
+            elif event.get("scope") == "campaign":
+                print("(answering from the campaign notes)\n", file=sys.stderr)
         elif event["event"] == "token":
             sys.stdout.write(event["text"])
             sys.stdout.flush()
@@ -84,7 +87,7 @@ def cmd_ask(args) -> int:
             timings = event["timings"]
     print("\n\nsources:")
     for s in sources:
-        lore = ", lore" if s.get("corpus") == "pathfinderwiki" else ""
+        lore = {"pathfinderwiki": ", lore", "campaign": ", campaign"}.get(s.get("corpus"), "")
         print(f"  {s['name']} ({s['category']}{lore}) — {s['url']}")
     if args.timings:
         parts = " · ".join(f"{k.replace('_', ' ')} {v:.1f}s" for k, v in timings.items())
@@ -150,10 +153,13 @@ def cmd_chat(args) -> int:
 
 def cmd_search(args) -> int:
     a = _assistant(args)
-    plan = a.rewrite(args.question)
+    campaign = a.resolve_campaign(args.scope, args.question)
+    plan = dict(a.CAMPAIGN_PLAN) if campaign else a.rewrite(args.question)
+    plan["campaign"] = campaign
+    plan["lore"] = a.resolve_scope(args.scope, plan)
     hits = a.search(args.question, k=args.k, plan=plan, rerank=not args.no_rerank,
                     scope=args.scope)
-    scope = "lore" if a.resolve_scope(args.scope, plan) else "rules"
+    scope = scope_name(plan)
     print(f"interpreted as: {plan['summary']!r}  kinds={plan['categories']}  scope={scope}\n")
     for n, h in enumerate(hits, 1):
         level = f" (level {h.level})" if h.level is not None else ""

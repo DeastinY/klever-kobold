@@ -39,6 +39,7 @@ from .app import (
     OllamaError,
     Turn,
     probe_backend,
+    scope_name,
 )
 from .ui import PAGE
 
@@ -305,7 +306,8 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                                "application/json")
                     return
                 self._send(200, json.dumps({"hits": _hits(hits), "browse": True,
-                                            "scope": "lore" if scope == "lore" else "rules"}).encode(),
+                                            "scope": scope if scope in ("lore", "campaign")
+                                            else "rules"}).encode(),
                            "application/json; charset=utf-8")
                 return
 
@@ -356,12 +358,14 @@ def make_handler(pool: Pool, lock: threading.Lock, health: dict):
                     # are the ones its standalone form retrieves, and showing
                     # them without an answer is the cheaper half of the feature.
                     asked = assistant.condense(question, history) if history else question
-                    plan = assistant.rewrite(asked)
-                    lore = assistant.resolve_scope(scope, plan)
+                    campaign = assistant.resolve_campaign(scope, asked)
+                    plan = dict(assistant.CAMPAIGN_PLAN) if campaign else assistant.rewrite(asked)
+                    plan["campaign"] = campaign
+                    plan["lore"] = assistant.resolve_scope(scope, plan)
                     payload = {"hits": _hits(assistant.search(asked, k=k, plan=plan,
                                                               rerank=rerank, scope=scope,
                                                               filters=filters)),
-                               "scope": "lore" if lore else "rules"}
+                               "scope": scope_name(plan)}
                     if history:
                         payload["standalone"] = asked
             except OllamaError as exc:

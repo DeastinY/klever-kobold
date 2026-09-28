@@ -39,8 +39,10 @@ TOOLS = [
                 "k": {"type": "integer", "description": "Excerpts to retrieve (default 8)."},
                 "scope": {"type": "string", "enum": list(SCOPES),
                           "description": "rules: Archives of Nethys only. lore: rules and "
-                                         "PathfinderWiki. auto (default): decided per question; "
-                                         "a rules question never sees lore."},
+                                         "PathfinderWiki. campaign: the GM's own campaign notes "
+                                         "(a shelf, if one is installed) plus two rules entries. "
+                                         "auto (default): decided per question; a rules "
+                                         "question never sees lore or campaign notes."},
                 "persona": {"type": "string",
                             "description": "Who is asking, e.g. 'level 5 human rogue, free "
                                            "archetype', so the answer applies to them."},
@@ -64,7 +66,7 @@ TOOLS = [
                                             "listed, by level and name, with no model involved."},
                 "k": {"type": "integer", "description": "Excerpts to retrieve (default 8)."},
                 "scope": {"type": "string", "enum": list(SCOPES),
-                          "description": "rules, lore, or auto (default)."},
+                          "description": "rules, lore, campaign, or auto (default)."},
                 "kinds": {"type": "array", "items": {"type": "string"},
                           "description": "Entry kinds to allow: feat, spell, action, condition, "
                                          "equipment, weapon, armor, creature, hazard, trait, "
@@ -167,13 +169,14 @@ def serve(index_dir: pathlib.Path, ollama_url: str, llm_model: str | None = None
                                 persona=(args.get("persona") or None))
                     lines = [out["answer"], "", "Sources:"]
                     lines += [f"- {s['name']} ({s['category']}"
-                              f"{', lore' if s.get('corpus') == 'pathfinderwiki' else ''}) "
+                              f"{ {'pathfinderwiki': ', lore', 'campaign': ', campaign'}.get(s.get('corpus'), '')}) "
                               f"{s['url']}" for s in out["sources"]]
                     return _result("\n".join(lines))
                 if name == "kobold_search":
                     hits = a.search(question, k=int(args.get("k") or DEFAULT_K), scope=scope,
                                     filters=filters)
-                    blocks = [f"## {h.name} ({h.category}{', Golarion lore' if h.lore else ''})"
+                    blocks = [f"## {h.name} ({h.category}"
+                              f"{', Golarion lore' if h.lore else ', campaign notes' if h.campaign else ''})"
                               f"\n{h.url}\n\n{h.text[:1600]}" for h in hits]
                     return _result("\n\n---\n\n".join(blocks) or "Nothing matched.")
                 return _result(f"Unknown tool {name!r}.", True)
