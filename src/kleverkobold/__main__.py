@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import os
 import pathlib
+import platform
 import shutil
 import subprocess
 import sys
@@ -35,6 +36,7 @@ from .app import (
     Ollama,
     OllamaError,
     Turn,
+    data_home,
     default_llm,
     scope_name,
 )
@@ -250,45 +252,142 @@ SCOPE_HELP = ("what to answer from: 'rules' is the Archives of Nethys alone, 'lo
               "rules question lore")
 
 INSTALL_HINT = {
-    "darwin": "brew install ollama\n  or download the app from https://ollama.com/download",
-    "linux": "curl -fsSL https://ollama.com/install.sh | sh",
+    "darwin": "brew install ollama, or the app from https://ollama.com/download,\n"
+              "  or `kobold setup --install-ollama` for a standalone copy in the data directory",
+    "linux": "curl -fsSL https://ollama.com/install.sh | sh  (system-wide, asks for sudo)\n"
+             "  or `kobold setup --install-ollama` for a standalone copy in the data directory",
     "win32": "winget install Ollama.Ollama\n  or download from https://ollama.com/download",
 }
+OLLAMA_DOWNLOAD = "https://ollama.com/download"
+
+
+def managed_ollama_dir() -> pathlib.Path:
+    """Where --install-ollama unpacks a standalone Ollama when it does not run a system installer."""
+    return data_home() / "ollama"
 
 
 def ollama_exe() -> str | None:
-    """The Ollama binary: on PATH, or where its Windows installer puts it.
+    """The Ollama binary, wherever this install keeps it.
 
-    That installer adds its directory to the user's PATH, but a process started
-    before it ran -- the kobold installer's own post-install step, a terminal
-    left open -- still carries the old one.
+    In order: the PATH; a copy bundled beside a frozen kobold (the macOS app
+    carries one); the standalone build --install-ollama unpacked into the data
+    directory; where Ollama's Windows installer puts it, since a process
+    started before that installer ran still carries the old PATH.
     """
     found = shutil.which("ollama")
     if found:
         return found
+    name = "ollama.exe" if sys.platform == "win32" else "ollama"
+    candidates = []
+    if getattr(sys, "frozen", False):
+        candidates.append(pathlib.Path(sys.executable).parent / "ollama" / name)
+    managed = managed_ollama_dir()
+    candidates += [managed / "bin" / name, managed / name]
     if sys.platform == "win32":
-        exe = (pathlib.Path(os.environ.get("LOCALAPPDATA", pathlib.Path.home()))
-               / "Programs" / "Ollama" / "ollama.exe")
-        if exe.exists():
+        candidates.append(pathlib.Path(os.environ.get("LOCALAPPDATA", pathlib.Path.home()))
+                          / "Programs" / "Ollama" / name)
+    for exe in candidates:
+        if exe.is_file():
             return str(exe)
     return None
 
 
+def _download(url: str, dest: pathlib.Path) -> None:
+    """Stream a file to disk, printing a running total."""
+    import httpx
+    with dest.open("wb") as out, httpx.stream("GET", url, follow_redirects=True,
+                                              timeout=None) as r:
+        r.raise_for_status()
+        total = int(r.headers.get("content-length") or 0)
+        done = 0
+        for chunk in r.iter_bytes(1 << 20):
+            out.write(chunk)
+            done += len(chunk)
+            if total:
+                print(f"\r    {done / 1e6:5.0f} / {total / 1e6:.0f} MB", end="", flush=True)
+    print()
+
+
+def _extract_tar(archive: pathlib.Path, into: pathlib.Path) -> None:
+    """Unpack a .tgz or .tar.zst.
+
+    tarfile reads zstd only from Python 3.14, so for .zst the zstandard module
+    (the frozen Linux build carries it) or the zstd tool stands in.
+    """
+    import tarfile
+    kw = {"filter": "data"} if hasattr(tarfile, "data_filter") else {}
+    if archive.name.endswith(".zst"):
+        try:
+            with tarfile.open(archive) as tar:
+                tar.extractall(into, **kw)
+            return
+        except tarfile.TarError:
+            pass
+        try:
+            import zstandard
+        except ImportError:
+            zstandard = None
+        if zstandard is not None:
+            with archive.open("rb") as raw, \
+                    zstandard.ZstdDecompressor().stream_reader(raw) as stream, \
+                    tarfile.open(fileobj=stream, mode="r|") as tar:
+                tar.extractall(into, **kw)
+            return
+        if shutil.which("unzstd"):
+            subprocess.run(["tar", "--use-compress-program=unzstd", "-xf", str(archive),
+                            "-C", str(into)], check=True)
+            return
+        raise OSError("this archive needs zstd: install it (apt/dnf/pacman install zstd) "
+                      "and run this again")
+    with tarfile.open(archive) as tar:
+        tar.extractall(into, **kw)
+
+
 def install_ollama() -> bool:
-    """Run the official installer. Only ever from --install-ollama."""
+    """Get Ollama onto this machine. Only ever from --install-ollama.
+
+    Homebrew on a Mac that has it. Otherwise the standalone build from
+    ollama.com, unpacked into the data directory and run from there: no sudo,
+    no system service, and it is what the AppImage and the macOS app rely on.
+    The official installers remain the better system-wide install; the hints
+    name them.
+    """
+    if sys.platform == "darwin" and shutil.which("brew"):
+        return subprocess.call(["brew", "install", "ollama"]) == 0
     if sys.platform == "darwin":
-        if shutil.which("brew"):
-            return subprocess.call(["brew", "install", "ollama"]) == 0
-        print("  Homebrew not found. Download the app: https://ollama.com/download",
+        name = "ollama-darwin.tgz"
+    elif sys.platform.startswith("linux"):
+        arch = {"x86_64": "amd64", "amd64": "amd64",
+                "aarch64": "arm64", "arm64": "arm64"}.get(platform.machine().lower())
+        if not arch:
+            print(f"  no standalone Ollama for {platform.machine()}. "
+                  "See https://ollama.com/download", file=sys.stderr)
+            return False
+        name = f"ollama-linux-{arch}.tar.zst"
+    else:
+        print("  Automatic install is not supported here. See https://ollama.com/download",
               file=sys.stderr)
         return False
-    if sys.platform.startswith("linux"):
-        print("  running the official installer (it will ask for sudo)")
-        return subprocess.call(
-            "curl -fsSL https://ollama.com/install.sh | sh", shell=True) == 0
-    print("  Automatic install is not supported here. See https://ollama.com/download",
-          file=sys.stderr)
-    return False
+    import tempfile
+    dest = managed_ollama_dir()
+    print(f"  fetching the standalone {name} into {dest}", flush=True)
+    dest.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory() as tmp:
+        archive = pathlib.Path(tmp) / name
+        try:
+            _download(f"{OLLAMA_DOWNLOAD}/{name}", archive)
+            _extract_tar(archive, dest)
+        except Exception as exc:
+            print(f"  could not fetch Ollama: {exc}", file=sys.stderr)
+            return False
+    exe = ollama_exe()
+    if not exe:
+        print("  the archive held no ollama binary; see https://ollama.com/download",
+              file=sys.stderr)
+        return False
+    pathlib.Path(exe).chmod(0o755)
+    print(f"  ok   {exe}")
+    return True
 
 
 def ensure_ollama(url: str, install: bool) -> bool:

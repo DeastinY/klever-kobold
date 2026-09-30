@@ -14,9 +14,11 @@ The one-line installers in the README do exactly this, plus installing
 [`deploy/install.ps1`](../deploy/install.ps1) for Windows. Both are safe to re-run.
 
 `kobold setup` is idempotent. Without `--install-ollama` it prints the Ollama
-install command for your platform and stops; with it, it runs Homebrew on macOS,
-the official script on Linux, and winget on Windows. Either way it starts the
-Ollama server if it is installed but not running, which is the step people miss.
+install commands for your platform and stops; with it, it runs Homebrew on a
+Mac that has it, and otherwise unpacks Ollama's standalone build into the data
+directory (`~/.local/share/kleverkobold/ollama` on Linux, no sudo; the
+equivalent on macOS) and runs it from there. Either way it starts the Ollama
+server if it is installed but not running, which is the step people miss.
 `kobold doctor` checks each part separately when something breaks.
 
 ## What gets installed where
@@ -119,43 +121,65 @@ If `kobold` is not on the PATH for those apps, use the interpreter that has it:
 `"command": "/path/to/.venv/bin/python", "args": ["-m", "kleverkobold", "mcp"]`.
 Web UI settings do not travel to the MCP server; it takes the same command-line flags.
 
-## The Windows installer
+## The installers
 
-`KleverKoboldSetup.exe` on the [latest release](https://github.com/DeastinY/klever-kobold/releases/latest)
-is the same program frozen with PyInstaller and wrapped by Inno Setup, for
-people who would rather not open a terminal. It is per-user, like Ollama's own
-installer: no administrator rights, no UAC prompt.
+The [latest release](https://github.com/DeastinY/klever-kobold/releases/latest)
+carries the same program frozen with PyInstaller and packaged for each system,
+for people who would rather not open a terminal. All three are per-user: no
+administrator rights, no sudo. Each ends up with the same data directory, the
+same `kobold` command and the same page as the script install. None is
+code-signed, so each system objects once, as noted below.
 
-What it does, in order:
+**Windows: `KleverKoboldSetup.exe`.** An Inno Setup installer. It copies the
+program to `%LOCALAPPDATA%\Programs\KleverKobold` and, if you leave the box
+ticked, adds it to your PATH so `kobold` works in a terminal and in Claude
+Desktop's MCP config. If Ollama is not installed it downloads `OllamaSetup.exe`
+from ollama.com (about 1.5 GB) and runs it silently; an Ollama already on the
+machine is left alone. The last page offers to run `kobold setup` (the two
+models, about 4 GB, and the index, 270 MB) and to open the kobold. Both are
+Start menu entries as well, next to *Kobold doctor*. SmartScreen shows
+"Windows protected your PC" the first time: *More info*, then *Run anyway*.
+Remove it from *Settings → Apps → The Klever Kobold*.
 
-1. Copies the program to `%LOCALAPPDATA%\Programs\KleverKobold` and, if you
-   leave the box ticked, adds it to your PATH so `kobold` works in a terminal
-   and in Claude Desktop's MCP config.
-2. If Ollama is not installed, downloads `OllamaSetup.exe` from ollama.com
-   (about 1.5 GB) and runs it silently. An Ollama already on the machine is
-   left alone.
-3. Offers to run `kobold setup` (the two models, about 4 GB, and the index,
-   270 MB) and to open the kobold. Both are Start menu entries as well, next to
-   *Kobold doctor*.
+**macOS: `KleverKobold-macOS-arm64.dmg`.** Open it and drag *The Klever Kobold*
+to Applications. Ollama's standalone build is inside the app, so nothing else
+gets installed; the models still go to `~/.ollama` and the index to
+`~/Library/Application Support/kleverkobold`. Opening the app opens a Terminal
+window on the kobold: setup first (seconds, once done), then the page. Apple
+Silicon only, which is also what Ollama's MLX backend needs. Gatekeeper refuses
+the first open because the app is not notarized: close that dialog, go to
+*System Settings → Privacy & Security*, scroll to the message about the app and
+click *Open Anyway* (or `xattr -dr com.apple.quarantine "/Applications/The
+Klever Kobold.app"` in a terminal). Remove it by deleting the app.
 
-It is not code-signed, so SmartScreen shows "Windows protected your PC" the
-first time: *More info*, then *Run anyway*. Everything else is as with the
-script install: same data directory, same `kobold` command, same page.
+**Linux: `KleverKobold-x86_64.AppImage`.** Mark it executable (`chmod +x`, or
+the file manager's Properties) and run it. With no arguments it starts the
+kobold: the first time it fetches Ollama's standalone Linux build (1.4 GB) into
+`~/.local/share/kleverkobold/ollama`, no sudo, then the models and the index,
+then the page; started from a desktop it opens a terminal window for that, when
+it can find one. With arguments it *is* the `kobold` command:
+`./KleverKobold-x86_64.AppImage doctor`. An Ollama already on the PATH is used
+instead of fetching one. AppImages need FUSE 2 (`libfuse2` on Debian and Ubuntu);
+without it, `APPIMAGE_EXTRACT_AND_RUN=1 ./KleverKobold-x86_64.AppImage` works.
+Remove it by deleting the file.
 
 **Updating**: the page still says when a newer kobold is out, but instead of an
-Upgrade button it links to the release; download the new installer and run it
-over the old one. **Removing**: *Settings → Apps → The Klever Kobold*. Ollama,
-its models, and the index stay; remove those separately if you want the disk back.
+Upgrade button it links to the release; download the new one and install it
+over the old. Ollama, its models and the index stay across updates and
+removals; delete those separately if you want the disk back.
 
-**Building it**: the *Windows installer* workflow under Actions builds it on a
-Windows runner from any commit (a `v*` tag attaches it to that release), then
-installs it on that runner silently, checks that Ollama landed alongside and
-`kobold` is on the PATH, and uninstalls it again; a pull request touching the
-installer runs the same. Tick *end_to_end* to also pull the models and run
-`kobold doctor` there. The pieces are in [`deploy/windows/`](../deploy/windows/): `kobold.spec` (the
-freeze), `kobold.iss` (the installer), `launcher.py` (the frozen entry point).
-Tick *bundle_ollama* to embed `OllamaSetup.exe` in the installer for machines
-that cannot download it during install; that makes it about 1.6 GB.
+**Building them**: the *Installers* workflow under Actions builds all three on
+their own runners from any commit (a `v*` tag attaches them to that release),
+then exercises each where it was built: the Windows one is installed silently
+and checked for Ollama alongside and the PATH entry, then uninstalled; the
+macOS app is mounted from its dmg and its kobold must start the bundled Ollama;
+the AppImage must run. A pull request touching `deploy/` runs the same. Tick
+*end_to_end* to also fetch Ollama where needed, pull the models and run `kobold
+doctor` on each. The pieces are under [`deploy/`](../deploy/):
+`windows/kobold.spec` (the freeze, shared by all three), `windows/kobold.iss`,
+`macos/build_app.sh`, `linux/build_appimage.sh`, `icon/make_icon.py`. Tick
+*bundle_ollama* to embed `OllamaSetup.exe` in the Windows installer for
+machines that cannot download it during install; that makes it about 1.6 GB.
 
 ## Docker
 
@@ -173,8 +197,8 @@ kobold setup                      # picks up a new index release if one is out
 uv tool uninstall kleverkobold    # the program; models stay with Ollama, the index in the data directory
 ```
 
-Installed with `KleverKoboldSetup.exe` instead: run the newer installer over
-the old one, and remove it from *Settings → Apps*.
+Installed from a release download instead: get the newer one and install it
+over the old; see [The installers](#the-installers) for removing each.
 
 ## Building from a clone
 

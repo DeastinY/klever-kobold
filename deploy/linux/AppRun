@@ -1,0 +1,29 @@
+#!/bin/sh
+# The AppImage's entry point.
+#
+# With arguments it is the kobold command itself:
+#     ./KleverKobold-x86_64.AppImage doctor
+# Without, it starts the kobold: Ollama (a standalone copy fetched into the data
+# directory the first time, no sudo), the models and the index (first time),
+# then the page. Launched from a desktop rather than a terminal, that first run
+# would download for minutes with nothing to look at, so it opens a terminal
+# window when it can find one.
+HERE="$(dirname "$(readlink -f "$0")")"
+K="$HERE/usr/bin/kobold/kobold"
+if [ $# -gt 0 ]; then
+  exec "$K" "$@"
+fi
+START="'$K' setup --install-ollama && exec '$K' serve"
+if [ -t 1 ]; then
+  exec sh -c "$START"
+fi
+for term in x-terminal-emulator gnome-terminal konsole xfce4-terminal kitty alacritty foot xterm; do
+  if command -v "$term" >/dev/null 2>&1; then
+    case "$term" in
+      gnome-terminal) exec gnome-terminal -- sh -c "$START; exec sh" ;;
+      *)              exec "$term" -e sh -c "$START; exec sh" ;;
+    esac
+  fi
+done
+# No terminal to open: run quietly; the page opens in the browser once it is up.
+exec sh -c "$START"

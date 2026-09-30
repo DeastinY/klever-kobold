@@ -1,0 +1,286 @@
+name: Installers
+
+# The three downloads: KleverKoboldSetup.exe (Windows), KleverKobold-macOS-arm64.dmg
+# and KleverKobold-x86_64.AppImage, each built and then exercised on its own
+# runner. Run by hand for artifacts, by a pull request touching deploy/, or by
+# a `v*` tag, which attaches all three to that tag's release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      bundle_ollama:
+        description: "Windows: embed OllamaSetup.exe (about 1.6 GB) instead of downloading it during install"
+        type: boolean
+        default: false
+      end_to_end:
+        description: "After installing on each runner, also fetch Ollama where needed, pull the models and the index, and run doctor (adds ~20 min)"
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - ".github/workflows/installers.yml"
+      - "deploy/**"
+      - "src/kleverkobold/update.py"
+      - "src/kleverkobold/__main__.py"
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+# A newer push supersedes a run still going on the same branch.
+concurrency:
+  group: installers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Name this build
+        # A tag names the version; otherwise the date and the short commit. The
+        # frozen program reads build_info.json to know what it is and to say
+        # when main has moved on (see update.py).
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then version="${GITHUB_REF_NAME#v}"
+          else version="$(date -u +%Y.%m.%d)+${GITHUB_SHA::7}"; fi
+          printf '{"commit": "%s", "version": "%s", "date": "%s"}\n' \
+            "$GITHUB_SHA" "$version" "$(date -u +%Y-%m-%d)" > src/kleverkobold/build_info.json
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          cat src/kleverkobold/build_info.json
+
+      - name: Freeze
+        run: |
+          uv sync
+          uv run --with pyinstaller pyinstaller --noconfirm deploy/windows/kobold.spec
+
+      - name: Smoke test the frozen program
+        run: |
+          dist\kobold\kobold.exe --help
+          dist\kobold\kobold.exe upgrade --check; if ($LASTEXITCODE -gt 1) { exit $LASTEXITCODE }
+          dist\kobold\kobold.exe doctor; if ($LASTEXITCODE -ne 1) { exit 1 }   # no index, no Ollama: says so and exits 1
+          exit 0   # the step otherwise takes the last command's exit code, and that 1 was the point
+
+      - name: Ollama's installer, to embed
+        if: inputs.bundle_ollama
+        run: curl.exe -fsSL -o deploy\windows\OllamaSetup.exe https://ollama.com/download/OllamaSetup.exe
+
+      - name: Installer
+        run: |
+          # Inno Setup 6 ships on the runner image; choco only tops it up if it is missing.
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup --no-progress -y }
+          $args = @("/DAppVersion=$env:VERSION")
+          if ('${{ inputs.bundle_ollama }}' -eq 'true') { $args += '/DBundleOllama' }
+          & $iscc @args deploy\windows\kobold.iss; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Get-Item dist\KleverKoboldSetup.exe | Format-List Name, Length
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KleverKoboldSetup
+          path: dist/KleverKoboldSetup.exe
+
+      - name: Install it on this runner
+        # A silent install downloads Ollama's installer and runs it, like the
+        # wizard would; the checks are what a user would find afterwards. The
+        # installer's log is echoed as it grows, so a stall shows where it is.
+        timeout-minutes: 30
+        run: |
+          $log = Join-Path $PWD install.log
+          $p = Start-Process -PassThru -FilePath dist\KleverKoboldSetup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/LOG=$log"
+          $shown = 0
+          while (-not $p.HasExited) {
+            Start-Sleep -Seconds 15
+            if (Test-Path $log) {
+              $lines = @(Get-Content $log)
+              if ($lines.Count -gt $shown) { $lines[$shown..($lines.Count - 1)] | Out-Host; $shown = $lines.Count }
+            }
+            $ollama = Get-Process -Name 'OllamaSetup*','ollama*' -ErrorAction SilentlyContinue
+            if ($ollama) { "  running: $($ollama.ProcessName -join ', ')" | Out-Host }
+          }
+          "installer exited with $($p.ExitCode)" | Out-Host
+          if ($p.ExitCode) { exit $p.ExitCode }
+          $app = "$env:LOCALAPPDATA\Programs\KleverKobold"
+          if (-not (Test-Path "$app\kobold.exe")) { Write-Error "kobold.exe is not where the installer puts it"; exit 1 }
+          & "$app\kobold.exe" --help | Select-Object -First 1; if ($LASTEXITCODE) { exit 1 }
+          $ollama = "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe"
+          if (-not (Test-Path $ollama)) { Write-Error "Ollama was not installed alongside"; exit 1 }
+          & $ollama --version
+          $path = (Get-ItemProperty -Path HKCU:\Environment -Name Path).Path
+          if ($path -notlike "*KleverKobold*") { Write-Error "kobold is not on the user's PATH"; exit 1 }
+          "windows: installed to $app, Ollama alongside, on PATH" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Setup and doctor, end to end
+        if: inputs.end_to_end
+        timeout-minutes: 45
+        run: |
+          $app = "$env:LOCALAPPDATA\Programs\KleverKobold"
+          & "$app\kobold.exe" setup; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          & "$app\kobold.exe" doctor; if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          "windows: setup and doctor passed" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Uninstall it again
+        run: |
+          $app = "$env:LOCALAPPDATA\Programs\KleverKobold"
+          Start-Process -Wait -FilePath "$app\unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'
+          if (Test-Path "$app\kobold.exe") { Write-Error "kobold.exe survived the uninstall"; exit 1 }
+          $path = (Get-ItemProperty -Path HKCU:\Environment -Name Path).Path
+          if ($path -like "*KleverKobold*") { Write-Error "PATH still names KleverKobold after uninstall"; exit 1 }
+
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" dist/KleverKoboldSetup.exe --clobber
+
+  macos:
+    # Apple Silicon only: Ollama's MLX backend is arm64, and so is every current runner.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Name this build
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then version="${GITHUB_REF_NAME#v}"
+          else version="$(date -u +%Y.%m.%d)+${GITHUB_SHA::7}"; fi
+          printf '{"commit": "%s", "version": "%s", "date": "%s"}\n' \
+            "$GITHUB_SHA" "$version" "$(date -u +%Y-%m-%d)" > src/kleverkobold/build_info.json
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Freeze
+        run: |
+          uv sync
+          uv run --with pyinstaller pyinstaller --noconfirm deploy/windows/kobold.spec
+
+      - name: Smoke test the frozen program
+        run: |
+          dist/kobold/kobold --help | head -1
+          dist/kobold/kobold upgrade --check || [ $? -eq 1 ]
+          if dist/kobold/kobold doctor; then echo "doctor should fail without an index"; exit 1; fi
+
+      - name: App and dmg
+        run: sh deploy/macos/build_app.sh "$VERSION"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KleverKobold-macOS
+          path: dist/KleverKobold-macOS-*.dmg
+
+      - name: Mount it and run the app's kobold
+        # What a user gets after dragging the app to Applications: the kobold
+        # inside runs, and it finds the Ollama it carries.
+        run: |
+          hdiutil attach dist/KleverKobold-macOS-*.dmg -mountpoint /Volumes/kobold -quiet
+          cp -R "/Volumes/kobold/The Klever Kobold.app" "$HOME/Applications.app.test"
+          hdiutil detach /Volumes/kobold -quiet
+          K="$HOME/Applications.app.test/Contents/Resources/kobold/kobold"
+          "$K" --help | head -1
+          "$(dirname "$K")/ollama/ollama" --version
+          # setup must find the bundled Ollama and start it; it is stopped once
+          # that shows, before it goes on to pull the models.
+          "$K" setup > setup.log 2>&1 &
+          pid=$!
+          for i in $(seq 1 45); do grep -q "ok   running" setup.log && break; sleep 2; done
+          kill $pid 2>/dev/null || true
+          cat setup.log
+          grep -q "starting it" setup.log && grep -q "ok   running" setup.log
+          pkill -f "ollama/ollama serve" || true
+          echo "macos: the app's kobold runs and starts its bundled Ollama" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Setup and doctor, end to end
+        if: inputs.end_to_end
+        timeout-minutes: 60
+        run: |
+          K="$HOME/Applications.app.test/Contents/Resources/kobold/kobold"
+          "$K" setup --install-ollama
+          "$K" doctor
+          echo "macos: setup and doctor passed" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" dist/KleverKobold-macOS-*.dmg --clobber
+
+  linux:
+    # The oldest image GitHub still runs: the frozen program links the build
+    # machine's glibc, so older is what lets it run on more distributions.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Name this build
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then version="${GITHUB_REF_NAME#v}"
+          else version="$(date -u +%Y.%m.%d)+${GITHUB_SHA::7}"; fi
+          printf '{"commit": "%s", "version": "%s", "date": "%s"}\n' \
+            "$GITHUB_SHA" "$version" "$(date -u +%Y-%m-%d)" > src/kleverkobold/build_info.json
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Freeze
+        # zstandard: Ollama's Linux archive is .tar.zst, and tarfile reads that only from Python 3.14.
+        run: |
+          uv sync
+          uv run --with pyinstaller --with zstandard pyinstaller --noconfirm deploy/windows/kobold.spec
+
+      - name: Smoke test the frozen program
+        run: |
+          dist/kobold/kobold --help | head -1
+          dist/kobold/kobold upgrade --check || [ $? -eq 1 ]
+          if dist/kobold/kobold doctor; then echo "doctor should fail without an index"; exit 1; fi
+
+      - name: AppImage
+        run: sh deploy/linux/build_appimage.sh "$VERSION"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KleverKobold-AppImage
+          path: dist/KleverKobold-*.AppImage
+
+      - name: Run the AppImage
+        # Extract-and-run, since the runner has no FUSE; a user's desktop does.
+        run: |
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          IMG=$(ls dist/KleverKobold-*.AppImage)
+          "$IMG" --help | head -1
+          if "$IMG" doctor; then exit 1; fi
+          echo "linux: the AppImage runs" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Setup and doctor, end to end
+        # Fetches the standalone Ollama (1.4 GB) into the data directory, no sudo.
+        if: inputs.end_to_end
+        timeout-minutes: 60
+        run: |
+          export APPIMAGE_EXTRACT_AND_RUN=1
+          IMG=$(ls dist/KleverKobold-*.AppImage)
+          "$IMG" setup --install-ollama
+          "$IMG" doctor
+          echo "linux: setup with a managed Ollama and doctor passed" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || gh release create "$GITHUB_REF_NAME" --generate-notes
+          gh release upload "$GITHUB_REF_NAME" dist/KleverKobold-*.AppImage --clobber

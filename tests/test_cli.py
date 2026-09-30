@@ -267,3 +267,66 @@ def test_ollama_exe_looks_where_the_windows_installer_puts_it(monkeypatch, tmp_p
     # PATH still wins when it has one.
     monkeypatch.setattr(cli.shutil, "which", lambda name: "C:/elsewhere/ollama.exe")
     assert cli.ollama_exe() == "C:/elsewhere/ollama.exe"
+
+
+def test_ollama_exe_finds_a_bundled_or_managed_copy(monkeypatch, tmp_path):
+    monkeypatch.setattr(cli.shutil, "which", lambda name: None)
+    monkeypatch.setattr(cli.sys, "platform", "linux")
+    monkeypatch.setattr(cli, "managed_ollama_dir", lambda: tmp_path / "managed")
+    assert cli.ollama_exe() is None
+    # The standalone Linux archive unpacks to bin/ollama in the data directory.
+    managed = tmp_path / "managed" / "bin" / "ollama"
+    managed.parent.mkdir(parents=True)
+    managed.write_bytes(b"")
+    assert cli.ollama_exe() == str(managed)
+    # A copy bundled beside a frozen kobold, as in the macOS app, wins over that.
+    app = tmp_path / "app"
+    (app / "ollama").mkdir(parents=True)
+    (app / "ollama" / "ollama").write_bytes(b"")
+    monkeypatch.setattr(cli.sys, "frozen", True, raising=False)
+    monkeypatch.setattr(cli.sys, "executable", str(app / "kobold"))
+    assert cli.ollama_exe() == str(app / "ollama" / "ollama")
+
+
+def test_install_ollama_unpacks_the_standalone_build(monkeypatch, tmp_path, capsys):
+    import io
+    import tarfile
+    monkeypatch.setattr(cli.shutil, "which", lambda name: None)
+    monkeypatch.setattr(cli.sys, "platform", "darwin")
+    monkeypatch.setattr(cli, "managed_ollama_dir", lambda: tmp_path / "ollama")
+    # A stand-in for ollama-darwin.tgz: the binary at the archive root.
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as tar:
+        info = tarfile.TarInfo("ollama")
+        info.size = 3
+        tar.addfile(info, io.BytesIO(b"bin"))
+    fetched = []
+
+    def download(url, dest):
+        fetched.append(url)
+        dest.write_bytes(buf.getvalue())
+
+    monkeypatch.setattr(cli, "_download", download)
+    assert cli.install_ollama() is True
+    assert fetched == ["https://ollama.com/download/ollama-darwin.tgz"]
+    exe = tmp_path / "ollama" / "ollama"
+    assert exe.read_bytes() == b"bin" and exe.stat().st_mode & 0o100
+    assert "ok" in capsys.readouterr().out
+    # A failed download is reported, not raised.
+    monkeypatch.setattr(cli, "_download", lambda url, dest: (_ for _ in ()).throw(OSError("no route")))
+    assert cli.install_ollama() is False
+    assert "could not fetch Ollama" in capsys.readouterr().err
+
+
+def test_install_ollama_names_the_linux_archive_by_arch(monkeypatch, tmp_path):
+    monkeypatch.setattr(cli.shutil, "which", lambda name: None)
+    monkeypatch.setattr(cli.sys, "platform", "linux")
+    monkeypatch.setattr(cli.platform, "machine", lambda: "aarch64")
+    monkeypatch.setattr(cli, "managed_ollama_dir", lambda: tmp_path / "ollama")
+    asked = []
+    monkeypatch.setattr(cli, "_download", lambda url, dest: asked.append(url) or dest.write_bytes(b""))
+    monkeypatch.setattr(cli, "_extract_tar", lambda archive, into: None)
+    cli.install_ollama()
+    assert asked == ["https://ollama.com/download/ollama-linux-arm64.tar.zst"]
+    monkeypatch.setattr(cli.platform, "machine", lambda: "riscv64")
+    assert cli.install_ollama() is False

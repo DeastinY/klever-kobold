@@ -19,23 +19,33 @@ Everything is fully local and offline with a small tuned model. It is based on t
 
 ## Install
 
-**macOS or Linux**:
+**The easy way is a download** from the
+[latest release](https://github.com/DeastinY/klever-kobold/releases/latest).
+Run it, let it fetch the two models (about 4 GB) and the index (270 MB), and
+the kobold opens in your browser:
+
+| | Download | Ollama |
+| --- | --- | --- |
+| Windows | `KleverKoboldSetup.exe` | installed alongside if it is missing; Start menu entries; uninstalls from *Settings → Apps* |
+| macOS (Apple Silicon) | `KleverKobold-macOS-arm64.dmg` | inside the app; drag it to Applications |
+| Linux | `KleverKobold-x86_64.AppImage` | fetched into your data directory on first start, no sudo; `chmod +x` the file first |
+
+None of them is code-signed, so each system objects once: Windows shows
+*More info → Run anyway*; macOS refuses the first open, then allows it under
+*System Settings → Privacy & Security → Open Anyway*. Details, and what gets
+installed where, are in [docs/running.md](docs/running.md#the-installers).
+
+**From a terminal** instead, on macOS or Linux:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/DeastinY/klever-kobold/main/deploy/install.sh | sh
 ```
 
-**Windows**:
+on Windows:
 
 ```powershell
 irm https://raw.githubusercontent.com/DeastinY/klever-kobold/main/deploy/install.ps1 | iex
 ```
-
-**Windows, without a terminal**: download `KleverKoboldSetup.exe` from the
-[latest release](https://github.com/DeastinY/klever-kobold/releases/latest) and run it.
-It installs Ollama alongside if it is missing, fetches the models and the index,
-and puts the kobold in the Start menu. It is not code-signed, so SmartScreen
-asks once: *More info*, then *Run anyway*.
 
 Either installs [Ollama](https://ollama.com) and [uv](https://docs.astral.sh/uv/)
 if they are missing, pulls the two models (about 4 GB), fetches the index
