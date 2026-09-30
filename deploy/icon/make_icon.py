@@ -1,10 +1,11 @@
-"""Draw the page's favicon (the hex gem in ui.py) as kobold.ico.
+"""Draw the page's favicon (the hex gem in ui.py) as the packages' icons.
 
-The favicon is an inline SVG of a dozen polygons, so it is redrawn here with
-Pillow rather than rasterised through an SVG library the build would have to
-carry. Run once, commit the .ico:
+kobold.ico for the Windows exe and installer, kobold.icns for the macOS app,
+kobold.png for the AppImage. The favicon is an inline SVG of a dozen polygons,
+so it is redrawn here with Pillow rather than rasterised through an SVG library
+the build would have to carry. Run once, commit the results:
 
-    uv run --with pillow deploy/windows/make_icon.py
+    uv run --with pillow deploy/icon/make_icon.py
 """
 
 from __future__ import annotations
@@ -56,12 +57,17 @@ def draw(size: int) -> Image.Image:
 
 
 def main() -> None:
-    out = pathlib.Path(__file__).with_name("kobold.ico")
+    here = pathlib.Path(__file__).parent
     sizes = [16, 24, 32, 48, 64, 128, 256]
     base = draw(256)
-    base.save(out, format="ICO", sizes=[(n, n) for n in sizes],
+    base.save(here / "kobold.ico", format="ICO", sizes=[(n, n) for n in sizes],
               append_images=[draw(n) for n in sizes[:-1]])
-    print(f"wrote {out} ({out.stat().st_size:,} bytes)")
+    big = draw(512)
+    big.save(here / "kobold.icns", format="ICNS",
+             append_images=[draw(n) for n in (16, 32, 64, 128, 256)])
+    base.save(here / "kobold.png", format="PNG")
+    for name in ("kobold.ico", "kobold.icns", "kobold.png"):
+        print(f"wrote {name} ({(here / name).stat().st_size:,} bytes)")
 
 
 if __name__ == "__main__":

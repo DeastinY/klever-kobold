@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=The Klever Kobold
+Comment=A Pathfinder 2e rules reference that runs on your own machine
+Exec=AppRun
+Icon=kobold
+Terminal=false
+Categories=Game;Utility;

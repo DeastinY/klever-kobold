@@ -43,7 +43,7 @@ exe = EXE(  # noqa: F821
     strip=False,
     upx=False,
     console=True,
-    icon=[str(here / "kobold.ico")] if sys.platform == "win32" else None,
+    icon=[str(here.parent / "icon" / "kobold.ico")] if sys.platform == "win32" else None,
 )
 coll = COLLECT(  # noqa: F821
     exe,
