@@ -31,6 +31,12 @@ curl -fsSL https://raw.githubusercontent.com/DeastinY/klever-kobold/main/deploy/
 irm https://raw.githubusercontent.com/DeastinY/klever-kobold/main/deploy/install.ps1 | iex
 ```
 
+**Windows, without a terminal**: download `KleverKoboldSetup.exe` from the
+[latest release](https://github.com/DeastinY/klever-kobold/releases/latest) and run it.
+It installs Ollama alongside if it is missing, fetches the models and the index,
+and puts the kobold in the Start menu. It is not code-signed, so SmartScreen
+asks once: *More info*, then *Run anyway*.
+
 Either installs [Ollama](https://ollama.com) and [uv](https://docs.astral.sh/uv/)
 if they are missing, pulls the two models (about 4 GB), fetches the index
 (270 MB: the rules and the lore), and opens the kobold in your browser. From then on it is:

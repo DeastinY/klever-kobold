@@ -146,3 +146,37 @@ def test_data_home(monkeypatch, platform, env, want):
     for k, v in env.items():
         monkeypatch.setenv(k, v)
     assert str(app.data_home()).endswith(want)
+
+
+def frozen(monkeypatch, sha="d3adbeef00000000000000000000000000000000"):
+    """The Windows installer's build: no pip record, sys.frozen, a build_info.json."""
+    import importlib.metadata
+    monkeypatch.setattr(importlib.metadata, "distribution", lambda name: Dist(None))
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(update, "build_info", lambda: {"commit": sha, "version": "1.2.3"})
+
+
+def test_frozen_build_knows_its_commit_and_points_at_the_release(monkeypatch):
+    frozen(monkeypatch)
+    assert update.is_frozen() is True
+    assert update.installed_commit().startswith("d3adbee")
+    assert update.upgrade_command() is None
+    ok, out = update.upgrade()
+    assert ok is False and update.RELEASES in out and "installer" in out
+    monkeypatch.setattr(update, "latest_commit",
+                        lambda timeout: {"sha": "0" * 40, "date": "2026-09-30", "message": "m"})
+    seen = update.check()
+    assert seen["behind"] is True
+    assert seen["tool"] is False
+    assert seen["command"] == update.RELEASES
+
+
+def test_build_info_is_read_beside_the_module(monkeypatch, tmp_path):
+    fake = tmp_path / "update.py"
+    fake.write_text("")
+    monkeypatch.setattr(update, "__file__", str(fake))
+    assert update.build_info() == {}
+    (tmp_path / "build_info.json").write_bytes(orjson.dumps({"commit": "abc", "date": "2026-09-30"}))
+    assert update.build_info()["commit"] == "abc"
+    (tmp_path / "build_info.json").write_text("not json")
+    assert update.build_info() == {}

@@ -203,7 +203,7 @@ def cmd_doctor(args) -> int:
             print(f"  ok   ollama version     {version}{note}")
         except Exception:
             pass
-    if args.backend == "ollama" and not shutil.which("ollama"):
+    if args.backend == "ollama" and not ollama_exe():
         hint = INSTALL_HINT.get(
             "linux" if sys.platform.startswith("linux") else sys.platform,
             "See https://ollama.com/download")
@@ -248,6 +248,24 @@ INSTALL_HINT = {
 }
 
 
+def ollama_exe() -> str | None:
+    """The Ollama binary: on PATH, or where its Windows installer puts it.
+
+    That installer adds its directory to the user's PATH, but a process started
+    before it ran -- the kobold installer's own post-install step, a terminal
+    left open -- still carries the old one.
+    """
+    found = shutil.which("ollama")
+    if found:
+        return found
+    if sys.platform == "win32":
+        exe = (pathlib.Path(os.environ.get("LOCALAPPDATA", pathlib.Path.home()))
+               / "Programs" / "Ollama" / "ollama.exe")
+        if exe.exists():
+            return str(exe)
+    return None
+
+
 def install_ollama() -> bool:
     """Run the official installer. Only ever from --install-ollama."""
     if sys.platform == "darwin":
@@ -284,11 +302,13 @@ def ensure_ollama(url: str, install: bool) -> bool:
     if up():
         return True
 
-    if not shutil.which("ollama"):
+    exe = ollama_exe()
+    if not exe:
         if install:
             print("ollama    not installed — installing", flush=True)
             if not install_ollama():
                 return False
+            exe = ollama_exe() or "ollama"
         else:
             hint = INSTALL_HINT.get(
                 "linux" if sys.platform.startswith("linux") else sys.platform,
@@ -304,7 +324,7 @@ def ensure_ollama(url: str, install: bool) -> bool:
     if url.rstrip("/") == DEFAULT_OLLAMA:
         print("ollama    installed but not running — starting it", flush=True)
         try:
-            subprocess.Popen(["ollama", "serve"],
+            subprocess.Popen([exe, "serve"],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                              start_new_session=True)
         except OSError as exc:
@@ -458,7 +478,8 @@ def cmd_upgrade(args) -> int:
     if args.check:
         return 1 if seen["behind"] else 0
     if not seen["tool"]:
-        print("This kobold runs from a checkout: update it with `git pull`.")
+        # A checkout or the Windows installer's build: upgrade() says which and what to do.
+        print(update.upgrade()[1])
         return 1
     print(f"running {seen['command']}", flush=True)
     ok, out = update.upgrade()

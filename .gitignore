@@ -26,6 +26,11 @@ wandb/
 *.gguf
 *.safetensors
 
+# What the Windows workflow writes before freezing, and PyInstaller's scratch.
+src/kleverkobold/build_info.json
+build/
+deploy/windows/OllamaSetup.exe
+
 # The packaged index is a build artifact: 244 MB of float16 that would grow with
 # every rebuild. It ships as a GitHub release asset instead -- see deploy/README.md.
 dist/

@@ -119,6 +119,44 @@ If `kobold` is not on the PATH for those apps, use the interpreter that has it:
 `"command": "/path/to/.venv/bin/python", "args": ["-m", "kleverkobold", "mcp"]`.
 Web UI settings do not travel to the MCP server; it takes the same command-line flags.
 
+## The Windows installer
+
+`KleverKoboldSetup.exe` on the [latest release](https://github.com/DeastinY/klever-kobold/releases/latest)
+is the same program frozen with PyInstaller and wrapped by Inno Setup, for
+people who would rather not open a terminal. It is per-user, like Ollama's own
+installer: no administrator rights, no UAC prompt.
+
+What it does, in order:
+
+1. Copies the program to `%LOCALAPPDATA%\Programs\KleverKobold` and, if you
+   leave the box ticked, adds it to your PATH so `kobold` works in a terminal
+   and in Claude Desktop's MCP config.
+2. If Ollama is not installed, downloads `OllamaSetup.exe` from ollama.com
+   (about 1.5 GB) and runs it silently. An Ollama already on the machine is
+   left alone.
+3. Offers to run `kobold setup` (the two models, about 4 GB, and the index,
+   270 MB) and to open the kobold. Both are Start menu entries as well, next to
+   *Kobold doctor*.
+
+It is not code-signed, so SmartScreen shows "Windows protected your PC" the
+first time: *More info*, then *Run anyway*. Everything else is as with the
+script install: same data directory, same `kobold` command, same page.
+
+**Updating**: the page still says when a newer kobold is out, but instead of an
+Upgrade button it links to the release; download the new installer and run it
+over the old one. **Removing**: *Settings → Apps → The Klever Kobold*. Ollama,
+its models, and the index stay; remove those separately if you want the disk back.
+
+**Building it**: the *Windows installer* workflow under Actions builds it on a
+Windows runner from any commit (a `v*` tag attaches it to that release), then
+installs it on that runner silently, checks that Ollama landed alongside and
+`kobold` is on the PATH, and uninstalls it again; a pull request touching the
+installer runs the same. Tick *end_to_end* to also pull the models and run
+`kobold doctor` there. The pieces are in [`deploy/windows/`](../deploy/windows/): `kobold.spec` (the
+freeze), `kobold.iss` (the installer), `launcher.py` (the frozen entry point).
+Tick *bundle_ollama* to embed `OllamaSetup.exe` in the installer for machines
+that cannot download it during install; that makes it about 1.6 GB.
+
 ## Docker
 
 For Linux and Windows, `docker compose up` runs Ollama and the kobold together;
@@ -134,6 +172,9 @@ uv tool upgrade kleverkobold      # the same, by hand
 kobold setup                      # picks up a new index release if one is out
 uv tool uninstall kleverkobold    # the program; models stay with Ollama, the index in the data directory
 ```
+
+Installed with `KleverKoboldSetup.exe` instead: run the newer installer over
+the old one, and remove it from *Settings → Apps*.
 
 ## Building from a clone
 

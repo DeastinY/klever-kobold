@@ -10,6 +10,11 @@ Upgrading is ``uv tool upgrade kleverkobold`` and a restart, which the server
 can do to itself: the page asks, the command runs, the process re-executes
 and the page reloads once it answers again. Only a browser on the same
 machine may ask, since the request runs a command on the host.
+
+The Windows installer's frozen build (deploy/windows/) has neither pip's
+record nor uv: the workflow writes ``build_info.json`` beside this file with
+the commit it froze, so the check still works, and the upgrade is a link to
+the newer installer rather than a command.
 """
 
 from __future__ import annotations
@@ -25,6 +30,7 @@ import orjson
 
 REPO = "DeastinY/klever-kobold"
 API = f"https://api.github.com/repos/{REPO}/commits/main"
+RELEASES = f"https://github.com/{REPO}/releases/latest"
 PACKAGE = "kleverkobold"
 # Set by restart() so a freshly upgraded process does not upgrade again on
 # start, whatever the check says.
@@ -51,11 +57,29 @@ def is_tool_install() -> bool:
     return bool((info.get("vcs_info") or {}).get("commit_id"))
 
 
+def is_frozen() -> bool:
+    """A PyInstaller build: the Windows installer's kobold.exe."""
+    return bool(getattr(sys, "frozen", False))
+
+
+def build_info() -> dict:
+    """What the workflow recorded when it froze this build: commit, version, date. {} otherwise."""
+    try:
+        raw = pathlib.Path(__file__).with_name("build_info.json").read_bytes()
+        info = orjson.loads(raw)
+    except (OSError, orjson.JSONDecodeError):
+        return {}
+    return info if isinstance(info, dict) else {}
+
+
 def installed_commit() -> str | None:
     info = _direct_url() or {}
     commit = (info.get("vcs_info") or {}).get("commit_id")
     if commit:
         return commit
+    commit = build_info().get("commit")
+    if commit:
+        return str(commit)
     root = pathlib.Path(__file__).resolve().parents[2]
     if (root / ".git").exists():
         try:
@@ -87,8 +111,10 @@ def check(timeout: float = 6.0) -> dict:
     ``checked: False`` and the page says nothing.
     """
     current = installed_commit() or ""
+    # `command` is what to run, or for a frozen build where to click.
+    command = " ".join(upgrade_command() or []) or (RELEASES if is_frozen() else "")
     out = {"checked": False, "current": current[:7], "latest": "", "date": "", "message": "",
-           "behind": False, "tool": is_tool_install(), "command": " ".join(upgrade_command() or [])}
+           "behind": False, "tool": bool(upgrade_command()), "command": command}
     try:
         latest = latest_commit(timeout)
     except Exception:
@@ -101,8 +127,8 @@ def check(timeout: float = 6.0) -> dict:
 
 
 def upgrade_command() -> list[str] | None:
-    """How this install is upgraded, or None when it is a checkout."""
-    if not is_tool_install():
+    """How this install is upgraded, or None when it is a checkout or a frozen build."""
+    if is_frozen() or not is_tool_install():
         return None
     uv = shutil.which("uv")
     if not uv:
@@ -115,6 +141,9 @@ def upgrade(timeout: float = 600.0) -> tuple[bool, str]:
     """Run the upgrade. Returns (ok, the command's output, trimmed)."""
     cmd = upgrade_command()
     if not cmd:
+        if is_frozen():
+            return False, ("This kobold came from the Windows installer; get the newer one "
+                           f"from {RELEASES} and run it over this one.")
         return False, ("This kobold runs from a checkout, not an installed tool; "
                        "update it with `git pull` and restart.")
     try:
@@ -130,6 +159,8 @@ def restart() -> None:
     os.environ[JUST_UPGRADED] = "1"
     sys.stdout.flush()
     sys.stderr.flush()
+    if is_frozen():
+        os.execv(sys.executable, [sys.executable, *sys.argv[1:]])
     os.execv(sys.executable, [sys.executable, "-m", PACKAGE, *sys.argv[1:]])
 
 

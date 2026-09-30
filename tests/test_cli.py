@@ -227,8 +227,22 @@ def test_ensure_ollama_paths(monkeypatch, capsys):
     monkeypatch.setattr(cli.time, "sleep", lambda s: None)
     calls["n"] = 0
     assert cli.ensure_ollama(cli.DEFAULT_OLLAMA, install=False) is True
-    assert started == [["ollama", "serve"]]
+    assert started == [["/usr/bin/ollama", "serve"]]
     # Down on a custom endpoint: not ours to start.
     calls["n"] = -100
     assert cli.ensure_ollama("http://elsewhere:9999", install=False) is False
     assert "nothing is answering" in capsys.readouterr().err
+
+
+def test_ollama_exe_looks_where_the_windows_installer_puts_it(monkeypatch, tmp_path):
+    monkeypatch.setattr(cli.shutil, "which", lambda name: None)
+    monkeypatch.setattr(cli.sys, "platform", "win32")
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path))
+    assert cli.ollama_exe() is None
+    exe = tmp_path / "Programs" / "Ollama" / "ollama.exe"
+    exe.parent.mkdir(parents=True)
+    exe.write_bytes(b"")
+    assert cli.ollama_exe() == str(exe)
+    # PATH still wins when it has one.
+    monkeypatch.setattr(cli.shutil, "which", lambda name: "C:/elsewhere/ollama.exe")
+    assert cli.ollama_exe() == "C:/elsewhere/ollama.exe"
