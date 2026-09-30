@@ -115,6 +115,27 @@ def test_doctor_reports_every_part(monkeypatch, index_dir, assistant, capsys):
     assert "retrieval smoke test ->" in out and "lore smoke test" in out and "all good" in out
 
 
+def test_doctor_checks_the_model_this_machine_answers_with(monkeypatch, index_dir, assistant, capsys):
+    """Not the manifest's: that names the model the index was benchmarked against."""
+    import httpx
+    monkeypatch.setattr(cli.shutil, "which", lambda name: "/usr/bin/ollama")
+    monkeypatch.setattr(httpx, "get", lambda url, timeout=None: FakeResponse({"version": "0.19.0"}))
+    monkeypatch.setattr(cli, "_assistant", lambda args: assistant)
+    checked = []
+
+    class Recording(FakeOllama):
+        def chat(self, system, user, model, max_tokens=8):
+            checked.append(model)
+            return "ok"
+
+    monkeypatch.setattr(cli, "Ollama", Recording)
+    assert cli.main(["--index", str(index_dir), "doctor"]) == 0
+    assert checked == [cli.default_llm()[0]]           # the default, not "fake-llm"
+    checked.clear()
+    assert cli.main(["--index", str(index_dir), "--llm-model", "other:1b", "doctor"]) == 0
+    assert checked == ["other:1b"]
+
+
 def test_doctor_names_the_broken_part(monkeypatch, index_dir, tmp_path, capsys):
     import httpx
     monkeypatch.setattr(cli.shutil, "which", lambda name: "/usr/bin/ollama")

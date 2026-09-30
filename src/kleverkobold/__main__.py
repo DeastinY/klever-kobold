@@ -210,8 +210,13 @@ def cmd_doctor(args) -> int:
         print(f"\n  Ollama is not installed.\n  {hint}\n  Then: kobold setup")
         return 1
     client = Ollama(args.ollama)
-    for key in ("ollama_embed", "ollama_llm"):
-        model = manifest[key]
+    # The embedder is the manifest's: the index was built with it and nothing
+    # else will do. The answering model is whatever this machine answers with --
+    # the manifest only records the one the index was benchmarked against, and
+    # `setup` pulls the default, so checking the manifest's failed every fresh
+    # install that had not also pulled the 9B.
+    llm, _ = _llm(args)
+    for key, model in (("ollama_embed", manifest["ollama_embed"]), ("ollama_llm", llm)):
         try:
             if key == "ollama_embed":
                 client.embed(["ping"], model)
