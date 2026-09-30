@@ -1,6 +1,6 @@
 [project]
 name = "kleverkobold"
-version = "0.1.0"
+version = "0.2.0"
 description = "The Klever Kobold: a Pathfinder 2e rules reference that runs on your own machine -- corpus, retrieval, benchmark, fine-tune."
 requires-python = ">=3.11"
 license = "MIT"
