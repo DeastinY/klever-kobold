@@ -60,6 +60,7 @@ jobs:
           dist\kobold\kobold.exe --help
           dist\kobold\kobold.exe upgrade --check; if ($LASTEXITCODE -gt 1) { exit $LASTEXITCODE }
           dist\kobold\kobold.exe doctor; if ($LASTEXITCODE -ne 1) { exit 1 }   # no index, no Ollama: says so and exits 1
+          exit 0   # the step otherwise takes the last command's exit code, and that 1 was the point
 
       - name: Ollama's installer, to embed
         if: inputs.bundle_ollama
