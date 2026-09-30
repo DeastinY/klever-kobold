@@ -36,6 +36,7 @@ from .app import (
     OllamaError,
     Turn,
     default_llm,
+    scope_name,
 )
 
 
@@ -77,6 +78,8 @@ def cmd_ask(args) -> int:
             sources = event["sources"]
             if event.get("scope") == "lore":
                 print("(answering from Golarion lore as well as the rules)\n", file=sys.stderr)
+            elif event.get("scope") == "campaign":
+                print("(answering from the campaign notes)\n", file=sys.stderr)
         elif event["event"] == "token":
             sys.stdout.write(event["text"])
             sys.stdout.flush()
@@ -84,7 +87,7 @@ def cmd_ask(args) -> int:
             timings = event["timings"]
     print("\n\nsources:")
     for s in sources:
-        lore = ", lore" if s.get("corpus") == "pathfinderwiki" else ""
+        lore = {"pathfinderwiki": ", lore", "campaign": ", campaign"}.get(s.get("corpus"), "")
         print(f"  {s['name']} ({s['category']}{lore}) — {s['url']}")
     if args.timings:
         parts = " · ".join(f"{k.replace('_', ' ')} {v:.1f}s" for k, v in timings.items())
@@ -150,10 +153,13 @@ def cmd_chat(args) -> int:
 
 def cmd_search(args) -> int:
     a = _assistant(args)
-    plan = a.rewrite(args.question)
+    campaign = a.resolve_campaign(args.scope, args.question)
+    plan = dict(a.CAMPAIGN_PLAN) if campaign else a.rewrite(args.question)
+    plan["campaign"] = campaign
+    plan["lore"] = a.resolve_scope(args.scope, plan)
     hits = a.search(args.question, k=args.k, plan=plan, rerank=not args.no_rerank,
                     scope=args.scope)
-    scope = "lore" if a.resolve_scope(args.scope, plan) else "rules"
+    scope = scope_name(plan)
     print(f"interpreted as: {plan['summary']!r}  kinds={plan['categories']}  scope={scope}\n")
     for n, h in enumerate(hits, 1):
         level = f" (level {h.level})" if h.level is not None else ""
@@ -197,7 +203,7 @@ def cmd_doctor(args) -> int:
             print(f"  ok   ollama version     {version}{note}")
         except Exception:
             pass
-    if args.backend == "ollama" and not shutil.which("ollama"):
+    if args.backend == "ollama" and not ollama_exe():
         hint = INSTALL_HINT.get(
             "linux" if sys.platform.startswith("linux") else sys.platform,
             "See https://ollama.com/download")
@@ -242,6 +248,24 @@ INSTALL_HINT = {
 }
 
 
+def ollama_exe() -> str | None:
+    """The Ollama binary: on PATH, or where its Windows installer puts it.
+
+    That installer adds its directory to the user's PATH, but a process started
+    before it ran -- the kobold installer's own post-install step, a terminal
+    left open -- still carries the old one.
+    """
+    found = shutil.which("ollama")
+    if found:
+        return found
+    if sys.platform == "win32":
+        exe = (pathlib.Path(os.environ.get("LOCALAPPDATA", pathlib.Path.home()))
+               / "Programs" / "Ollama" / "ollama.exe")
+        if exe.exists():
+            return str(exe)
+    return None
+
+
 def install_ollama() -> bool:
     """Run the official installer. Only ever from --install-ollama."""
     if sys.platform == "darwin":
@@ -278,11 +302,13 @@ def ensure_ollama(url: str, install: bool) -> bool:
     if up():
         return True
 
-    if not shutil.which("ollama"):
+    exe = ollama_exe()
+    if not exe:
         if install:
             print("ollama    not installed — installing", flush=True)
             if not install_ollama():
                 return False
+            exe = ollama_exe() or "ollama"
         else:
             hint = INSTALL_HINT.get(
                 "linux" if sys.platform.startswith("linux") else sys.platform,
@@ -298,7 +324,7 @@ def ensure_ollama(url: str, install: bool) -> bool:
     if url.rstrip("/") == DEFAULT_OLLAMA:
         print("ollama    installed but not running — starting it", flush=True)
         try:
-            subprocess.Popen(["ollama", "serve"],
+            subprocess.Popen([exe, "serve"],
                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                              start_new_session=True)
         except OSError as exc:
@@ -452,7 +478,8 @@ def cmd_upgrade(args) -> int:
     if args.check:
         return 1 if seen["behind"] else 0
     if not seen["tool"]:
-        print("This kobold runs from a checkout: update it with `git pull`.")
+        # A checkout or the Windows installer's build: upgrade() says which and what to do.
+        print(update.upgrade()[1])
         return 1
     print(f"running {seen['command']}", flush=True)
     ok, out = update.upgrade()

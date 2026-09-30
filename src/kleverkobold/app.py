@@ -50,7 +50,7 @@ import httpx
 import numpy as np
 import orjson
 
-from . import retrieval
+from . import retrieval, shelves
 from .bm25 import BM25
 
 DEFAULT_OLLAMA = "http://localhost:11434"
@@ -154,7 +154,7 @@ CATEGORIES = ("action", "condition", "feat", "spell", "equipment", "weapon", "ar
 
 # What a question may be answered from. ``rules`` is the Archives alone and is
 # the measured path; ``lore`` adds PathfinderWiki; ``auto`` asks the rewriter.
-SCOPES = ("auto", "rules", "lore")
+SCOPES = ("auto", "rules", "lore", "campaign")
 DEFAULT_SCOPE = "auto"
 
 # Excerpts kept for the Archives when a question is answered with lore in play.
@@ -265,6 +265,22 @@ LORE_ANSWER_SYSTEM = (
     "matter -- who, where, when, and how it bears on play if the question is about a game. No "
     "headings, and no bullet list unless the question asks for a list. Finish with a line "
     "'Source:' giving the URL of each excerpt you used, and nothing after it."
+)
+
+# Used only when a campaign shelf row (the GM's own notes, see shelves.py) is
+# among the excerpts. The shelf's preamble -- who is in the party, which ship,
+# where the story stands -- is appended at load time, generated from the notes.
+CAMPAIGN_ANSWER_SYSTEM = (
+    "You are the game master's assistant for their own Pathfinder Second Edition campaign. "
+    "Excerpts are provided below: the GM's campaign notes (marked 'campaign notes'; German "
+    "and English mixed, rule terms in English) and, where useful, rules entries from the "
+    "Archives of Nethys. The campaign notes are authoritative for this table: where a house "
+    "rule differs from the Archives, the house rule applies. Do not invent campaign facts "
+    "that are not in the excerpts; if they do not contain the answer, say so plainly.\n"
+    "Answer in the language of the question. Keep the answer under 150 words: lead with the "
+    "direct answer, then the details that matter at the table. No headings, and no bullet "
+    "list unless the question asks for a list. Finish with a line 'Source:' naming each "
+    "note (or URL) you used, and nothing after it."
 )
 
 # Follow-ups are elliptical -- "what if she's prone?" names nothing the index
@@ -414,6 +430,11 @@ DEFAULT_EXPAND = 0
 EXPAND_WEIGHT = 0.25
 
 
+def scope_name(plan: dict) -> str:
+    """What a question was answered from, as the page and the CLI name it."""
+    return "campaign" if plan.get("campaign") else "lore" if plan.get("lore") else "rules"
+
+
 class OllamaError(RuntimeError):
     """Raised with a message a user can act on, not a stack trace."""
 
@@ -428,11 +449,15 @@ class Hit:
     text: str
     summary: str = ""
     legacy_name: list = None  # names this entry had before the Remaster, if any
-    corpus: str = "aon"       # "aon" (rules) or "pathfinderwiki" (lore)
+    corpus: str = "aon"       # "aon" (rules), "pathfinderwiki" (lore), "campaign" (a shelf)
 
     @property
     def lore(self) -> bool:
         return self.corpus == "pathfinderwiki"
+
+    @property
+    def campaign(self) -> bool:
+        return self.corpus == "campaign"
 
 
 @dataclass
@@ -709,6 +734,8 @@ class Assistant:
         # quotes. Index byte offsets instead and read those eight on demand.
         self._bodies_path = index_dir / "bodies.jsonl"
         self._body_offsets: dict[str, tuple[int, int]] = {}
+        # Rows attached from a shelf keep their bodies in the shelf's own file.
+        self._body_files: dict[str, pathlib.Path] = {}
         with self._bodies_path.open("rb") as fh:
             offset = 0
             for line in fh:
@@ -728,9 +755,18 @@ class Assistant:
             bm25=BM25.load(index_dir / "bm25.npz"),
             model_name=self.manifest["embed_model"],
         )
+        # Extra shelves (a GM's campaign notes), attached beside the packaged rows.
+        self.shelves = shelves.attach(self, data_home()) if index_dir == DEFAULT_INDEX or \
+            os.environ.get("KOBOLD_SHELVES") else []
+        self.campaign_preamble = "\n\n".join(s.preamble for s in self.shelves if s.preamble)
+        self._campaign_re = shelves.trigger_pattern(
+            [t for s in self.shelves for t in s.triggers] + list(shelves.CUE_WORDS))
+        self._campaign_triggers = [t for s in self.shelves for t in s.triggers]
+        self._glossary = {k: v for s in self.shelves for k, v in s.glossary.items()}
         # One mask per scope, built once: `allowed` walks every row.
         self._masks = {False: self.index.allowed(exclude_legacy=False),
                        True: self.index.allowed(exclude_legacy=False, lore=True)}
+        self._campaign_mask = self.index.allowed(exclude_legacy=False, campaign=True)
         self._base_mask = self._masks[False]
 
         # Outbound link graph, if the package carries one. Optional so an older
@@ -797,7 +833,7 @@ class Assistant:
         if span is None:
             return ""
         offset, length = span
-        with self._bodies_path.open("rb") as fh:
+        with self._body_files.get(chunk_id, self._bodies_path).open("rb") as fh:
             fh.seek(offset)
             return orjson.loads(fh.read(length)).get("text", "")
 
@@ -893,6 +929,8 @@ class Assistant:
     def has_lore(self) -> bool:
         return bool(getattr(getattr(self, "index", None), "has_lore", False))
 
+    CAMPAIGN_PLAN = {"summary": "", "categories": [], "scope": "rules", "campaign": True}
+
     def rewrite(self, question: str) -> dict:
         system = self.rewrite_system or (REWRITE_SCOPE_SYSTEM if self.has_lore else REWRITE_SYSTEM)
         try:
@@ -906,10 +944,31 @@ class Assistant:
             return {"summary": "", "categories": [], "scope": "rules"}
         return parse_plan(raw)
 
+    @property
+    def has_campaign(self) -> bool:
+        return bool(getattr(getattr(self, "index", None), "has_campaign", False))
+
+    def resolve_campaign(self, scope: str, question: str) -> bool:
+        """Whether this question goes to the campaign shelf.
+
+        Asked for outright, or, under ``auto``, when the question names a person,
+        ship or place from the shelf's own trigger list or says "unsere" /
+        "Hausregel" and the like. Decided before the rewriter, without a model.
+        """
+        if not self.has_campaign or scope in ("rules", "lore"):
+            return False
+        if scope == "campaign":
+            return True
+        pattern = getattr(self, "_campaign_re", None)
+        return bool(pattern and pattern.search(question.lower())) or \
+            shelves.compound_hit(question, getattr(self, "_campaign_triggers", []))
+
     def resolve_scope(self, scope: str, plan: dict | None) -> bool:
         """Whether this question may see lore. Anything unsure is rules."""
         if scope not in SCOPES:
             raise ValueError(f"scope must be one of {SCOPES}, not {scope!r}")
+        if scope == "campaign" or (plan or {}).get("campaign"):
+            return False
         if not self.has_lore or scope == "rules":
             return False
         if scope == "lore":
@@ -966,13 +1025,19 @@ class Assistant:
                rerank: bool = True, pool: int | None = None,
                expand: int = DEFAULT_EXPAND, scope: str = DEFAULT_SCOPE,
                filters: dict | None = None) -> list[Hit]:
-        plan = plan if plan is not None else self.rewrite(question)
+        if plan is None:
+            plan = (dict(self.CAMPAIGN_PLAN) if self.resolve_campaign(scope, question)
+                    else self.rewrite(question))
         queries = [question]
         if plan.get("summary"):
             queries.append(plan["summary"])
         vecs = self._embed_queries(queries).astype(np.float32)
         qvec, hvec = vecs[0], (vecs[1] if len(vecs) > 1 else None)
 
+        campaign = bool(plan.get("campaign")) or (
+            "campaign" not in plan and self.resolve_campaign(scope, question))
+        if campaign:
+            return self._search_campaign(question, qvec, hvec, k, rerank, pool, filters)
         lore = self.resolve_scope(scope, plan)
         mask = self._masks[lore]
         # Hard filters from the asker -- a kind, a level range, traits -- sit
@@ -1045,6 +1110,61 @@ class Assistant:
                         if n < k or (len(h.name or "") >= 4 and h.name.lower() in q)]
             hits = self.keep_rules(hits, eligible, k)
         return hits
+
+    CAMPAIGN_RULES_SLOTS = 2
+
+    def _search_campaign(self, question: str, qvec: np.ndarray, hvec: np.ndarray | None,
+                         k: int, rerank: bool, pool: int | None,
+                         filters: dict | None) -> list[Hit]:
+        """The campaign scope: the shelf first, and up to two Archives entries.
+
+        Each corpus is ranked on its own (their BM25 scores are not on one scale)
+        and the rankings are fused. The candidate list keeps the Archives to
+        ``CAMPAIGN_RULES_SLOTS``, so a house-rule question still gets the rule it
+        modifies next to the note, and "who is Miro?" is not drowned by feats.
+        """
+        camp = self._campaign_mask
+        rules = self._masks[False]
+        if filters:
+            camp, rules = camp & self.index.narrow(**filters), rules & self.index.narrow(**filters)
+        # The table's words for things: "Etmal" is filed under Day Speed. The
+        # shelf's glossary (from the vault) adds the other name to the query.
+        extra = shelves.expand(question, getattr(self, "_glossary", {}))
+        query = f"{question} ({'; '.join(extra)})" if extra else question
+        vecs = [qvec]
+        if extra:
+            vecs.append(self._embed_queries([query]).astype(np.float32)[0])
+        # Rules rankings count half: they are there for the rule a house rule
+        # modifies, not to outvote the notes the question is about.
+        rankings, weights = [], []
+        for mask, weight in ((camp, 1.0), (rules, 0.5)):
+            if not mask.any():
+                continue
+            for vec in vecs:
+                rankings += [self.index.dense(vec, mask, 50),
+                             self.index.dense(vec, mask, 50, view="summary")]
+                weights += [weight, weight]
+            rankings.append(self.index.lexical(query, mask, 50))
+            weights.append(weight)
+        take = pool or (DEFAULT_POOL if rerank else k)
+        order = retrieval.rrf(rankings, take * 4, smoothing=RRF_SMOOTHING, weights=weights,
+                              index=self.index)
+        order = retrieval.dedupe(self.index, order)
+        hits = self.campaign_quota([self._hit(i) for i in order], take)
+        if rerank:
+            hits = self.campaign_quota(self.rerank(question, hits, k), k)
+        return hits
+
+    def campaign_quota(self, hits: list[Hit], n: int) -> list[Hit]:
+        """At most CAMPAIGN_RULES_SLOTS non-campaign hits in the first ``n``, order kept."""
+        out, others = [], 0
+        for h in hits:
+            if not h.campaign:
+                if others >= self.CAMPAIGN_RULES_SLOTS:
+                    continue
+                others += 1
+            out.append(h)
+        return out[:n]
 
     def entry(self, name: str | None = None, url: str | None = None) -> Hit | None:
         """One entry, by its URL or its exact name.
@@ -1148,7 +1268,8 @@ class Assistant:
         if len(hits) <= k:
             return hits[:k]
         listing = "\n".join(
-            f"{n}. {h.name} ({h.category.replace('-', ' ')}{', lore' if h.lore else ''})"
+            f"{n}. {h.name} ({h.category.replace('-', ' ')}"
+            f"{', lore' if h.lore else ', campaign notes' if h.campaign else ''})"
             + (f" [level {h.level}]" if h.level is not None else "")
             + f" — {(h.summary or h.text[:110]).strip()}"
             for n, h in enumerate(hits, 1))
@@ -1180,13 +1301,15 @@ class Assistant:
                 head += f", level {h.level}"
             if h.lore:
                 head += ", Golarion lore from PathfinderWiki"
+            elif h.campaign:
+                head += ", campaign notes"
             head += f") — {h.url}"
             # The shipped index still carries AoN's "Nethys Note: No description…"
             # housekeeping line, which a small model reads as "does not exist".
             body = RE_NETHYS_NOTE.sub("", retrieval.plain(stat_block_first(h)))
             blocks.append(head + "\n" + body[:max_chars].strip())
         # The tag the rules path was measured with, unless lore is among them.
-        tag = "excerpts" if any(h.lore for h in hits) else "rules_excerpts"
+        tag = "excerpts" if any(h.lore or h.campaign for h in hits) else "rules_excerpts"
         return f"<{tag}>\n" + "\n\n".join(blocks) + f"\n</{tag}>"
 
     @staticmethod
@@ -1219,7 +1342,13 @@ class Assistant:
             timings["condense"] = round(time.time() - t, 2)
 
         t = time.time()
-        plan = self.rewrite(asked)
+        # A campaign question skips the rewriter: its entry kinds and one-line
+        # summaries describe the Archives, and for "Wer ist Miro?" it invents one.
+        if self.resolve_campaign(scope, asked):
+            plan = dict(self.CAMPAIGN_PLAN)
+        else:
+            plan = self.rewrite(asked)
+            plan["campaign"] = False
         # What the question was actually answered from, for the caller to show.
         plan["lore"] = self.resolve_scope(scope, plan)
         timings["rewrite"] = round(time.time() - t, 2)
@@ -1259,7 +1388,13 @@ class Assistant:
     def answer_system(self, history: Iterable[Turn] | None = None,
                       hits: Iterable[Hit] = ()) -> str:
         """The answering instructions. Unchanged, to the byte, without history or lore."""
-        base = self.system_for(hits)
+        hits = list(hits)
+        if any(h.campaign for h in hits):
+            base = CAMPAIGN_ANSWER_SYSTEM
+            if getattr(self, "campaign_preamble", ""):
+                base += "\n\n<campaign>\n" + self.campaign_preamble + "\n</campaign>"
+        else:
+            base = self.system_for(hits)
         return (base + FOLLOWUP_NOTE) if history else base
 
     PERSONA_CHARS = 300
@@ -1276,8 +1411,24 @@ class Assistant:
 
     def prompt(self, question: str, hits: Iterable[Hit],
                history: Iterable[Turn] | None = None, persona: str | None = None) -> str:
+        hits = list(hits)
         return (self.earlier(history) + self.asker(persona) + self.context(hits)
-                + "\n\nQuestion: " + question)
+                + self.glossary_note(question, hits) + "\n\nQuestion: " + question)
+
+    def glossary_note(self, question: str, hits: list[Hit]) -> str:
+        """The table's words the question used, with the names the notes use for them.
+
+        Only with campaign excerpts: "Etmal" is what the table says, the notes
+        say Day Speed, and a small model will not make that link by itself.
+        """
+        glossary = getattr(self, "_glossary", None)
+        if not glossary or not any(h.campaign for h in hits):
+            return ""
+        pairs = shelves.expand_pairs(question, glossary)
+        if not pairs:
+            return ""
+        return ("\n\n<glossary>\n" + "\n".join(f"{a} = {b}" for a, b in pairs)
+                + "\n</glossary>")
 
     @staticmethod
     def named_last(question: str, hits: list[Hit]) -> list[Hit]:
@@ -1318,7 +1469,7 @@ class Assistant:
         timings["answer"] = round(time.time() - t, 2)
         timings["total"] = round(sum(timings.values()), 2)
         return {"question": question, "answer": answer, "plan": plan,
-                "scope": "lore" if plan.get("lore") else "rules",
+                "scope": scope_name(plan),
                 "timings": timings, "hits": hits,
                 "sources": [{"name": h.name, "category": h.category, "url": h.url,
                              "corpus": h.corpus} for h in hits]}
@@ -1412,7 +1563,7 @@ class Assistant:
         # `hits` carries the Hit objects (full body text) for a caller that wants
         # to render cards; `sources` is the JSON-safe citation list.
         yield {"event": "sources", "plan": plan, "timings": dict(timings), "hits": hits,
-               "scope": "lore" if plan.get("lore") else "rules",
+               "scope": scope_name(plan),
                "sources": [{"name": h.name, "category": h.category, "url": h.url,
                             "corpus": h.corpus} for h in hits]}
         t = time.time()

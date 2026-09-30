@@ -636,6 +636,7 @@ offline like anything else here; the star on any entry adds or removes it.</p>
   <option value="auto">Rules, and Golarion lore when the question is about the world</option>
   <option value="rules">Rules only — the Archives of Nethys</option>
   <option value="lore">Rules and lore together, every time</option>
+  <option value="campaign">Your campaign notes (a shelf), plus two rules entries</option>
  </select>
  <p class="note" id="s-scopenote"></p>
 </div>
@@ -1647,9 +1648,11 @@ function paintUpdate(d){
   const auto=!!(d.defaults&&d.defaults.auto_upgrade);
   el.innerHTML='<span>A newer kobold is out'+(u.date?' ('+esc(u.date)+')':'')+
     (u.message?': <span class="what">'+esc(u.message)+'</span>':'')+'</span>'+
-    (LOCAL_ONLY||d.local_only!==false?
+    ((LOCAL_ONLY||d.local_only!==false)&&u.tool!==false?
       '<button type="button" class="primary" id="upd-go">Upgrade and restart</button>'+
       '<label><input type="checkbox" id="upd-auto"'+(auto?' checked':'')+'> always upgrade when the kobold starts</label>':
+      /^https?:/.test(u.command||'')?
+      '<span>Get it here: <a href="'+esc(u.command)+'" target="_blank" rel="noopener">'+esc(u.command)+'</a></span>':
       '<span>On the machine that runs it: <code>'+esc(u.command||'git pull')+'</code></span>')+
     '<button type="button" class="x" id="upd-x" title="Not now" aria-label="Dismiss">×</button>';
   el.hidden=false;
