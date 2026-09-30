@@ -95,10 +95,16 @@ begin
   Result := Pos(';' + Uppercase(Param) + ';', ';' + Uppercase(Current) + ';') = 0;
 end;
 
+var
+  LastLogged: Int64;
+
 function OnDownloadProgress(const Url, FileName: String; const Progress, ProgressMax: Int64): Boolean;
 begin
-  if Progress = ProgressMax then
-    Log(Format('downloaded %s', [FileName]));
+  if (Progress = ProgressMax) or (Progress - LastLogged > 100000000) then
+  begin
+    Log(Format('%s: %d of %d MB', [FileName, Progress div 1000000, ProgressMax div 1000000]));
+    LastLogged := Progress;
+  end;
   Result := True;
 end;
 
@@ -137,6 +143,16 @@ begin
   #ifndef BundleOllama
   if OllamaInstalled then
     exit;
+  if WizardSilent then
+  begin
+    // No wizard to show a page on: the plain call, which logs its progress.
+    try
+      DownloadTemporaryFile('{#OllamaURL}', 'OllamaSetup.exe', '', @OnDownloadProgress);
+    except
+      Result := 'Could not download Ollama: ' + AddPeriod(GetExceptionMessage);
+    end;
+    exit;
+  end;
   DownloadPage.Clear;
   DownloadPage.Add('{#OllamaURL}', 'OllamaSetup.exe', '');
   DownloadPage.Show;

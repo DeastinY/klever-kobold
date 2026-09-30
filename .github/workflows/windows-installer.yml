@@ -27,6 +27,11 @@ on:
 permissions:
   contents: write
 
+# A newer push supersedes a run still going on the same branch.
+concurrency:
+  group: windows-installer-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -83,10 +88,24 @@ jobs:
 
       - name: Install it on this runner
         # A silent install downloads Ollama's installer and runs it, like the
-        # wizard would; the checks are what a user would find afterwards.
+        # wizard would; the checks are what a user would find afterwards. The
+        # installer's log is echoed as it grows, so a stall shows where it is.
+        timeout-minutes: 30
         run: |
-          Start-Process -Wait -FilePath dist\KleverKoboldSetup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/LOG=install.log'
-          Get-Content install.log | Select-Object -Last 30
+          $log = Join-Path $PWD install.log
+          $p = Start-Process -PassThru -FilePath dist\KleverKoboldSetup.exe -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/LOG=$log"
+          $shown = 0
+          while (-not $p.HasExited) {
+            Start-Sleep -Seconds 15
+            if (Test-Path $log) {
+              $lines = @(Get-Content $log)
+              if ($lines.Count -gt $shown) { $lines[$shown..($lines.Count - 1)] | Out-Host; $shown = $lines.Count }
+            }
+            $ollama = Get-Process -Name 'OllamaSetup*','ollama*' -ErrorAction SilentlyContinue
+            if ($ollama) { "  running: $($ollama.ProcessName -join ', ')" | Out-Host }
+          }
+          "installer exited with $($p.ExitCode)" | Out-Host
+          if ($p.ExitCode) { exit $p.ExitCode }
           $app = "$env:LOCALAPPDATA\Programs\KleverKobold"
           if (-not (Test-Path "$app\kobold.exe")) { Write-Error "kobold.exe is not where the installer puts it"; exit 1 }
           & "$app\kobold.exe" --help | Select-Object -First 1; if ($LASTEXITCODE) { exit 1 }
