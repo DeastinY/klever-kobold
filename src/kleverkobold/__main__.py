@@ -228,7 +228,10 @@ def cmd_doctor(args) -> int:
             ok = False
 
     if ok:
-        a = _assistant(args)
+        # Built here rather than through _assistant(), which would announce the
+        # answering model a second time.
+        a = Assistant(args.index, args.ollama, backend=args.backend, llm_model=llm,
+                      embed_model=getattr(args, "embed_override", None))
         by_corpus = manifest.get("chunks_by_corpus") or {"aon": manifest.get("chunks")}
         print("  ok   corpus             " + ", ".join(f"{v:,} {k}" for k, v in by_corpus.items())
               + ("" if a.has_lore else "  (no lore in this index)"))
