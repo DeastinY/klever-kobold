@@ -68,9 +68,12 @@ jobs:
 
       - name: Installer
         run: |
-          choco install innosetup --no-progress -y
-          $define = if ('${{ inputs.bundle_ollama }}' -eq 'true') { '/DBundleOllama' } else { '' }
-          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$env:VERSION" $define deploy\windows\kobold.iss
+          # Inno Setup 6 ships on the runner image; choco only tops it up if it is missing.
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup --no-progress -y }
+          $args = @("/DAppVersion=$env:VERSION")
+          if ('${{ inputs.bundle_ollama }}' -eq 'true') { $args += '/DBundleOllama' }
+          & $iscc @args deploy\windows\kobold.iss; if ($LASTEXITCODE) { exit $LASTEXITCODE }
           Get-Item dist\KleverKoboldSetup.exe | Format-List Name, Length
 
       - uses: actions/upload-artifact@v4
